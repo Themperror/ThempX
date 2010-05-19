@@ -56,17 +56,13 @@ public:
 	}
 private:						   
 
-	struct Part
-	{
-		float currentLife;
-		float maxLife;
-		Object2D* obj;
-	};
-
+	LPDIRECT3DINDEXBUFFER9 iBuffer;
+	LPDIRECT3DVERTEXBUFFER9 vBuffer;
+	float maxLife;
 	float updateTimer;
 	ResourceManager* resources;
 	char* texturePath;
-	std::vector<Part> particles;
+	std::vector<Particle2D*> particles;
 	LPDIRECT3DDEVICE9 p_Device;
 	D3DXMATRIXA16* cameraView;
 

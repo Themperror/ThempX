@@ -60,6 +60,9 @@
     <ClCompile Include="Source_Code\CPP\Game.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source_Code\CPP\Particle2D.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source_Code\Headers\CollisionGeo.h">
@@ -93,6 +96,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Source_Code\Headers\Game.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source_Code\Headers\Particle2D.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
