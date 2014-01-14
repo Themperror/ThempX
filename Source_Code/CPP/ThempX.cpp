@@ -4,28 +4,27 @@ ThempX::ThempX(HWND handle,HINSTANCE hInstance)
 {
 	handleWindow = handle;
 	isDone = false;
-	//Init de engine
+	
+	//claim graphics device
 	p_Device = InitializeDevice(handleWindow);
+	
+	//instantiate all necessities
 	resources = new ResourceManager(p_Device,handle);
 	inputHandler = new InputHandler(handleWindow);
 	soundHandler = new SoundHandler(handle,44100,16,2);
+
 	WINDOWINFO winInfo;
-	
-	//p_VertexBuffer = FillVertices();
-	//p_IndexBuffer = FillIndices();
 	
 	LoadLevel();
 	
 	SetUpCamera();
 
-	//Init variabelen
+	//Init variables
 	Initialize();
 
 	debugCubes.push_back(new DebugCube(p_Device,D3DXVECTOR3(0,5,0),D3DXVECTOR3(0,0,0),D3DXVECTOR3(-2,-2,-2),D3DXVECTOR3(2,2,2),resources));
 
-	
-
-
+	//following switch is for testing collisions
 
 	/*	switch(cResult)
 	{
@@ -52,9 +51,7 @@ ThempX::ThempX(HWND handle,HINSTANCE hInstance)
 	}		*/
 
 
-
-	//std::cout<< "Everything initialized correctly without errors, now drawing" << std::endl;
-	//Init Game Loop
+	// Game loop starts here after everything is initialized
 	MSG msg;
     while(!isDone)
     {
@@ -75,7 +72,6 @@ ThempX::ThempX(HWND handle,HINSTANCE hInstance)
         }
 		if(msg.message == WM_QUIT)
 		{
-			//std::cout << "found QUIT message, Ending program" << std::endl;
 			isDone = true;
 			DestroyWindow(handleWindow);
 		}							  
@@ -84,7 +80,7 @@ ThempX::ThempX(HWND handle,HINSTANCE hInstance)
 		Sleep(0);
     }
 
-	//release alles
+	//release everything
 	resources->ReleaseResources();
 	for(unsigned int i=0;i<modelObjs.size();i++)
 	{
@@ -137,7 +133,9 @@ D3DXVECTOR3 ThempX::SubstractVector3(D3DXVECTOR3* a, D3DXVECTOR3* b)
 }
 bool ThempX::CheckCamBoxCollision(D3DXVECTOR3 pos, Object3D* obj)
 {
-/*	D3DXVECTOR3 innerPoint = AddVector3(&obj->position,&obj->innerBox); //- values
+	//This function will be replaced by the IsInX Functions from CollisionGeo
+	
+	/*	D3DXVECTOR3 innerPoint = AddVector3(&obj->position,&obj->innerBox); //- values
 	D3DXVECTOR3 outerPoint = AddVector3(&obj->position,&obj->outerBox); //+ values
 
 	if(pos.x > innerPoint.x && pos.y > innerPoint.y && pos.z > innerPoint.z && pos.x < outerPoint.x && pos.y < outerPoint.y && pos.z < outerPoint.z)
@@ -145,11 +143,6 @@ bool ThempX::CheckCamBoxCollision(D3DXVECTOR3 pos, Object3D* obj)
 		return true;
 	}  */
 	return false;
-}
-
-void LogVector(D3DXVECTOR3 a)
-{
-	//std::cout << a.x << "<- X  " << a.y << "<- Y  " << a.z << "<- Z  " << endl;
 }
 void ThempX::LeftMouseClick()
 {
@@ -171,7 +164,7 @@ void ThempX::LeftMouseClick()
 			D3DXVec3TransformCoord(&outCamPos,&camera.position,temp);
 			D3DXVec3TransformNormal(&lookDirInverse,&camera.lookDir,temp);
 
-			D3DXIntersect(modelObjs.at(i)->model.mesh,&outCamPos,&lookDirInverse,&hit,NULL,NULL,NULL,&distToHit,NULL,NULL);  //dit werkt niet want hij verwijst naar de ingelade model via resourceManager, Wat ik moet doen is opnieuw inladen elke keer, niet verzinnen om hier om heen te komen, teveel werk voor te weinig winst atm, je zal hoe dan ook aparte meshes in je ram krijgen en de models lezen duurt niet lang
+			D3DXIntersect(modelObjs.at(i)->model.mesh,&outCamPos,&lookDirInverse,&hit,NULL,NULL,NULL,&distToHit,NULL,NULL); 
 		
 			if(hit == TRUE)
 			{
@@ -209,7 +202,7 @@ void ThempX::DoInput()
 	{
 		if(mouseLeftJustDown == false)
 		{
-			//LeftMouseClick();
+			//LeftMouseClick();		//currently disabled the function because this is a raycast and not needed atm
 			mouseLeftJustDown = true;
 		}
 	}
@@ -219,7 +212,6 @@ void ThempX::DoInput()
 	}
 	if(inputHandler->MouseButtonDown(1))
 	{
-		//std::cout<< camera.position.x << "<-X "  <<camera.position.y  << "<-Y " <<camera.position.z  <<"<-Z " <<std::endl;
 		if(mouseRightJustDown == false)
 		{
 			lockCursor = !lockCursor;
@@ -269,31 +261,39 @@ void ThempX::DoInput()
 		newPos.x += temp.x *deltaTime*speed;
 		newPos.z += temp.z *deltaTime*speed;
 	}
+
+	// for checking the world positions,  handy visual support for when going to place objects in the world
 	if(KeyPressed(DIK_I))
 	{
-		spriteObjs.at(1)->position.x += speed*deltaTime;
+		spriteObjs.at(0)->position.x += speed*deltaTime;
 	}
 	if(KeyPressed(DIK_K))
 	{
-		spriteObjs.at(1)->position.x -= speed*deltaTime;
+		spriteObjs.at(0)->position.x -= speed*deltaTime;
 	}
 	if(KeyPressed(DIK_J))
 	{
-		spriteObjs.at(1)->position.z += speed*deltaTime;
+		spriteObjs.at(0)->position.z += speed*deltaTime;
 	}
 	if(KeyPressed(DIK_L))
 	{
-		spriteObjs.at(1)->position.z -= speed*deltaTime;
+		spriteObjs.at(0)->position.z -= speed*deltaTime;
 	}
 	if(KeyPressed(DIK_U))
 	{
-		spriteObjs.at(1)->position.y += speed*deltaTime;
+		spriteObjs.at(0)->position.y += speed*deltaTime;
 	}
 	if(KeyPressed(DIK_O))
 	{
-		spriteObjs.at(1)->position.y -= speed*deltaTime;
+		spriteObjs.at(0)->position.y -= speed*deltaTime;
+	}
+	if(KeyPressed(DIK_RSHIFT))
+	{
+		std::cout << "X: " << spriteObjs.at(0)->position.x << " Y: " << spriteObjs.at(0)->position.y << " Z: " << spriteObjs.at(0)->position.z << std::endl; 
 	}
 
+
+	//animation testing
 	if(KeyPressed(DIK_1))
 	{
 		for(unsigned int i = 0; i < spriteObjs.size();i++)
@@ -317,18 +317,14 @@ void ThempX::DoInput()
 
 	if(KeyPressed(DIK_SPACE))
 	{
-		//cout << "Reloaded level" << endl;
-		DestroyLevel();
-		// dat is het rare, pas geleden was het 7 MB
-		//also de muis locked in center bij start , rechtsklik om de lock eraf te halen
-		LoadLevel();
+		DestroyLevel();	 //This will destroy the current level 
+		LoadLevel();	//load the level in level.txt (if edited, the changes will reflect on the world)
 	}
 	
 	if(inputHandler->KeyPressed(DIK_ESCAPE))
 	{
 		PostQuitMessage(0);
 		isDone = true;
-		
 	}
 }
 
@@ -358,9 +354,8 @@ D3DXVECTOR3 ThempX::ReturnDirection(float anglesX,float anglesY)
 
 	final.x = fX - camPos.x;
 	final.y = fY - camPos.y;
-	final.z = fZ - camPos.z;
+	final.z = fZ - camPos.z;																			  
 
-	//std::cout << lookDir.x << " <- X  " << lookDir.y << "<- normY  " << lookDir.z << "<- normZ" << std::endl;
 	return final;
 }
 void ThempX::SetCameraLookX(float anglesX,float anglesY)
@@ -375,10 +370,6 @@ void ThempX::SetCameraLookX(float anglesX,float anglesY)
 	camera.lookDir.x = camera.lookAt.x - camera.position.x;
 	camera.lookDir.y = camera.lookAt.y - camera.position.y;
 	camera.lookDir.z = camera.lookAt.z - camera.position.z;
-	//float normX = camera.position.x-camera.lookAt.x;
-	//float normY = camera.position.y-camera.lookAt.y;
-	//float normZ = camera.position.z-camera.lookAt.z;
-	//std::cout << lookDir.x << " <- X  " << lookDir.y << "<- normY  " << lookDir.z << "<- normZ" << std::endl;
 }
 void ThempX::Initialize()
 {
@@ -403,7 +394,7 @@ void ThempX::Initialize()
 void ThempX::DrawScene()
 {
 	////////////////////////
-	// Clear de scene en begin met het drawen
+	// Clear the scene and Z buffer
     p_Device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(58,155,255), 1.0f, 0);
 	p_Device->Clear(0, NULL, D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(0, 0, 0), 1.0f, 0);
 
@@ -414,7 +405,7 @@ void ThempX::DrawScene()
     ////////////////////////
 
 	////////////////////////
-	//Draw mijn objecten
+	//Draw Objects
 	
 	p_Device->SetSamplerState(0,D3DSAMP_ADDRESSU,D3DTADDRESS_WRAP);
 	p_Device->SetSamplerState(0,D3DSAMP_ADDRESSV,D3DTADDRESS_WRAP);
@@ -439,7 +430,7 @@ void ThempX::DrawScene()
 	////////////////////////
 
 	////////////////////////
-	//eindig het drawen en laat het zien op het scherm (switch backbuffer met frontbuffer)
+	//End drawing
     p_Device->EndScene();
     p_Device->Present(NULL, NULL, NULL, NULL);
 	////////////////////////
@@ -456,22 +447,22 @@ void ThempX::SetUpCamera()
 LPDIRECT3DDEVICE9 ThempX::InitializeDevice(HWND han_WindowToBindTo) 
 {
 	//////////////////////////////////////////
-	//Check of de PC DirectX heeft, anders laat een error zien;
+	//Check if the computer has the correct DirectX version (or higher) else show an error and exit the program after
 	LPDIRECT3D9 p_dx_Object = NULL;
 	p_dx_Object = Direct3DCreate9(D3D_SDK_VERSION);
 	if (p_dx_Object == NULL)
 	{
 		MessageBox(han_WindowToBindTo,"DirectX Runtime library not installed!","InitializeDevice()",MB_OK);
-		isDone = true; // laat de applicatie zich afsluiten
+		isDone = true; 
 		return 0;
 	}
 	//////////////////////////////////////////
 
 	//////////////////////////////////////////
-	//initialiseer parameters voor DX9
+	//Initialize DX9 parameters
 	D3DPRESENT_PARAMETERS dx_PresParams;
  
-	ZeroMemory( &dx_PresParams, sizeof(dx_PresParams)); //zet alles op NULL in de parameter class zodat alles ge-init is (NULL = 0x000000, het is dus een waarde (pointer) en niet null als in niks)
+	ZeroMemory( &dx_PresParams, sizeof(dx_PresParams)); 
 	dx_PresParams.Windowed = TRUE;
 	dx_PresParams.SwapEffect = D3DSWAPEFFECT_DISCARD;
 	dx_PresParams.BackBufferFormat = D3DFMT_UNKNOWN;
@@ -482,7 +473,7 @@ LPDIRECT3DDEVICE9 ThempX::InitializeDevice(HWND han_WindowToBindTo)
 	//////////////////////////////////////////
 
 	//////////////////////////////////////////
-	// Claim de device in Hardware mode als dat lukt
+	// Try claiming the graphics device in hardware mode
 	HRESULT result;
 	LPDIRECT3DDEVICE9 p_dx_Device = NULL;
 
@@ -502,10 +493,10 @@ LPDIRECT3DDEVICE9 ThempX::InitializeDevice(HWND han_WindowToBindTo)
 		MessageBox(han_WindowToBindTo,"Error: Out of Video Memory","InitializeDevice()",MB_OK);
 		break;
 	}
-	if(p_dx_Device == NULL) //device claimen is dus niet gelukt, laten we proberen of we het in software-mode kunnen krijgen
+	if(p_dx_Device == NULL) // Device claiming didn't work, let's try in software mode
 	{
 		result = p_dx_Object->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_REF, han_WindowToBindTo, D3DCREATE_SOFTWARE_VERTEXPROCESSING, &dx_PresParams, &p_dx_Device);
-		switch(result)
+		switch(result) //if theres any error, exit the program as we couldn't claim a graphics device
 		{
 		case D3D_OK: 
 			MessageBox(han_WindowToBindTo,"Running in software mode","InitializeDevice()",MB_OK);
@@ -547,7 +538,7 @@ LPDIRECT3DDEVICE9 ThempX::InitializeDevice(HWND han_WindowToBindTo)
 	p_dx_Device->SetRenderState(D3DRS_DESTBLEND,D3DBLEND_ZERO);
 
 	//////////////////////////////////////////
-	//alles is goed gegaan, we returnen nu onze geclaimde device
+	//Everything worked correctly, now exiting function
 	return p_dx_Device;
 	//////////////////////////////////////////
 }
@@ -601,7 +592,7 @@ void ThempX::LoadLevel()
 	}
 	else
 	{
-		string str;	   //Zijn strings niet like.. long pointers? ehm volgensmij een soort wrapper om Char* heen moet je hem dan niet deleten..? Waar ben je klaar met al die strings?
+		string str;
 		while(getline(fin, str))
 		{
 			string name;
@@ -626,9 +617,7 @@ void ThempX::LoadLevel()
 				{
 					obj->SetScale(scalex,scaley,scalez);
 				}
-				modelObjs.push_back(obj); 
-				
-				//hier voor models
+				modelObjs.push_back(obj);
 			}
 			else
 			{
@@ -656,11 +645,9 @@ void ThempX::LoadLevel()
 						obj->SetScale(scalex,scaley,scalez);
 					}
 					spriteObjs.push_back(obj);
-					//hier voor sprites
 				}
 			}
 		}
-		//einde functie
 		fin.close();
 		
 	}
