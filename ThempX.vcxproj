@@ -10,6 +10,28 @@
       <Platform>Win32</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Source Code\CPP\CollisionGeo.cpp" />
+    <ClCompile Include="Source Code\CPP\DebugCube.cpp" />
+    <ClCompile Include="Source Code\CPP\InputHandler.cpp" />
+    <ClCompile Include="Source Code\CPP\Main.cpp" />
+    <ClCompile Include="Source Code\CPP\Object2D.cpp" />
+    <ClCompile Include="Source Code\CPP\Object3D.cpp" />
+    <ClCompile Include="Source Code\CPP\ResourceManager.cpp" />
+    <ClCompile Include="Source Code\CPP\SoundHandler.cpp" />
+    <ClCompile Include="Source Code\CPP\ThempX.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Source Code\Headers\CollisionGeo.h" />
+    <ClInclude Include="Source Code\Headers\DebugCube.h" />
+    <ClInclude Include="Source Code\Headers\InputHandler.h" />
+    <ClInclude Include="Source Code\Headers\Main.h" />
+    <ClInclude Include="Source Code\Headers\Object2D.h" />
+    <ClInclude Include="Source Code\Headers\Object3D.h" />
+    <ClInclude Include="Source Code\Headers\ResourceManager.h" />
+    <ClInclude Include="Source Code\Headers\SoundHandler.h" />
+    <ClInclude Include="Source Code\Headers\ThempX.h" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{468A34F8-DC49-45B5-9F55-6F96F1C885C5}</ProjectGuid>
     <RootNamespace>ThempX</RootNamespace>
@@ -70,28 +92,6 @@
       <AdditionalDependencies>dxguid.lib;dinput8.lib;dxerr.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClInclude Include="CollisionGeo.h" />
-    <ClInclude Include="DebugCube.h" />
-    <ClInclude Include="InputHandler.h" />
-    <ClInclude Include="Object2D.h" />
-    <ClInclude Include="Object3D.h" />
-    <ClInclude Include="ResourceManager.h" />
-    <ClInclude Include="SoundHandler.h" />
-    <ClInclude Include="THEMPX.h" />
-    <ClInclude Include="KeyCodes.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="CollisionGeo.cpp" />
-    <ClCompile Include="DebugCube.cpp" />
-    <ClCompile Include="InputHandler.cpp" />
-    <ClCompile Include="Object2D.cpp" />
-    <ClCompile Include="Object3D.cpp" />
-    <ClCompile Include="ResourceManager.cpp" />
-    <ClCompile Include="SoundHandler.cpp" />
-    <ClCompile Include="ThempX.cpp" />
-    <ClCompile Include="Main.cpp" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
