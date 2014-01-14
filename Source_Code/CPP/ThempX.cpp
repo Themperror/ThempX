@@ -621,7 +621,7 @@ void ThempX::LoadLevel()
 			}
 			else
 			{
-				if(XAnimRows == 0 && YAnimRows == 0 || XAnimRows == 1 && YAnimRows == 1)
+				if(XAnimRows == 0 && YAnimRows == 0)
 				{
 					Object2D* obj = new Object2D(resources,p_Device,_strdup(name.c_str()),&camera.m_View);
 					obj->handleWindow = handleWindow;

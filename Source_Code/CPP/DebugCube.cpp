@@ -52,10 +52,10 @@ void DebugCube::Draw()
 	D3DXMatrixMultiply(&RotScaleMatrix,&scalingMatrix,&rotationMatrix);
 	D3DXMatrixMultiply(&worldMatrix,&RotScaleMatrix,&translationMatrix);
 
-	//p_Device->SetFVF(D3DFVF_XYZ | D3DFVF_DIFFUSE);
+	p_Device->SetFVF(D3DFVF_XYZ | D3DFVF_DIFFUSE);
 
 	result = p_Device->SetIndices(iBuffer);
-	result = p_Device->SetStreamSource(0, vBuffer, 0, sizeof(D3DFVF_XYZ |D3DFVF_NORMAL));
+	result = p_Device->SetStreamSource(0, vBuffer, 0, sizeof(D3DFVF_XYZ |D3DFVF_DIFFUSE));
 	result = p_Device->SetTransform(D3DTS_WORLD, &worldMatrix);
 	if(texture != NULL)
 	{
@@ -86,40 +86,40 @@ LPDIRECT3DVERTEXBUFFER9 DebugCube::FillVertices()
 {	
 	VertexPNT vertices[] =
 	{
-		{ -3.0f, -3.0f, 3.0f, 0.0f, 0.0f, 1.0f, },    // side 1
-		{ 3.0f, -3.0f, 3.0f, 0.0f, 0.0f, 1.0f, },
-		{ -3.0f, 3.0f, 3.0f, 0.0f, 0.0f, 1.0f, },
-		{ 3.0f, 3.0f, 3.0f, 0.0f, 0.0f, 1.0f, },
+		{ -3.0f, -3.0f, 3.0f, 255, 0.0f, 0.0f, },    // side 1
+		{  3.0f, -3.0f, 3.0f, 255, 0.0f, 0.0f, },
+		{ -3.0f,  3.0f, 3.0f, 255, 0.0f, 0.0f, },
+		{  3.0f,  3.0f, 3.0f, 255, 0.0f, 0.0f, },
 
-		{ -3.0f, -3.0f, -3.0f, 0.0f, 0.0f, -1.0f, },    // side 2
-		{ -3.0f, 3.0f, -3.0f, 0.0f, 0.0f, -1.0f, },
-		{ 3.0f, -3.0f, -3.0f, 0.0f, 0.0f, -1.0f, },
-		{ 3.0f, 3.0f, -3.0f, 0.0f, 0.0f, -1.0f, },
+		{ -3.0f, -3.0f, -3.0f, 0.0f, 255, 0.0f, },    // side 2
+		{ -3.0f,  3.0f, -3.0f, 0.0f, 255, 0.0f, },
+		{  3.0f, -3.0f, -3.0f, 0.0f, 255, 0.0f, },
+		{  3.0f,  3.0f, -3.0f, 0.0f, 255, 0.0f, },
 
-		{ -3.0f, 3.0f, -3.0f, 0.0f, 1.0f, 0.0f, },    // side 3
-		{ -3.0f, 3.0f, 3.0f, 0.0f, 1.0f, 0.0f, },
-		{ 3.0f, 3.0f, -3.0f, 0.0f, 1.0f, 0.0f, },
-		{ 3.0f, 3.0f, 3.0f, 0.0f, 1.0f, 0.0f, },
+		{ -3.0f, 3.0f, -3.0f, 0.0f, 0.0f, 255, },    // side 3
+		{ -3.0f, 3.0f,  3.0f, 0.0f, 0.0f, 255, },
+		{  3.0f, 3.0f, -3.0f, 0.0f, 0.0f, 255, },
+		{  3.0f, 3.0f,  3.0f, 0.0f, 0.0f, 255, },
 
-		{ -3.0f, -3.0f, -3.0f, 0.0f, -1.0f, 0.0f, },    // side 4
-		{ 3.0f, -3.0f, -3.0f, 0.0f, -1.0f, 0.0f, },
-		{ -3.0f, -3.0f, 3.0f, 0.0f, -1.0f, 0.0f, },
-		{ 3.0f, -3.0f, 3.0f, 0.0f, -1.0f, 0.0f, },
+		{ -3.0f, -3.0f, -3.0f, 255, 255, 0.0f, },    // side 4
+		{  3.0f, -3.0f, -3.0f, 255, 255, 0.0f, },
+		{ -3.0f, -3.0f,  3.0f, 255, 255, 0.0f, },
+		{  3.0f, -3.0f,  3.0f, 255, 255, 0.0f, },
 
-		{ 3.0f, -3.0f, -3.0f, 1.0f, 0.0f, 0.0f, },    // side 5
-		{ 3.0f, 3.0f, -3.0f, 1.0f, 0.0f, 0.0f, },
-		{ 3.0f, -3.0f, 3.0f, 1.0f, 0.0f, 0.0f, },
-		{ 3.0f, 3.0f, 3.0f, 1.0f, 0.0f, 0.0f, },
+		{ 3.0f, -3.0f, -3.0f, 0.0f, 255, 255, },    // side 5
+		{ 3.0f,  3.0f, -3.0f, 0.0f, 255, 255, },
+		{ 3.0f, -3.0f,  3.0f, 0.0f, 255, 255, },
+		{ 3.0f,  3.0f,  3.0f, 0.0f, 255, 255, },
 
-		{ -3.0f, -3.0f, -3.0f, -1.0f, 0.0f, 0.0f, },    // side 6
-		{ -3.0f, -3.0f, 3.0f, -1.0f, 0.0f, 0.0f, },
-		{ -3.0f, 3.0f, -3.0f, -1.0f, 0.0f, 0.0f, },
-		{ -3.0f, 3.0f, 3.0f, -1.0f, 0.0f, 0.0f, },
+		{ -3.0f, -3.0f, -3.0f, 255, 255, 255, },    // side 6
+		{ -3.0f, -3.0f,  3.0f, 255, 255, 255, },
+		{ -3.0f,  3.0f, -3.0f, 255, 255, 255, },
+		{ -3.0f,  3.0f,  3.0f, 255, 255, 255, },
 
 	};
 	LPDIRECT3DVERTEXBUFFER9 p_dx_VertexBuffer = NULL; 
 
-	HRESULT result = p_Device->CreateVertexBuffer(sizeof(vertices), 0, D3DFVF_XYZ  | D3DFVF_NORMAL, D3DPOOL_MANAGED, &p_dx_VertexBuffer, NULL);
+	HRESULT result = p_Device->CreateVertexBuffer(sizeof(vertices), 0, D3DFVF_XYZ  | D3DFVF_DIFFUSE, D3DPOOL_MANAGED, &p_dx_VertexBuffer, NULL);
 	
 	void* p_Vertices = NULL;
 	result = p_dx_VertexBuffer->Lock(0, sizeof(vertices), (void**)&p_Vertices, 0);
@@ -151,7 +151,7 @@ LPDIRECT3DINDEXBUFFER9 DebugCube::FillIndices() //zelfde als FillVertices, zie u
 	VOID* pVoid = NULL;
 
 	LPDIRECT3DINDEXBUFFER9 p_dx_IndexBuffer = NULL;
-	HRESULT result = p_Device->CreateIndexBuffer(sizeof(indices), 0, D3DFMT_INDEX16,D3DPOOL_DEFAULT,  &p_dx_IndexBuffer, NULL);
+	HRESULT result = p_Device->CreateIndexBuffer(sizeof(indices), 0, D3DFMT_INDEX16,D3DPOOL_MANAGED,  &p_dx_IndexBuffer, NULL);
 	switch(result)
 	{
 	case D3DERR_INVALIDCALL: 

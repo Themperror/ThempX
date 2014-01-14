@@ -142,7 +142,7 @@ void Object2D::Draw()
 	worldMatrix._43 = position.z;
 	HRESULT result;
 
-	//result = p_Device->SetFVF(quad.vBuffer->FVF);
+	result = p_Device->SetFVF( D3DFVF_XYZ |D3DFVF_NORMAL | D3DFVF_TEX1);
 	result = p_Device->SetStreamSource(0, quad.vBuffer, 0, sizeof(VertexPosNorTex));
 	result = p_Device->SetIndices(quad.iBuffer);
 	result = p_Device->SetTransform(D3DTS_WORLD, &worldMatrix);

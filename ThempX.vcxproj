@@ -32,6 +32,9 @@
     <ClInclude Include="Source_Code\Headers\SoundHandler.h" />
     <ClInclude Include="Source_Code\Headers\ThempX.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\level.txt" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{468A34F8-DC49-45B5-9F55-6F96F1C885C5}</ProjectGuid>
     <RootNamespace>ThempX</RootNamespace>
