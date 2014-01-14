@@ -1,9 +1,10 @@
-#include "Object2D.h"
+#include "../Headers/Object2D.h"
 
 Object2D::Object2D(ResourceManager* resources,LPDIRECT3DDEVICE9 d3d_Device,char* texturePath,D3DXMATRIXA16* camViewMatrix)
 {
 	p_Device = d3d_Device;
 	cameraView = camViewMatrix;	 
+	quad.texture = NULL;
 	quad.textureName = texturePath;
 	quad.texture = resources->GetTexture(texturePath);
 	hasAnimation = false;
@@ -13,6 +14,7 @@ Object2D::Object2D(ResourceManager* resources,LPDIRECT3DDEVICE9 d3d_Device,char*
 {
 	p_Device = d3d_Device;
 	cameraView = camViewMatrix;	 
+	quad.texture = NULL;
 	quad.textureName = texturePath;
 	quad.texture = resources->GetTexture(texturePath);
 	hasAnimation = true;
@@ -82,19 +84,19 @@ bool Object2D::PlayAnimation(std::string name)
 }
 void Object2D::InitVars()
 {
-	quad.materialBuffer = NULL;
-	D3DMATERIAL9 mat;
-	mat.Ambient.a = 255;
-	mat.Ambient.r = 128;
-	mat.Ambient.g = 128;
-	mat.Ambient.b = 128;
-	mat.Diffuse.a = 255;
-	mat.Diffuse.r = 128;
-	mat.Diffuse.g = 128;
-	mat.Diffuse.b = 128;
-	quad.meshMaterial = mat;
-	
-	D3DXCreateBuffer(sizeof(quad.texture),&quad.materialBuffer);
+	if(quad.texture != NULL)
+	{
+		D3DMATERIAL9 mat;
+		mat.Ambient.a = 255;
+		mat.Ambient.r = 128;
+		mat.Ambient.g = 128;
+		mat.Ambient.b = 128;
+		mat.Diffuse.a = 255;
+		mat.Diffuse.r = 128;
+		mat.Diffuse.g = 128;
+		mat.Diffuse.b = 128;
+		quad.meshMaterial = mat;
+	}
 	scaling.x = 1;
 	scaling.y = 1;
 	scaling.z = 1;
@@ -107,7 +109,9 @@ void Object2D::InitVars()
 	timeSinceChange = 0;
 	currentXAnimValue = 0;
 	currentYAnimValue = 0;
+	quad.vBuffer = NULL;
 	quad.vBuffer = FillVertices();
+	quad.iBuffer = NULL;
 	quad.iBuffer = FillIndices();
 
 	//light = new light etc
@@ -251,9 +255,14 @@ void Object2D::Animate(float dTime)
 }
 void Object2D::ReleaseResources()
 {
-	quad.vBuffer->Release();
-	quad.iBuffer->Release();
-	quad.materialBuffer->Release();
+	if(quad.vBuffer != NULL)
+	{
+		quad.vBuffer->Release();
+	}
+	if(quad.iBuffer != NULL)
+	{
+		quad.iBuffer->Release();
+	}
 	//delete scaling;
 	//delete rotation;
 	//delete position;

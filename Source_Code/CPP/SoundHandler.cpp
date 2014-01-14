@@ -1,4 +1,4 @@
-#include "SoundHandler.h"
+#include "../Headers/SoundHandler.h"
 
 SoundHandler::SoundHandler(HWND handle,DWORD samplesPerSec,WORD bitsPerSample, WORD channels)
 {
@@ -30,9 +30,9 @@ bool SoundHandler::Initialize(HWND hwnd)
 void SoundHandler::Shutdown()
 {
 	// Release the secondary buffer.
-	for(int i =0;i< sounds.size();i++)
+	for(unsigned int i =0;i< sounds.size();i++)
 	{
-		for(int j=0;j<sounds.at(i).extraSounds.size();j++)
+		for(unsigned int j=0;j<sounds.at(i).extraSounds.size();j++)
 		{
 			sounds.at(i).extraSounds.at(j)->Release();
 		}
@@ -304,7 +304,8 @@ bool SoundHandler::LoadWaveFile(char* filename,char* name, DWORD samplesPerSec,W
 		waveData = 0;
 		
 		return true;
-	}
+	}		   
+	return false;
 }
 
 IDirectSoundBuffer8* SoundHandler::CreateCopySoundBuffer(char* name)
@@ -393,4 +394,5 @@ bool SoundHandler::PlayWaveFile(char* name)
 			}
 		}
 	}
+	return false;
 }

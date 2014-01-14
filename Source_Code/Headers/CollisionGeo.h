@@ -3,7 +3,6 @@
 
 #include "ResourceManager.h"
 
-
 struct OBB 
 {
 	D3DXVECTOR3 c; // OBB center point

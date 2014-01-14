@@ -11,26 +11,26 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Source Code\CPP\CollisionGeo.cpp" />
-    <ClCompile Include="Source Code\CPP\DebugCube.cpp" />
-    <ClCompile Include="Source Code\CPP\InputHandler.cpp" />
-    <ClCompile Include="Source Code\CPP\Main.cpp" />
-    <ClCompile Include="Source Code\CPP\Object2D.cpp" />
-    <ClCompile Include="Source Code\CPP\Object3D.cpp" />
-    <ClCompile Include="Source Code\CPP\ResourceManager.cpp" />
-    <ClCompile Include="Source Code\CPP\SoundHandler.cpp" />
-    <ClCompile Include="Source Code\CPP\ThempX.cpp" />
+    <ClCompile Include="Source_Code\CPP\CollisionGeo.cpp" />
+    <ClCompile Include="Source_Code\CPP\DebugCube.cpp" />
+    <ClCompile Include="Source_Code\CPP\InputHandler.cpp" />
+    <ClCompile Include="Source_Code\CPP\Main.cpp" />
+    <ClCompile Include="Source_Code\CPP\Object2D.cpp" />
+    <ClCompile Include="Source_Code\CPP\Object3D.cpp" />
+    <ClCompile Include="Source_Code\CPP\ResourceManager.cpp" />
+    <ClCompile Include="Source_Code\CPP\SoundHandler.cpp" />
+    <ClCompile Include="Source_Code\CPP\ThempX.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Source Code\Headers\CollisionGeo.h" />
-    <ClInclude Include="Source Code\Headers\DebugCube.h" />
-    <ClInclude Include="Source Code\Headers\InputHandler.h" />
-    <ClInclude Include="Source Code\Headers\Main.h" />
-    <ClInclude Include="Source Code\Headers\Object2D.h" />
-    <ClInclude Include="Source Code\Headers\Object3D.h" />
-    <ClInclude Include="Source Code\Headers\ResourceManager.h" />
-    <ClInclude Include="Source Code\Headers\SoundHandler.h" />
-    <ClInclude Include="Source Code\Headers\ThempX.h" />
+    <ClInclude Include="Source_Code\Headers\CollisionGeo.h" />
+    <ClInclude Include="Source_Code\Headers\DebugCube.h" />
+    <ClInclude Include="Source_Code\Headers\InputHandler.h" />
+    <ClInclude Include="Source_Code\Headers\Main.h" />
+    <ClInclude Include="Source_Code\Headers\Object2D.h" />
+    <ClInclude Include="Source_Code\Headers\Object3D.h" />
+    <ClInclude Include="Source_Code\Headers\ResourceManager.h" />
+    <ClInclude Include="Source_Code\Headers\SoundHandler.h" />
+    <ClInclude Include="Source_Code\Headers\ThempX.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{468A34F8-DC49-45B5-9F55-6F96F1C885C5}</ProjectGuid>

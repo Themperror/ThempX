@@ -1,4 +1,4 @@
-#include "Source_Code/Headers/CollisionGeo.h"
+#include "..\Headers\CollisionGeo.h"
 
 CollisionGeo::CollisionGeo(D3DXVECTOR3 cubePosition, D3DXVECTOR3 LowerLeftFrontPos,D3DXVECTOR3 UpperRightBackPos)
 {

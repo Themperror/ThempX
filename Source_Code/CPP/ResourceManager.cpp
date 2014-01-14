@@ -1,4 +1,4 @@
-#include "ResourceManager.h"
+#include "../Headers/ResourceManager.h"
 
 ResourceManager::ResourceManager(LPDIRECT3DDEVICE9 d3d_Device, HWND handle)
 {
@@ -44,7 +44,7 @@ LPDIRECT3DTEXTURE9 ResourceManager::GetTexture(char* name)
 		{
 			if(strcmp(quads.at(i).textureName,name)== 0)
 			{
-				std::cout << "texture found and reused" << std::endl;
+				//std::cout << "texture found and reused" << std::endl;
 				return quads.at(i).texture;
 			}
 		}
@@ -53,11 +53,30 @@ LPDIRECT3DTEXTURE9 ResourceManager::GetTexture(char* name)
 	{
 		Quad quad;
 		quad.textureName = name;
-		D3DXCreateTextureFromFile(p_Device, name,&quad.texture);
-		quads.push_back(quad);
-		std::cout << "texture NOT found and is created" << std::endl;
-		return quad.texture;
-	}
+		quad.texture = NULL;
+		HRESULT result = D3DXCreateTextureFromFile(p_Device, name,&quad.texture);
+		switch(result)
+		{
+		case D3DERR_NOTAVAILABLE: std::cout << "Texture not found/available" << std::endl; break;
+		case D3DERR_OUTOFVIDEOMEMORY:  std::cout << "Out of Video Memory" << std::endl; break;
+		case D3DERR_INVALIDCALL: std::cout << "Invalid Call (Is the path correct? is it a string? does it point to a png or jpg?)" << std::endl;  break;
+		case D3DXERR_INVALIDDATA:  std::cout << "Invalid Data" << std::endl; break;
+		case E_OUTOFMEMORY:  std::cout << "System out of memory" << std::endl;  break; 
+		}
+		if(quad.texture != NULL)
+		{
+			std::cout << "texture NOT found and was created" << std::endl; 
+			quads.push_back(quad);
+			return quad.texture;
+		}
+		else
+		{
+			MessageBox(wHandle,"Texture was not found", "ResourceManager::GetTexture()",MB_OK);
+			return NULL;
+		}
+	} 
+
+	//should be impossible to come here
 	MessageBox(wHandle,"No texture returned, the program will probably crash now.","GetTexture()",MB_OK);
 	return NULL;
 }

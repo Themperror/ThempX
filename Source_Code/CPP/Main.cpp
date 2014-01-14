@@ -1,4 +1,4 @@
-#include "ThempX.h"
+#include "../Headers/ThempX.h"
 
 ThempX* engine;
 HWND NewWindow(LPCTSTR windowName,int posX,int posY, int sizeX,int sizeY);

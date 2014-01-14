@@ -1,4 +1,4 @@
-#include "Object3D.h"
+#include "../Headers/Object3D.h"
 
 void Object3D::InitVars()
 {
@@ -29,15 +29,25 @@ Object3D::Object3D(ResourceManager* resources,char* path, LPDIRECT3DDEVICE9 d3d_
 }
 bool Object3D::LoadModel(LPSTR pathName)
 {
+	model.d3dxMaterials = NULL;
+	model.meshMaterials = NULL;
+	model.meshTextures = NULL;
+	model.numMaterials = 0;
+	model.mesh = NULL;
 	HRESULT result = D3DXLoadMeshFromX(pathName, D3DXMESH_SYSTEMMEM,p_Device, NULL, &model.materialBuffer,NULL, &model.numMaterials,  &model.mesh );
 	switch(result)
 	{
 		case D3DERR_INVALIDCALL: std::cout << "invalid call" << std::endl; break;
 		case E_OUTOFMEMORY: std::cout << "out of memory" << std::endl;break;
 	}
-	model.d3dxMaterials = (D3DXMATERIAL*)model.materialBuffer->GetBufferPointer();
+	if(model.materialBuffer != NULL)
+	{
+		model.d3dxMaterials = (D3DXMATERIAL*)model.materialBuffer->GetBufferPointer();
+	}
 	model.meshMaterials = new D3DMATERIAL9[model.numMaterials];
-	model.meshTextures  = new LPDIRECT3DTEXTURE9[model.numMaterials];   
+	model.meshTextures  = new LPDIRECT3DTEXTURE9[model.numMaterials];
+
+	   
 	// Filling material and texture arrays
 	for (DWORD i=0; i<model.numMaterials; i++)
 	{
@@ -49,9 +59,11 @@ bool Object3D::LoadModel(LPSTR pathName)
 
 		// Create the texture if it exists - it may not
 		model.meshTextures[i] = NULL;
-		if (model.d3dxMaterials[i].pTextureFilename)
+		std::string texturePath = model.d3dxMaterials[i].pTextureFilename; 
+		texturePath = "Resources/Models/"+texturePath;
+		if (texturePath != "")
 		{
-			result = D3DXCreateTextureFromFile(p_Device, model.d3dxMaterials[i].pTextureFilename, &model.meshTextures[i]);
+			result = D3DXCreateTextureFromFile(p_Device, texturePath.c_str(), &model.meshTextures[i]);
 			switch(result)
 			{
 				case D3DERR_NOTAVAILABLE:		std::cout << "Err: Not Available" << std::endl;			return false;  break;
@@ -82,23 +94,43 @@ void Object3D::DrawModel()
 
 	D3DXMatrixMultiply(&worldMatrix,&m_rotScale,&m_Translation);
 	p_Device->SetTransform(D3DTS_WORLD, &worldMatrix);
-	p_Device->SetFVF(model.mesh->GetFVF());
-	for (DWORD i=0; i<model.numMaterials; i++)
-    {
-        p_Device->SetMaterial(&model.meshMaterials[i]);
-        p_Device->SetTexture(0,model.meshTextures[i]);
-		model.mesh->DrawSubset(i);
-    }
+	if(model.mesh != NULL)
+	{
+		p_Device->SetFVF(model.mesh->GetFVF());
+		for (DWORD i=0; i<model.numMaterials; i++)
+		{
+			if(model.meshTextures != NULL)
+			{
+				p_Device->SetMaterial(&model.meshMaterials[i]);
+				p_Device->SetTexture(0,model.meshTextures[i]);
+			}
+			result = model.mesh->DrawSubset(i);
+			if(result == D3DERR_INVALIDCALL)
+			{
+				std::cout << "Invalid Call (DrawSubset)" << std::endl;
+			}
+		}
+	}
+	
 }
 void Object3D::ReleaseResources()
 {
-	model.mesh->Release();
-	model.materialBuffer->Release();
+	if(model.mesh != NULL)
+	{
+		model.mesh->Release();
+	}
+	if(model.materialBuffer != NULL)
+	{
+		model.materialBuffer->Release();
+	}
 	for(unsigned int x=0; x < model.numMaterials;x++)
 	{
 		if(model.meshTextures != NULL)
 		{
-			model.meshTextures[x]->Release(); 
+			if(model.meshTextures[x] != NULL)
+			{
+				model.meshTextures[x]->Release(); 
+			}
 		}
 	}
 }

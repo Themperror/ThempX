@@ -1,4 +1,4 @@
-#include "ThempX.h"
+#include "../Headers/ThempX.h"
 
 ThempX::ThempX(HWND handle,HINSTANCE hInstance)
 {
@@ -593,7 +593,7 @@ void ThempX::DestroyLevel()
 }
 void ThempX::LoadLevel()
 {
-	ifstream fin("level.txt");
+	ifstream fin("Resources/level.txt");
 	if (!fin.good())
 	{
 		MessageBox(handleWindow,"Could Not Find Level.txt, scene will be empty", "ThempX()",MB_OK);

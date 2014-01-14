@@ -1,4 +1,4 @@
-#include "DebugCube.h"
+#include "..\Headers\DebugCube.h"
 
 DebugCube::DebugCube(LPDIRECT3DDEVICE9 d3d_Device, D3DXVECTOR3 cubePosition,D3DXVECTOR3 cubeRotation, D3DXVECTOR3 LLFPosition, D3DXVECTOR3 URBPosition, ResourceManager* resources)
 {
@@ -8,8 +8,10 @@ DebugCube::DebugCube(LPDIRECT3DDEVICE9 d3d_Device, D3DXVECTOR3 cubePosition,D3DX
 	LLFPos = D3DXVECTOR3(LLFPosition.x,LLFPosition.y,LLFPosition.z);
 	URBPos = D3DXVECTOR3(URBPosition.x,URBPosition.y,URBPosition.z);
 
-	texture = resources->GetTexture("DebugTexture.png");
-	materialBuffer = NULL;
+	vBuffer = NULL;
+	iBuffer = NULL;
+	texture = resources->GetTexture("Resources/Models/CarTexture.jpg");
+
 	D3DMATERIAL9 mat;
 	mat.Ambient.a = 255;
 	mat.Ambient.r = 128;
@@ -20,18 +22,19 @@ DebugCube::DebugCube(LPDIRECT3DDEVICE9 d3d_Device, D3DXVECTOR3 cubePosition,D3DX
 	mat.Diffuse.g = 128;
 	mat.Diffuse.b = 128;
 	meshMaterial = mat;
-
-	D3DXCreateBuffer(sizeof(texture),&materialBuffer);
-
-
 	vBuffer= FillVertices();
 	iBuffer = FillIndices();
 }
 void DebugCube::Release()
 {
-	iBuffer->Release();
-	vBuffer->Release();
-	materialBuffer->Release();
+	if(iBuffer != NULL)
+	{
+		iBuffer->Release();
+	}
+	if(vBuffer != NULL)
+	{
+		vBuffer->Release();
+	}
 }
 void DebugCube::Draw()
 {
@@ -54,8 +57,12 @@ void DebugCube::Draw()
 	result = p_Device->SetIndices(iBuffer);
 	result = p_Device->SetStreamSource(0, vBuffer, 0, sizeof(D3DFVF_XYZ |D3DFVF_NORMAL));
 	result = p_Device->SetTransform(D3DTS_WORLD, &worldMatrix);
+	if(texture != NULL)
+	{
+		result = p_Device->SetTexture(0,texture);
+	}
 	result = p_Device->SetMaterial(&meshMaterial);
-	result = p_Device->SetTexture(0,texture);
+
 	
 
 	// draw the cube
