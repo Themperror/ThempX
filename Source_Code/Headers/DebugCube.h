@@ -3,8 +3,17 @@
 
 #include "ResourceManager.h"
 
-struct CUSTOMVERTEX {FLOAT X, Y, Z; DWORD COLOR;};
-struct VertexPNT{FLOAT X, Y, Z; D3DVECTOR NORMAL;};
+struct VertexPNT
+{
+	FLOAT X; 
+	FLOAT Y; 
+	FLOAT Z;
+	FLOAT nX; 
+	FLOAT nY; 
+	FLOAT nZ;
+	FLOAT U;
+	FLOAT V;
+};
 
 class DebugCube
 {
@@ -20,11 +29,11 @@ public:
 	D3DMATERIAL9 meshMaterial;
 	LPD3DXBUFFER materialBuffer;
 	LPDIRECT3DTEXTURE9 texture;
-
-
+	ResourceManager* resource;
 	LPDIRECT3DDEVICE9 p_Device;
 	void Release();
 	void Draw();
+	void ChangeTexture(char* path);
 	LPDIRECT3DINDEXBUFFER9 FillIndices();
 	LPDIRECT3DVERTEXBUFFER9 FillVertices();
 	HWND handleWindow;

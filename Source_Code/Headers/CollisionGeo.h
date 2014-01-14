@@ -92,6 +92,30 @@ public:
 	inline void SetRotation(D3DXVECTOR3 newValue)
 	{
 		rotation = newValue;
+		if(rotation.x > 360)
+		{
+			rotation.x = 0;
+		}
+		if(rotation.y > 360)
+		{
+			rotation.y = 0;
+		}
+		if(rotation.z > 360)
+		{
+			rotation.z = 0;
+		}
+		if(rotation.x < 0)
+		{
+			rotation.x = 360;
+		}
+		if(rotation.y < 0)
+		{
+			rotation.y = 360;
+		}
+		if(rotation.z < 0)
+		{
+			rotation.z = 360;
+		}
 		thisOBB2.normalAxis[0] = D3DXVECTOR3(rotation.x+90,rotation.y,rotation.z);
 		thisOBB2.normalAxis[1] = D3DXVECTOR3(rotation.x,rotation.y+90,rotation.z);
 		thisOBB2.normalAxis[2] = D3DXVECTOR3(rotation.x,rotation.y,rotation.z+90);

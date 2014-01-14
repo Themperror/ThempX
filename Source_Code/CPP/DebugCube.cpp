@@ -10,20 +10,19 @@ DebugCube::DebugCube(LPDIRECT3DDEVICE9 d3d_Device, D3DXVECTOR3 cubePosition,D3DX
 
 	vBuffer = NULL;
 	iBuffer = NULL;
-	texture = resources->GetTexture("Resources/Models/CarTexture.jpg");
+	texture = resources->GetTexture("Resources/Models/CubeRed.png");
+	resource = resources;
+	ZeroMemory(&meshMaterial,sizeof(meshMaterial));
 
-	D3DMATERIAL9 mat;
-	mat.Ambient.a = 255;
-	mat.Ambient.r = 128;
-	mat.Ambient.g = 128;
-	mat.Ambient.b = 128;
-	mat.Diffuse.a = 255;
-	mat.Diffuse.r = 128;
-	mat.Diffuse.g = 128;
-	mat.Diffuse.b = 128;
-	meshMaterial = mat;
+	meshMaterial.Diffuse.a = 255; meshMaterial.Diffuse.r = 128; meshMaterial.Diffuse.g = 128; meshMaterial.Diffuse.b = 128;
+	meshMaterial.Ambient.a = 255; meshMaterial.Ambient.r = 128; meshMaterial.Ambient.g = 128; meshMaterial.Ambient.b = 128;
+
 	vBuffer= FillVertices();
 	iBuffer = FillIndices();
+}
+void DebugCube::ChangeTexture(char* path)
+{
+	texture = resource->GetTexture(path);
 }
 void DebugCube::Release()
 {
@@ -52,10 +51,10 @@ void DebugCube::Draw()
 	D3DXMatrixMultiply(&RotScaleMatrix,&scalingMatrix,&rotationMatrix);
 	D3DXMatrixMultiply(&worldMatrix,&RotScaleMatrix,&translationMatrix);
 
-	p_Device->SetFVF(D3DFVF_XYZ | D3DFVF_DIFFUSE);
+	p_Device->SetFVF(D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_TEX1);
 
 	result = p_Device->SetIndices(iBuffer);
-	result = p_Device->SetStreamSource(0, vBuffer, 0, sizeof(D3DFVF_XYZ |D3DFVF_DIFFUSE));
+	result = p_Device->SetStreamSource(0, vBuffer, 0, sizeof(VertexPNT));
 	result = p_Device->SetTransform(D3DTS_WORLD, &worldMatrix);
 	if(texture != NULL)
 	{
@@ -66,7 +65,7 @@ void DebugCube::Draw()
 	
 
 	// draw the cube
-	result = p_Device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 8, 0, 12);
+	result = p_Device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 24, 0, 12);
 	switch(result)
 	{	
 		//case D3D_OK:std::cout << "D3D OK" << std::endl;
@@ -86,40 +85,39 @@ LPDIRECT3DVERTEXBUFFER9 DebugCube::FillVertices()
 {	
 	VertexPNT vertices[] =
 	{
-		{ -3.0f, -3.0f, 3.0f, 255, 0.0f, 0.0f, },    // side 1
-		{  3.0f, -3.0f, 3.0f, 255, 0.0f, 0.0f, },
-		{ -3.0f,  3.0f, 3.0f, 255, 0.0f, 0.0f, },
-		{  3.0f,  3.0f, 3.0f, 255, 0.0f, 0.0f, },
-
-		{ -3.0f, -3.0f, -3.0f, 0.0f, 255, 0.0f, },    // side 2
-		{ -3.0f,  3.0f, -3.0f, 0.0f, 255, 0.0f, },
-		{  3.0f, -3.0f, -3.0f, 0.0f, 255, 0.0f, },
-		{  3.0f,  3.0f, -3.0f, 0.0f, 255, 0.0f, },
-
-		{ -3.0f, 3.0f, -3.0f, 0.0f, 0.0f, 255, },    // side 3
-		{ -3.0f, 3.0f,  3.0f, 0.0f, 0.0f, 255, },
-		{  3.0f, 3.0f, -3.0f, 0.0f, 0.0f, 255, },
-		{  3.0f, 3.0f,  3.0f, 0.0f, 0.0f, 255, },
-
-		{ -3.0f, -3.0f, -3.0f, 255, 255, 0.0f, },    // side 4
-		{  3.0f, -3.0f, -3.0f, 255, 255, 0.0f, },
-		{ -3.0f, -3.0f,  3.0f, 255, 255, 0.0f, },
-		{  3.0f, -3.0f,  3.0f, 255, 255, 0.0f, },
-
-		{ 3.0f, -3.0f, -3.0f, 0.0f, 255, 255, },    // side 5
-		{ 3.0f,  3.0f, -3.0f, 0.0f, 255, 255, },
-		{ 3.0f, -3.0f,  3.0f, 0.0f, 255, 255, },
-		{ 3.0f,  3.0f,  3.0f, 0.0f, 255, 255, },
-
-		{ -3.0f, -3.0f, -3.0f, 255, 255, 255, },    // side 6
-		{ -3.0f, -3.0f,  3.0f, 255, 255, 255, },
-		{ -3.0f,  3.0f, -3.0f, 255, 255, 255, },
-		{ -3.0f,  3.0f,  3.0f, 255, 255, 255, },
-
+		{ LLFPos.x, LLFPos.y, URBPos.z,  0,0,1, 0.0f, 0.0f,},    // side 1
+		{ URBPos.x, LLFPos.y, URBPos.z,  0,0,1, 0.0f, 1.0f,},
+		{ LLFPos.x, URBPos.y, URBPos.z,  0,0,1, 1.0f, 0.0f,},
+		{ URBPos.x, URBPos.y, URBPos.z,  0,0,1, 1.0f, 1.0f,},
+										 
+		{ LLFPos.x, LLFPos.y, LLFPos.z,  0,0,-1, 0.0f, 0.0f,},    // side 2
+		{ LLFPos.x, URBPos.y, LLFPos.z,  0,0,-1, 0.0f, 1.0f,},
+		{ URBPos.x, LLFPos.y, LLFPos.z,  0,0,-1, 1.0f, 0.0f,},
+		{ URBPos.x, URBPos.y, LLFPos.z,  0,0,-1, 1.0f, 1.0f,},
+									
+		{ LLFPos.x, URBPos.y, LLFPos.z,  0,1,0, 0.0f, 0.0f,},    // side 3
+		{ LLFPos.x, URBPos.y, URBPos.z,  0,1,0, 0.0f, 1.0f,},
+		{ URBPos.x, URBPos.y, LLFPos.z,  0,1,0, 1.0f, 0.0f,},
+		{ URBPos.x, URBPos.y, URBPos.z,  0,1,0, 1.0f, 1.0f,},
+										 
+		{ LLFPos.x, LLFPos.y, LLFPos.z,  0,-1,0, 0.0f, 0.0f,},    // side 4
+		{ URBPos.x, LLFPos.y, LLFPos.z,  0,-1,0, 0.0f, 1.0f,},
+		{ LLFPos.x, LLFPos.y, URBPos.z,  0,-1,0, 1.0f, 0.0f,},
+		{ URBPos.x, LLFPos.y, URBPos.z,  0,-1,0, 1.0f, 1.0f,},
+										  
+		{ URBPos.x, LLFPos.y, LLFPos.z,  1,0,0, 0.0f, 0.0f,},    // side 5
+		{ URBPos.x, URBPos.y, LLFPos.z,  1,0,0, 0.0f, 1.0f,},
+		{ URBPos.x, LLFPos.y, URBPos.z,  1,0,0, 1.0f, 0.0f,},
+		{ URBPos.x, URBPos.y, URBPos.z,  1,0,0, 1.0f, 1.0f,},
+										
+		{ LLFPos.x, LLFPos.y, LLFPos.z,  -1,0,0, 0.0f, 0.0f,},    // side 6
+		{ LLFPos.x, LLFPos.y, URBPos.z,  -1,0,0, 0.0f, 1.0f,},
+		{ LLFPos.x, URBPos.y, LLFPos.z,  -1,0,0, 1.0f, 0.0f,},
+		{ LLFPos.x, URBPos.y, URBPos.z,  -1,0,0, 1.0f, 1.0f,},
 	};
 	LPDIRECT3DVERTEXBUFFER9 p_dx_VertexBuffer = NULL; 
 
-	HRESULT result = p_Device->CreateVertexBuffer(sizeof(vertices), 0, D3DFVF_XYZ  | D3DFVF_DIFFUSE, D3DPOOL_MANAGED, &p_dx_VertexBuffer, NULL);
+	HRESULT result = p_Device->CreateVertexBuffer(sizeof(vertices), 0, D3DFVF_XYZ  | D3DFVF_NORMAL |D3DFVF_TEX1, D3DPOOL_MANAGED, &p_dx_VertexBuffer, NULL);
 	
 	void* p_Vertices = NULL;
 	result = p_dx_VertexBuffer->Lock(0, sizeof(vertices), (void**)&p_Vertices, 0);

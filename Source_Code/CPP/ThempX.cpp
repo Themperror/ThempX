@@ -22,11 +22,14 @@ ThempX::ThempX(HWND handle,HINSTANCE hInstance)
 	//Init variables
 	Initialize();
 
-	debugCubes.push_back(new DebugCube(p_Device,D3DXVECTOR3(0,5,0),D3DXVECTOR3(0,0,0),D3DXVECTOR3(-2,-2,-2),D3DXVECTOR3(2,2,2),resources));
-
+	debugCubes.push_back(new DebugCube(p_Device,D3DXVECTOR3(0,0,0),D3DXVECTOR3(0,0,0),D3DXVECTOR3(-1,-1,-1),D3DXVECTOR3(1,1,1),resources));
+	debugCubes.push_back(new DebugCube(p_Device,D3DXVECTOR3(0,0,0),D3DXVECTOR3(0,0,0),D3DXVECTOR3(-1,-1,-1),D3DXVECTOR3(1,1,1),resources));
+	c1 = new CollisionGeo(D3DXVECTOR3(0,0,0),D3DXVECTOR3(0,0,0),D3DXVECTOR3(-1,-1,-1),D3DXVECTOR3(1,1,1));
+	c2 = new CollisionGeo(D3DXVECTOR3(0,0,0),D3DXVECTOR3(0,0,0),D3DXVECTOR3(-1,-1,-1),D3DXVECTOR3(1,1,1));
 	//following switch is for testing collisions
-
-	/*	switch(cResult)
+	
+	 /*
+	switch(cResult)
 	{
 	case CollisionGeo::Arg1NotCapsule:			std::cout << "Arg1NotCapsule" << std::endl; break;
 	case CollisionGeo::Arg1NotSphere:			std::cout << "Arg1NotSphere" << std::endl; break;
@@ -40,7 +43,7 @@ ThempX::ThempX(HWND handle,HINSTANCE hInstance)
 	case CollisionGeo::Arg2NotOBBCube:			std::cout << "Arg2NotOBBCube" << std::endl; break;
 	case CollisionGeo::Arg2NotCylinder:			std::cout << "Arg2NotCylinder" << std::endl; break;
 	case CollisionGeo::Arg2NotStaticOrOBBCube:	std::cout << "Arg2NotStaticOrOBBCube" << std::endl; break;
-	case CollisionGeo::Collision:				std::cout << "Collision Found" << std::endl; break;
+	case CollisionGeo::Collision:				std::cout << "Collision Found" << std::endl;  break;
 	case CollisionGeo::NoCollision:				std::cout << "No Collision Found" << std::endl; break;
 	case CollisionGeo::NotACapsule:				std::cout << "NotACapsule" << std::endl; break;
 	case CollisionGeo::NotACylinder:			std::cout << "NotACylinder" << std::endl; break;
@@ -48,7 +51,7 @@ ThempX::ThempX(HWND handle,HINSTANCE hInstance)
 	case CollisionGeo::NotAOBBCube:				std::cout << "NotAOBBCube" << std::endl; break;
 	case CollisionGeo::NotAStaticCube:			std::cout << "NotAStaticCube" << std::endl; break;
 	case CollisionGeo::NotAStaticOrOBBCube:		std::cout << "NotAStaticOrOBBCube" << std::endl; break;
-	}		*/
+	}	   */
 
 
 	// Game loop starts here after everything is initialized
@@ -110,6 +113,19 @@ void ThempX::Update()
 	{
 		deltaTime = tempDeltaTime*0.001f;
 		DoInput();
+
+		if(c1->DidOBBCollideWithOBB2(c2) == CollisionGeo::Collision)
+		{
+			std::cout << "Collision" << std::endl;
+			debugCubes.at(0)->ChangeTexture("Resources/Models/CubeGreen.png"); 
+			debugCubes.at(1)->ChangeTexture("Resources/Models/CubeGreen.png");
+		}
+		else
+		{
+			debugCubes.at(0)->ChangeTexture("Resources/Models/CubeRed.png"); 
+			debugCubes.at(1)->ChangeTexture("Resources/Models/CubeRed.png");
+		}
+
 		bool didCollide = false;
 		if(!didCollide)
 		{
@@ -265,27 +281,47 @@ void ThempX::DoInput()
 	// for checking the world positions,  handy visual support for when going to place objects in the world
 	if(KeyPressed(DIK_I))
 	{
-		spriteObjs.at(0)->position.x += speed*deltaTime;
+		debugCubes.at(0)->position.x += speed*deltaTime;
+		c1->SetPosition(debugCubes.at(0)->position);
+		c1->SetRotation(D3DXVECTOR3(debugCubes.at(0)->rotation.x,0,0));
 	}
 	if(KeyPressed(DIK_K))
 	{
-		spriteObjs.at(0)->position.x -= speed*deltaTime;
+		debugCubes.at(0)->position.x -= speed*deltaTime;
+		c1->SetPosition(debugCubes.at(0)->position); 
+		c1->SetRotation(D3DXVECTOR3(debugCubes.at(0)->rotation.x,0,0));
 	}
 	if(KeyPressed(DIK_J))
 	{
-		spriteObjs.at(0)->position.z += speed*deltaTime;
+		debugCubes.at(0)->position.z += speed*deltaTime;
+		c1->SetPosition(debugCubes.at(0)->position);
+		c1->SetRotation(D3DXVECTOR3(debugCubes.at(0)->rotation.x,0,0));
 	}
 	if(KeyPressed(DIK_L))
 	{
-		spriteObjs.at(0)->position.z -= speed*deltaTime;
+		debugCubes.at(0)->position.z -= speed*deltaTime;
+		c1->SetPosition(debugCubes.at(0)->position); 
+		c1->SetRotation(D3DXVECTOR3(debugCubes.at(0)->rotation.x,0,0));
 	}
 	if(KeyPressed(DIK_U))
 	{
-		spriteObjs.at(0)->position.y += speed*deltaTime;
+		debugCubes.at(0)->position.y += speed*deltaTime;
+		c1->SetPosition(debugCubes.at(0)->position); 
+		c1->SetRotation(D3DXVECTOR3(debugCubes.at(0)->rotation.x,0,0));
 	}
 	if(KeyPressed(DIK_O))
 	{
-		spriteObjs.at(0)->position.y -= speed*deltaTime;
+		debugCubes.at(0)->position.y -= speed*deltaTime;
+		c1->SetPosition(debugCubes.at(0)->position);
+		c1->SetRotation(D3DXVECTOR3(debugCubes.at(0)->rotation.x,0,0));
+	}
+	if(KeyPressed(DIK_8))
+	{
+		 //rot cube 
+	}
+	if(KeyPressed(DIK_9))
+	{
+		 //rot cube
 	}
 	if(KeyPressed(DIK_RSHIFT))
 	{

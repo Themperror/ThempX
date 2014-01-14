@@ -10,7 +10,7 @@ CollisionGeo::CollisionGeo(D3DXVECTOR3 cubePosition, D3DXVECTOR3 LowerLeftFrontP
 }
 CollisionGeo::CollisionGeo(D3DXVECTOR3 cubePosition,D3DXVECTOR3 cubeRotation, D3DXVECTOR3 LowerLeftFrontPos,D3DXVECTOR3 UpperRightBackPos)
 {
-	currentType = OBBCube;	
+	currentType = OBBCube;
 	LLFPos = D3DXVECTOR3(cubePosition.x+LowerLeftFrontPos.x,cubePosition.y+LowerLeftFrontPos.y,cubePosition.z+LowerLeftFrontPos.z) ;
 	URBPos = D3DXVECTOR3(cubePosition.x+UpperRightBackPos.x,cubePosition.y+UpperRightBackPos.y,cubePosition.z+UpperRightBackPos.z) ;
 	SetPosition(cubePosition);
@@ -189,7 +189,7 @@ CollisionGeo::CollisionResult CollisionGeo::DidOBBCollideWithOBB(CollisionGeo* o
 	// Test axis L = A1 x B0
 	ra = a->e[0] * AbsR[2] + a->e[2] * AbsR[0];
 	rb = b->e[1] * AbsR[7] + b->e[2] * AbsR[4];
-	if (std::abs(t[0] * R[2] - t[2] * R[0]) > ra + rb) return Collision;
+	if (std::abs(t[0] * R[2] - t[2] * R[0]) > ra + rb) return NoCollision;
 	// Test axis L = A1 x B1
 	ra = a->e[0] * AbsR[5] + a->e[2] * AbsR[3];
 	rb = b->e[0] * AbsR[7] + b->e[2] * AbsR[1];
