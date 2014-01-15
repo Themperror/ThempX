@@ -5,7 +5,7 @@ ResourceManager::ResourceManager(LPDIRECT3DDEVICE9 d3d_Device, HWND handle)
 	p_Device = d3d_Device;
 	wHandle = handle;
 }
-void ResourceManager::ReleaseResources()	//main data release			  //Ben ik weer, lagged out
+void ResourceManager::ReleaseResources()	//main data release
 {
 	for(unsigned int i=0;i<models.size();i++)
 	{
@@ -15,8 +15,7 @@ void ResourceManager::ReleaseResources()	//main data release			  //Ben ik weer, 
 		{
 			if(models.at(i).meshTextures != NULL)
 			{
-				models.at(i).meshTextures[x]->Release();  //dit is dus de main data houder maar dat zou voor reloaden van het level niet voor extra data moeten zorgen 
-				//want dit wordt 1x bij elke texture/model inladen 1x uitgevoerd zodat hij de model/texture heeft, daarna hergebruikt ie em heletijd
+				models.at(i).meshTextures[x]->Release();
 			}
 		}
 	}

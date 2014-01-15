@@ -37,7 +37,7 @@ public:
 	Model model;
 	D3DXMATRIX worldMatrix;
 	std::string objName;
-
+	CollisionGeo* collision;
 private:
 	void InitVars();
 	

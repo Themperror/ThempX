@@ -38,6 +38,10 @@ public:
 	LPDIRECT3DVERTEXBUFFER9 FillVertices();
 	HWND handleWindow;
 	CollisionGeo* collision;
+
+	short cubeIndices[36];
+
+
 	inline void AddPosition(float x, float y, float z)
 	{
 		position.x += x;
@@ -81,7 +85,6 @@ public:
 		{
 			collision->SetRotation(rotation);
 		}
-		
 	}
 };
 

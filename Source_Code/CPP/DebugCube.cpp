@@ -90,27 +90,22 @@ LPDIRECT3DVERTEXBUFFER9 DebugCube::FillVertices()
 		{ URBPos.x, LLFPos.y, URBPos.z,  0,0,1, 0.0f, 1.0f,},
 		{ LLFPos.x, URBPos.y, URBPos.z,  0,0,1, 1.0f, 0.0f,},
 		{ URBPos.x, URBPos.y, URBPos.z,  0,0,1, 1.0f, 1.0f,},
-										 
 		{ LLFPos.x, LLFPos.y, LLFPos.z,  0,0,-1, 0.0f, 0.0f,},    // side 2
 		{ LLFPos.x, URBPos.y, LLFPos.z,  0,0,-1, 0.0f, 1.0f,},
 		{ URBPos.x, LLFPos.y, LLFPos.z,  0,0,-1, 1.0f, 0.0f,},
 		{ URBPos.x, URBPos.y, LLFPos.z,  0,0,-1, 1.0f, 1.0f,},
-									
 		{ LLFPos.x, URBPos.y, LLFPos.z,  0,1,0, 0.0f, 0.0f,},    // side 3
 		{ LLFPos.x, URBPos.y, URBPos.z,  0,1,0, 0.0f, 1.0f,},
 		{ URBPos.x, URBPos.y, LLFPos.z,  0,1,0, 1.0f, 0.0f,},
 		{ URBPos.x, URBPos.y, URBPos.z,  0,1,0, 1.0f, 1.0f,},
-										 
 		{ LLFPos.x, LLFPos.y, LLFPos.z,  0,-1,0, 0.0f, 0.0f,},    // side 4
 		{ URBPos.x, LLFPos.y, LLFPos.z,  0,-1,0, 0.0f, 1.0f,},
 		{ LLFPos.x, LLFPos.y, URBPos.z,  0,-1,0, 1.0f, 0.0f,},
 		{ URBPos.x, LLFPos.y, URBPos.z,  0,-1,0, 1.0f, 1.0f,},
-										  
 		{ URBPos.x, LLFPos.y, LLFPos.z,  1,0,0, 0.0f, 0.0f,},    // side 5
 		{ URBPos.x, URBPos.y, LLFPos.z,  1,0,0, 0.0f, 1.0f,},
 		{ URBPos.x, LLFPos.y, URBPos.z,  1,0,0, 1.0f, 0.0f,},
 		{ URBPos.x, URBPos.y, URBPos.z,  1,0,0, 1.0f, 1.0f,},
-										
 		{ LLFPos.x, LLFPos.y, LLFPos.z,  -1,0,0, 0.0f, 0.0f,},    // side 6
 		{ LLFPos.x, LLFPos.y, URBPos.z,  -1,0,0, 0.0f, 1.0f,},
 		{ LLFPos.x, URBPos.y, LLFPos.z,  -1,0,0, 1.0f, 0.0f,},
@@ -131,26 +126,47 @@ LPDIRECT3DVERTEXBUFFER9 DebugCube::FillVertices()
 
 LPDIRECT3DINDEXBUFFER9 DebugCube::FillIndices() //zelfde als FillVertices, zie uitleg daar
 {
-	short indices[] =
-	{
-		0, 1, 2,    // side 1
-		2, 1, 3,
-		4, 5, 6,    // side 2
-		6, 5, 7,
-		8, 9, 10,    // side 3
-		10, 9, 11,
-		12, 13, 14,    // side 4
-		14, 13, 15,
-		16, 17, 18,    // side 5
-		18, 17, 19,
-		20, 21, 22,    // side 6
-		22, 21, 23,
-	};
+	cubeIndices[0]	 = 0;
+	cubeIndices[1]	 = 1;
+	cubeIndices[2]	 = 2;
+	cubeIndices[3]	 = 2;
+	cubeIndices[4]	 = 1;
+	cubeIndices[5]	 = 3;
+	cubeIndices[6]	 = 4;
+	cubeIndices[7]	 = 5;
+	cubeIndices[8]	 = 6;
+	cubeIndices[9]	 = 6;
+	cubeIndices[10]	 = 5;
+	cubeIndices[11]	 = 7;
+	cubeIndices[12]	 = 8;
+	cubeIndices[13]	 = 9;
+	cubeIndices[14]	 = 10;
+	cubeIndices[15]	 = 10;
+	cubeIndices[16]	 = 9;
+	cubeIndices[17]	 = 11;
+	cubeIndices[18]	 = 12;
+	cubeIndices[19]	 = 13;
+	cubeIndices[20]	 = 14;
+	cubeIndices[21]	 = 14;
+	cubeIndices[22]	 = 13;
+	cubeIndices[23]	 = 15;
+	cubeIndices[24]	 = 16;
+	cubeIndices[25]	 = 17;
+	cubeIndices[26]	 = 18;
+	cubeIndices[27]	 = 18;
+	cubeIndices[28]	 = 17;
+	cubeIndices[29]	 = 19;
+	cubeIndices[30]	 = 20;
+	cubeIndices[31]	 = 21;
+	cubeIndices[32]	 = 22;
+	cubeIndices[33]	 = 22;
+	cubeIndices[34]	 = 21;
+	cubeIndices[35]	 = 23;
 
 	VOID* pVoid = NULL;
 
 	LPDIRECT3DINDEXBUFFER9 p_dx_IndexBuffer = NULL;
-	HRESULT result = p_Device->CreateIndexBuffer(sizeof(indices), 0, D3DFMT_INDEX16,D3DPOOL_MANAGED,  &p_dx_IndexBuffer, NULL);
+	HRESULT result = p_Device->CreateIndexBuffer(sizeof(cubeIndices), 0, D3DFMT_INDEX16,D3DPOOL_MANAGED,  &p_dx_IndexBuffer, NULL);
 	switch(result)
 	{
 	case D3DERR_INVALIDCALL: 
@@ -176,7 +192,7 @@ LPDIRECT3DINDEXBUFFER9 DebugCube::FillIndices() //zelfde als FillVertices, zie u
 		break;
 	}
 
-	memcpy(pVoid, indices, sizeof(indices));
+	memcpy(pVoid, cubeIndices, sizeof(cubeIndices));
 	p_dx_IndexBuffer->Unlock();
 
 	return p_dx_IndexBuffer;

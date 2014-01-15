@@ -6,7 +6,6 @@ CollisionGeo::CollisionGeo(D3DXVECTOR3 cubePosition, D3DXVECTOR3 LowerLeftFrontP
 	position = cubePosition;
 	LLFPos = D3DXVECTOR3(cubePosition.x+LowerLeftFrontPos.x,cubePosition.y+LowerLeftFrontPos.y,cubePosition.z+LowerLeftFrontPos.z) ;
 	URBPos = D3DXVECTOR3(cubePosition.x+UpperRightBackPos.x,cubePosition.y+UpperRightBackPos.y,cubePosition.z+UpperRightBackPos.z) ;
- //OBB values aangeven
 }
 CollisionGeo::CollisionGeo(D3DXVECTOR3 cubePosition,D3DXVECTOR3 cubeRotation, D3DXVECTOR3 LowerLeftFrontPos,D3DXVECTOR3 UpperRightBackPos)
 {
@@ -15,7 +14,6 @@ CollisionGeo::CollisionGeo(D3DXVECTOR3 cubePosition,D3DXVECTOR3 cubeRotation, D3
 	URBPos = D3DXVECTOR3(cubePosition.x+UpperRightBackPos.x,cubePosition.y+UpperRightBackPos.y,cubePosition.z+UpperRightBackPos.z) ;
 	SetPosition(cubePosition);
 	SetRotation(cubeRotation);
- //OBB values aangeven
 }
 CollisionGeo::CollisionGeo(D3DXVECTOR3 spherePosition, float sphereRadius)
 {
@@ -92,11 +90,6 @@ CollisionGeo::CollisionResult CollisionGeo::DidSphereCollideWith(CollisionGeo* o
 			{
 				return Collision;
 			}
-
-			/*if(position.x+radius > other->GetPosition().x - other->GetRadius()&& position.x-radius < other->GetPosition().x + other->GetRadius()&& position.z+radius > other->GetPosition().z - other->GetRadius() && position.z-radius < other->GetPosition().z + other->GetRadius() && position.y+radius > other->GetPosition().y - other->GetRadius() && position.y-radius < other->GetPosition().y + other->GetRadius())
-			{
-				return Collision;
-			}	 */
 			return NoCollision;
 		}
 		return Arg2NotSphere;
@@ -125,6 +118,8 @@ CollisionGeo::CollisionResult CollisionGeo::DidCubeCollideWith(CollisionGeo* oth
 
 CollisionGeo::CollisionResult CollisionGeo::DidOBBCollideWithOBB(CollisionGeo* other)
 {
+	//Need to cast a bounding volume over the current OBB before using SAT as performance tweak;
+
 	/*switch(DidCubeCollideWith(other))
 	{
 	case NoCollision: return NoCollision;break;
@@ -132,11 +127,13 @@ CollisionGeo::CollisionResult CollisionGeo::DidOBBCollideWithOBB(CollisionGeo* o
 	case Arg2NotStaticOrOBBCube: return Arg2NotStaticOrOBBCube;break;
 	} */
 
+
+	//Start SAT (Separating Axis Theorem)
 	for(int i = 0; i < 3; i++)
 	{
-
 		float Min0,Max0;
 		Project(GetOBB(),GetOBB()->normalAxis[i], Min0, Max0);
+
 		float Min1,Max1;
 		Project(other->GetOBB(),other->GetOBB()->normalAxis[i], Min1, Max1);
 

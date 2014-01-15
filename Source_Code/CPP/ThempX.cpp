@@ -166,29 +166,53 @@ bool ThempX::CheckCamBoxCollision(D3DXVECTOR3 pos, Object3D* obj)
 void ThempX::LeftMouseClick()
 {
 	
-	D3DXVECTOR3 outCamPos;
-	D3DXMATRIX inverseWorld;
-	D3DXVECTOR3 lookDirInverse;
-	const D3DXMATRIX* temp;
-
-	for(unsigned int i = 0; i < modelObjs.size();i++)
+	for(unsigned int i = 0; i < debugCubes.size();i++)
 	{
-		if(Vector3Distance(&modelObjs.at(i)->position,&camera.position) < 100)
-		{
-			float distance = Vector3Distance(&modelObjs.at(i)->position,&camera.position);
-			BOOL hit = FALSE;
-			FLOAT distToHit = 100;
-			temp = &modelObjs.at(i)->worldMatrix;
-			D3DXMatrixInverse(&inverseWorld,0,temp);
-			D3DXVec3TransformCoord(&outCamPos,&camera.position,temp);
-			D3DXVec3TransformNormal(&lookDirInverse,&camera.lookDir,temp);
+		DebugCube* obj = debugCubes.at(i);
 
-			D3DXIntersect(modelObjs.at(i)->model.mesh,&outCamPos,&lookDirInverse,&hit,NULL,NULL,NULL,&distToHit,NULL,NULL); 
-		
-			if(hit == TRUE)
+		if(obj->collision != NULL && Vector3Distance(&obj->position,&camera.position) < 100)
+		{	
+			if(obj->collision->GetType() == CollisionGeo::OBBCube || obj->collision->GetType() == CollisionGeo::StaticCube)
 			{
-				cout << "hit target: "<<modelObjs.at(i)->objName << "  at distance: " << distToHit << endl;
-			}
+				D3DXVECTOR3 LLFPos = AddVector3(&obj->collision->GetLowerLeftFrontPos(),&obj->position);
+				D3DXVECTOR3 URBPos = AddVector3(&obj->collision->GetUpperRightBackPos(),&obj->position);
+				
+				std::vector<D3DXVECTOR3> vertices;
+
+				vertices.push_back(D3DXVECTOR3(LLFPos.x, LLFPos.y, URBPos.z));
+				vertices.push_back(D3DXVECTOR3(URBPos.x, LLFPos.y, URBPos.z));
+				vertices.push_back(D3DXVECTOR3(LLFPos.x, URBPos.y, URBPos.z));
+				vertices.push_back(D3DXVECTOR3(URBPos.x, URBPos.y, URBPos.z));
+				vertices.push_back(D3DXVECTOR3(LLFPos.x, LLFPos.y, LLFPos.z));
+				vertices.push_back(D3DXVECTOR3(LLFPos.x, URBPos.y, LLFPos.z));
+				vertices.push_back(D3DXVECTOR3(URBPos.x, LLFPos.y, LLFPos.z));
+				vertices.push_back(D3DXVECTOR3(URBPos.x, URBPos.y, LLFPos.z));
+				vertices.push_back(D3DXVECTOR3(LLFPos.x, URBPos.y, LLFPos.z));
+				vertices.push_back(D3DXVECTOR3(LLFPos.x, URBPos.y, URBPos.z));
+				vertices.push_back(D3DXVECTOR3(URBPos.x, URBPos.y, LLFPos.z));
+				vertices.push_back(D3DXVECTOR3(URBPos.x, URBPos.y, URBPos.z));
+				vertices.push_back(D3DXVECTOR3(LLFPos.x, LLFPos.y, LLFPos.z));
+				vertices.push_back(D3DXVECTOR3(URBPos.x, LLFPos.y, LLFPos.z));
+				vertices.push_back(D3DXVECTOR3(LLFPos.x, LLFPos.y, URBPos.z));
+				vertices.push_back(D3DXVECTOR3(URBPos.x, LLFPos.y, URBPos.z));
+				vertices.push_back(D3DXVECTOR3(URBPos.x, LLFPos.y, LLFPos.z));
+				vertices.push_back(D3DXVECTOR3(URBPos.x, URBPos.y, LLFPos.z));
+				vertices.push_back(D3DXVECTOR3(URBPos.x, LLFPos.y, URBPos.z));
+				vertices.push_back(D3DXVECTOR3(URBPos.x, URBPos.y, URBPos.z));
+				vertices.push_back(D3DXVECTOR3(LLFPos.x, LLFPos.y, LLFPos.z));
+				vertices.push_back(D3DXVECTOR3(LLFPos.x, LLFPos.y, URBPos.z));
+				vertices.push_back(D3DXVECTOR3(LLFPos.x, URBPos.y, LLFPos.z));
+				vertices.push_back(D3DXVECTOR3(LLFPos.x, URBPos.y, URBPos.z));
+
+				float distToHit = 0;
+				for(unsigned int x=0;x < 36; x+=3)
+				{
+					if(D3DXIntersectTri(&vertices[obj->cubeIndices[x]],&vertices[obj->cubeIndices[x+1]],&vertices[obj->cubeIndices[x+2]],&camera.position,&camera.lookDir,NULL,NULL,&distToHit)) 
+					{
+						cout << "hit target debugcube, NR: "<<i << "  at distance: " << distToHit << endl;
+					}
+				}
+			} 
 		}
 	}
 	for(unsigned int i = 0; i < spriteObjs.size();i++)
@@ -221,7 +245,7 @@ void ThempX::DoInput()
 	{
 		if(mouseLeftJustDown == false)
 		{
-			//LeftMouseClick();		//currently disabled the function because this is a raycast and not needed atm
+			LeftMouseClick();		//currently disabled the function because this is a raycast and not needed atm
 			mouseLeftJustDown = true;
 		}
 	}
