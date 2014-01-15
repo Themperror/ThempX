@@ -24,8 +24,8 @@ ThempX::ThempX(HWND handle,HINSTANCE hInstance)
 
 	debugCubes.push_back(new DebugCube(p_Device,D3DXVECTOR3(0,0,0),D3DXVECTOR3(0,0,0),D3DXVECTOR3(-1,-1,-1),D3DXVECTOR3(1,1,1),resources));
 	debugCubes.push_back(new DebugCube(p_Device,D3DXVECTOR3(0,0,0),D3DXVECTOR3(0,0,0),D3DXVECTOR3(-1,-1,-1),D3DXVECTOR3(1,1,1),resources));
-	c1 = new CollisionGeo(D3DXVECTOR3(0,0,0),D3DXVECTOR3(0,0,0),D3DXVECTOR3(-1,-1,-1),D3DXVECTOR3(1,1,1));
-	c2 = new CollisionGeo(D3DXVECTOR3(0,0,0),D3DXVECTOR3(0,0,0),D3DXVECTOR3(-1,-1,-1),D3DXVECTOR3(1,1,1));
+	debugCubes.at(0)->collision = new CollisionGeo(D3DXVECTOR3(0,0,0),D3DXVECTOR3(0,0,0),D3DXVECTOR3(-1,-1,-1),D3DXVECTOR3(1,1,1));
+	debugCubes.at(1)->collision = new CollisionGeo(D3DXVECTOR3(0,0,0),D3DXVECTOR3(0,0,0),D3DXVECTOR3(-1,-1,-1),D3DXVECTOR3(1,1,1));
 	//following switch is for testing collisions
 	
 	 /*
@@ -114,16 +114,19 @@ void ThempX::Update()
 		deltaTime = tempDeltaTime*0.001f;
 		DoInput();
 
-		if(c1->DidOBBCollideWithOBB2(c2) == CollisionGeo::Collision)
+		if(debugCubes.at(0)->collision != NULL && debugCubes.at(1)->collision != NULL)
 		{
-			std::cout << "Collision" << std::endl;
-			debugCubes.at(0)->ChangeTexture("Resources/Models/CubeGreen.png"); 
-			debugCubes.at(1)->ChangeTexture("Resources/Models/CubeGreen.png");
-		}
-		else
-		{
-			debugCubes.at(0)->ChangeTexture("Resources/Models/CubeRed.png"); 
-			debugCubes.at(1)->ChangeTexture("Resources/Models/CubeRed.png");
+			if(debugCubes.at(0)->collision->DidOBBCollideWithOBB(debugCubes.at(1)->collision) == CollisionGeo::Collision)
+			{
+				//std::cout << "Collision" << std::endl;
+				debugCubes.at(0)->ChangeTexture("Resources/Models/CubeGreen.png"); 
+				debugCubes.at(1)->ChangeTexture("Resources/Models/CubeGreen.png");
+			}
+			else
+			{
+				debugCubes.at(0)->ChangeTexture("Resources/Models/CubeRed.png"); 
+				debugCubes.at(1)->ChangeTexture("Resources/Models/CubeRed.png");
+			}
 		}
 
 		bool didCollide = false;
@@ -281,52 +284,46 @@ void ThempX::DoInput()
 	// for checking the world positions,  handy visual support for when going to place objects in the world
 	if(KeyPressed(DIK_I))
 	{
-		debugCubes.at(0)->position.x += speed*deltaTime;
-		c1->SetPosition(debugCubes.at(0)->position);
-		c1->SetRotation(D3DXVECTOR3(debugCubes.at(0)->rotation.x,0,0));
+		debugCubes.at(0)->AddPosition(5*deltaTime,0,0);
+		debugCubes.at(0)->AddRotation(0,0,0);
 	}
 	if(KeyPressed(DIK_K))
 	{
-		debugCubes.at(0)->position.x -= speed*deltaTime;
-		c1->SetPosition(debugCubes.at(0)->position); 
-		c1->SetRotation(D3DXVECTOR3(debugCubes.at(0)->rotation.x,0,0));
+		debugCubes.at(0)->AddPosition(-5*deltaTime,0,0);
+		debugCubes.at(0)->AddRotation(0,0,0);
 	}
 	if(KeyPressed(DIK_J))
 	{
-		debugCubes.at(0)->position.z += speed*deltaTime;
-		c1->SetPosition(debugCubes.at(0)->position);
-		c1->SetRotation(D3DXVECTOR3(debugCubes.at(0)->rotation.x,0,0));
+		debugCubes.at(0)->AddPosition(0,0,5*deltaTime);
+		debugCubes.at(0)->AddRotation(0,0,0);
 	}
 	if(KeyPressed(DIK_L))
 	{
-		debugCubes.at(0)->position.z -= speed*deltaTime;
-		c1->SetPosition(debugCubes.at(0)->position); 
-		c1->SetRotation(D3DXVECTOR3(debugCubes.at(0)->rotation.x,0,0));
+		debugCubes.at(0)->AddPosition(0,0,-5*deltaTime);
+		debugCubes.at(0)->AddRotation(0,0,0);
 	}
 	if(KeyPressed(DIK_U))
 	{
-		debugCubes.at(0)->position.y += speed*deltaTime;
-		c1->SetPosition(debugCubes.at(0)->position); 
-		c1->SetRotation(D3DXVECTOR3(debugCubes.at(0)->rotation.x,0,0));
+		debugCubes.at(0)->AddPosition(0,5*deltaTime,0);
+		debugCubes.at(0)->AddRotation(0,0,0);
 	}
 	if(KeyPressed(DIK_O))
 	{
-		debugCubes.at(0)->position.y -= speed*deltaTime;
-		c1->SetPosition(debugCubes.at(0)->position);
-		c1->SetRotation(D3DXVECTOR3(debugCubes.at(0)->rotation.x,0,0));
+		debugCubes.at(0)->AddPosition(0,-5*deltaTime,0);
+		debugCubes.at(0)->AddRotation(0,0,0);
 	}
 	if(KeyPressed(DIK_8))
 	{
-		 //rot cube 
+		debugCubes.at(0)->AddPosition(0,0,0);
+		debugCubes.at(0)->AddRotation(7*deltaTime,0,0);
+		std::cout << "X Rot: " << debugCubes.at(0)->rotation.x << " Y Rot: " << debugCubes.at(0)->rotation.y << " Z Rot: " << debugCubes.at(0)->rotation.z << std::endl; 
 	}
 	if(KeyPressed(DIK_9))
 	{
-		 //rot cube
-	}
-	if(KeyPressed(DIK_RSHIFT))
-	{
-		std::cout << "X: " << spriteObjs.at(0)->position.x << " Y: " << spriteObjs.at(0)->position.y << " Z: " << spriteObjs.at(0)->position.z << std::endl; 
-	}
+		debugCubes.at(0)->AddPosition(0,0,0);
+		debugCubes.at(0)->AddRotation(-7*deltaTime,0,0);
+		std::cout << "X Rot: " << debugCubes.at(0)->rotation.x << " Y Rot: " << debugCubes.at(0)->rotation.y << " Z Rot: " << debugCubes.at(0)->rotation.z << std::endl; 
+	} 
 
 
 	//animation testing

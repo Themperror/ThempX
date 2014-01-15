@@ -53,9 +53,6 @@ public:
 	HWND handleWindow;
 	ThempX(HWND handle,HINSTANCE hInstance);
 
-	CollisionGeo* c1;
-	CollisionGeo* c2;
-
 	Camera camera;
 	ResourceManager* resources;
 

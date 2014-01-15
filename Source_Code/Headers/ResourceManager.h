@@ -1,6 +1,8 @@
 #ifndef _RESOURCEMANAGER_H_
 #define _RESOURCEMANAGER_H_
 
+#define ToRadian 0.0174532925f
+
 #include <d3dx9.h>
 #include <d3d9.h>
 #include <vector>
@@ -8,7 +10,7 @@
 #include <stdlib.h>
 #include <D3DX9Mesh.h>
 #include <string>
-
+#include "CollisionGeo.h"
 
 class ResourceManager
 {

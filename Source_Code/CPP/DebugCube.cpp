@@ -8,6 +8,7 @@ DebugCube::DebugCube(LPDIRECT3DDEVICE9 d3d_Device, D3DXVECTOR3 cubePosition,D3DX
 	LLFPos = D3DXVECTOR3(LLFPosition.x,LLFPosition.y,LLFPosition.z);
 	URBPos = D3DXVECTOR3(URBPosition.x,URBPosition.y,URBPosition.z);
 
+	collision = NULL;
 	vBuffer = NULL;
 	iBuffer = NULL;
 	texture = resources->GetTexture("Resources/Models/CubeRed.png");
@@ -45,7 +46,7 @@ void DebugCube::Draw()
 	D3DXMATRIX RotScaleMatrix;
 
 	D3DXMatrixTranslation(&translationMatrix,position.x,position.y,position.z);
-	D3DXMatrixRotationYawPitchRoll(&rotationMatrix,rotation.x,rotation.y,rotation.z);
+	D3DXMatrixRotationYawPitchRoll(&rotationMatrix,rotation.x*ToRadian,rotation.y*ToRadian,rotation.z*ToRadian);
 	D3DXMatrixScaling(&scalingMatrix,1,1,1);
 
 	D3DXMatrixMultiply(&RotScaleMatrix,&scalingMatrix,&rotationMatrix);

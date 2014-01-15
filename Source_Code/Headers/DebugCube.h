@@ -37,6 +37,52 @@ public:
 	LPDIRECT3DINDEXBUFFER9 FillIndices();
 	LPDIRECT3DVERTEXBUFFER9 FillVertices();
 	HWND handleWindow;
+	CollisionGeo* collision;
+	inline void AddPosition(float x, float y, float z)
+	{
+		position.x += x;
+		position.y += y;
+		position.z += z;
+		if(collision != NULL)
+		{
+			collision->SetPosition(position);
+		}
+	}
+	inline void AddRotation(float x, float y, float z)
+	{
+		rotation.x += x;
+		rotation.y += y;
+		rotation.z += z;
+		if(rotation.x > 360)
+		{
+			rotation.x = 0;
+		}
+		if(rotation.x < 0)
+		{
+			rotation.x = 360;
+		}
+		if(rotation.y > 360)
+		{
+			rotation.y = 0;
+		}
+		if(rotation.y < 0)
+		{
+			rotation.y =360;
+		}
+		if(rotation.z > 360)
+		{
+			rotation.z = 0;
+		}
+		if(rotation.z < 0)
+		{
+			rotation.z =360;
+		}
+		if(collision != NULL)
+		{
+			collision->SetRotation(rotation);
+		}
+		
+	}
 };
 
 
