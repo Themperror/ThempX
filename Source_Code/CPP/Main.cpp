@@ -12,6 +12,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 	}
 	return DefWindowProc(hWnd, message, wParam, lParam);
 }
+
 HWND NewWindow(LPCTSTR windowName,int posX,int posY, int sizeX,int sizeY)
 {
 	WNDCLASSEX wc;
@@ -28,11 +29,13 @@ HWND NewWindow(LPCTSTR windowName,int posX,int posY, int sizeX,int sizeY)
 	wc.lpszClassName = "ThempX";
 	wc.lpszMenuName = NULL;
 	wc.hIconSm = LoadIcon(NULL,IDI_APPLICATION);
-
+		
 	RegisterClassEx(&wc);
  
 	return CreateWindowEx(WS_EX_CONTROLPARENT, "ThempX", windowName, WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_VISIBLE, posX, posY, sizeX, sizeY, NULL, NULL, GetModuleHandle(NULL), NULL);
 }
+
+
 void GetDesktopResolution(int& horizontal, int& vertical)
 {
    RECT desktop;

@@ -24,6 +24,7 @@
 #include <string>
 #include <fstream>
 #include <stdio.h>
+//#include <boost/thread.hpp>
 
 #pragma comment(lib, "d3dx9.lib")
 #pragma comment (lib, "d3d9.lib")
@@ -79,6 +80,8 @@ private:
 	void Update();
 	void LoadLevel();
 	void DestroyLevel();
+	void CollisionThread();
+
 	D3DXVECTOR3 AddVector3(D3DXVECTOR3* a, D3DXVECTOR3* b);
 	D3DXVECTOR3 SubstractVector3(D3DXVECTOR3* a, D3DXVECTOR3* b);
 	D3DXVECTOR3 ReturnDirection(float anglesX,float anglesY);

@@ -33,7 +33,19 @@
     <ClInclude Include="Source_Code\Headers\ThempX.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\AnimationPNG\DukeAnimAlien.png" />
+    <None Include="Resources\AnimationPNG\DukeAnimAlien.txt" />
     <None Include="Resources\level.txt" />
+    <None Include="Resources\Models\Car.x" />
+    <None Include="Resources\Models\CarTexture.jpg" />
+    <None Include="Resources\Models\CityPart1.jpg" />
+    <None Include="Resources\Models\CityPart1.x" />
+    <None Include="Resources\Models\CubeGreen.png" />
+    <None Include="Resources\Models\CubeRed.png" />
+    <None Include="Resources\Models\DebugTexture.png" />
+    <None Include="Resources\Sound\test.wav" />
+    <None Include="Resources\Sprites\enemy.png" />
+    <None Include="Resources\Sprites\toiletmonster.png" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{468A34F8-DC49-45B5-9F55-6F96F1C885C5}</ProjectGuid>
@@ -63,7 +75,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IncludePath>C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib;$(LibraryPath)</LibraryPath>
+    <LibraryPath>C:\Program Files %28x86%29\boost\boost_1_55_0\boost;C:\Program Files %28x86%29\boost\boost_1_55_0\stage;C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IncludePath>C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Include;$(IncludePath)</IncludePath>
@@ -76,8 +88,8 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>dinput8.lib;dsound.lib;dxguid.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Program Files %28x86%29\boost\boost_1_55_0\stage\lib;C:\Program Files %28x86%29\boost\boost_1_55_0\boost;C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>dinput8.lib;dsound.lib;dxguid.lib;winmm.lib;libboost_thread-vc100-mt-gd-1_55.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

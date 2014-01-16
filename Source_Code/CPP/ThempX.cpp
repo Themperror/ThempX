@@ -22,6 +22,8 @@ ThempX::ThempX(HWND handle,HINSTANCE hInstance)
 	//Init variables
 	Initialize();
 
+	//not using until I get Boost:: working for starting with multithreading
+	//boost::thread* t = new boost::thread(&ThempX::CollisionThread,this);
 
 	for(unsigned int x = 0; x < 15; x++)
 	{
@@ -30,7 +32,7 @@ ThempX::ThempX(HWND handle,HINSTANCE hInstance)
 			DebugCube* cube = new DebugCube(p_Device,D3DXVECTOR3(0,0,0),D3DXVECTOR3(0,0,0),D3DXVECTOR3(-1,-1,-1),D3DXVECTOR3(1,1,1),resources);
 			debugCubes.push_back(cube);
 			cube->collision = new CollisionGeo(D3DXVECTOR3(0,0,0),D3DXVECTOR3(0,0,0),D3DXVECTOR3(-1,-1,-1),D3DXVECTOR3(1,1,1));
-			cube->AddPositionAndRotation(2.5f*x,0,2.5f*y,0,0,0);
+			cube->AddPositionAndRotation(2.5f*x,12,2.5f*y,0,0,0);
 		}
 	}
 
@@ -85,12 +87,15 @@ ThempX::ThempX(HWND handle,HINSTANCE hInstance)
 		{
 			isDone = true;
 			DestroyWindow(handleWindow);
-		}							  
+		}		
+		
 		Update();
 		DrawScene();
 		Sleep(0);
     }
 
+
+	t->join();
 	//release everything
 	resources->ReleaseResources();
 	for(unsigned int i=0;i<modelObjs.size();i++)
@@ -109,6 +114,14 @@ ThempX::ThempX(HWND handle,HINSTANCE hInstance)
 		delete debugCubes.at(i);
 	}
 	p_Device->Release();
+}
+void ThempX::CollisionThread(void)	 // Going to use for seperate thread for collisionhandling
+{
+	while(!isDone)
+	{
+		std::cout << "Thread is working" << std::endl;
+		//sleep(0);
+	}
 }
 void ThempX::Update()
 {
