@@ -12,8 +12,7 @@ CollisionGeo::CollisionGeo(D3DXVECTOR3 cubePosition,D3DXVECTOR3 cubeRotation, D3
 	currentType = OBBCube;
 	LLFPos = D3DXVECTOR3(cubePosition.x+LowerLeftFrontPos.x,cubePosition.y+LowerLeftFrontPos.y,cubePosition.z+LowerLeftFrontPos.z) ;
 	URBPos = D3DXVECTOR3(cubePosition.x+UpperRightBackPos.x,cubePosition.y+UpperRightBackPos.y,cubePosition.z+UpperRightBackPos.z) ;
-	SetPosition(cubePosition);
-	SetRotation(cubeRotation);
+	SetAABB(cubePosition,cubeRotation);
 }
 CollisionGeo::CollisionGeo(D3DXVECTOR3 spherePosition, float sphereRadius)
 {
@@ -116,7 +115,7 @@ CollisionGeo::CollisionResult CollisionGeo::DidCubeCollideWith(CollisionGeo* oth
 	return Arg1NotStaticOrOBBCube;
 }
 
-CollisionGeo::CollisionResult CollisionGeo::DidOBBCollideWithOBB(CollisionGeo* other)
+CollisionGeo::CollisionResult CollisionGeo::DidAABBCollideWithAABB(CollisionGeo* other)
 {
 	//Need to cast a bounding volume over the current OBB before using SAT as performance tweak;
 
@@ -128,30 +127,31 @@ CollisionGeo::CollisionResult CollisionGeo::DidOBBCollideWithOBB(CollisionGeo* o
 	} */
 
 
-	//Start SAT (Separating Axis Theorem)
+	//Start SAT (Separating Axis Theorem) or is it just AABB? Damn this
 	for(int i = 0; i < 3; i++)
 	{
 		float Min0,Max0;
-		Project(GetOBB(),GetOBB()->normalAxis[i], Min0, Max0);
+		Project(GetAABB(),GetAABB()->normalAxis[i], Min0, Max0);
 
 		float Min1,Max1;
-		Project(other->GetOBB(),other->GetOBB()->normalAxis[i], Min1, Max1);
+		Project(other->GetAABB(),other->GetAABB()->normalAxis[i], Min1, Max1);
 
 		if(Max0<Min1 || Max1<Min0)
 		{
 			return NoCollision;
 		}
 	}
+
   	return Collision;
 }
 
-void CollisionGeo::Project(OBB* obb,const D3DXVECTOR3& dir, float& min, float& max) const
+void CollisionGeo::Project(AABB* aabb,const D3DXVECTOR3& dir, float& min, float& max) const
 {
 	min = FLT_MAX;
 	max = -FLT_MAX;
 	for(int i=0;i<8;i++)
 	{
-		const float dp = D3DXVec3Dot(&D3DXVECTOR3(obb->transformedVertexPoints[i].x,obb->transformedVertexPoints[i].y,obb->transformedVertexPoints[i].z),&dir);
+		const float dp = D3DXVec3Dot(&D3DXVECTOR3(aabb->transformedVertexPoints[i].x,aabb->transformedVertexPoints[i].y,aabb->transformedVertexPoints[i].z),&dir);
 		if(dp < min)	min = dp;
 		if(dp > max)	max = dp;
 	}

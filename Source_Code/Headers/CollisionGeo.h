@@ -4,11 +4,8 @@
 #include "ResourceManager.h"
 
 
-struct OBB 
+struct AABB 
 {
-	D3DXVECTOR3 centerPoint;
-	float min;
-	float max;
 	D3DXVECTOR3 normalAxis[3]; // Local x-, y-, and z-axes
 	D3DXVECTOR4 transformedVertexPoints[8];
 };
@@ -16,8 +13,8 @@ struct OBB
 class CollisionGeo
 {
 public:
-	enum GeoType { OBBCube,StaticCube, Sphere , Capsule, Cylinder };
-	enum CollisionResult { NoCollision, Collision, NotASphere, NotAOBBCube,NotAStaticCube,NotAStaticOrOBBCube, NotACapsule, NotACylinder,Arg1NotCylinder,Arg1NotStaticCube,Arg1NotOBBCube,Arg1NotStaticOrOBBCube,Arg1NotSphere,Arg1NotCapsule,Arg2NotCylinder,Arg2NotOBBCube,Arg2NotStaticOrOBBCube,Arg2NotStaticCube,Arg2NotSphere,Arg2NotCapsule};
+	enum GeoType { OBBCube,AABBCube,StaticCube, Sphere , Capsule, Cylinder };
+	enum CollisionResult { NoCollision, Collision, NotASphere, NotAOBBCube,NotAAABBCube,NotAStaticCube,NotAStaticOrOBBCube, NotACapsule, NotACylinder,Arg1NotCylinder,Arg1NotStaticCube,Arg1NotOBBCube,Arg1NotAABBCube,Arg1NotStaticOrOBBCube,Arg1NotSphere,Arg1NotCapsule,Arg2NotCylinder,Arg2NotOBBCube,Arg2NotAABBCube,Arg2NotStaticOrOBBCube,Arg2NotStaticCube,Arg2NotSphere,Arg2NotCapsule};
 	
 	CollisionGeo(D3DXVECTOR3 cubePosition, D3DXVECTOR3 LowerLeftFrontPos,D3DXVECTOR3 UpperRightBackPos); // Cube
 
@@ -62,18 +59,14 @@ public:
 	{
 		return D3DXVECTOR3(std::abs(LLFPos.x - URBPos.x),std::abs(LLFPos.y - URBPos.y),std::abs(LLFPos.z - URBPos.z));
 	}
-	inline OBB* GetOBB()
+	inline AABB* GetAABB()
 	{
-		return &thisOBB;
+		return &thisAABB;
 	}
-	inline void SetPosition(D3DXVECTOR3 newValue)
+	inline void SetAABB(D3DXVECTOR3 newValuePos,D3DXVECTOR3 newValueRot)
 	{
-		position = newValue;
-		thisOBB.centerPoint= newValue;
-	}
-	inline void SetRotation(D3DXVECTOR3 newValue)
-	{
-		rotation = newValue;
+		position = newValuePos;
+		rotation = newValueRot;
 		
 		D3DXVECTOR3 radianRot = rotation;
 
@@ -81,9 +74,9 @@ public:
 		radianRot.y *=ToRadian;
 		radianRot.z *=ToRadian;
 
-		D3DXVec3Normalize(&thisOBB.normalAxis[0],&D3DXVECTOR3(90,0,0));
-		D3DXVec3Normalize(&thisOBB.normalAxis[1],&D3DXVECTOR3(0,90,0));
-		D3DXVec3Normalize(&thisOBB.normalAxis[2],&D3DXVECTOR3(0,0,90));
+		D3DXVec3Normalize(&thisAABB.normalAxis[0],&D3DXVECTOR3(rotation.x+90,rotation.y,rotation.y));
+		D3DXVec3Normalize(&thisAABB.normalAxis[1],&D3DXVECTOR3(rotation.x,rotation.y+90,rotation.y));
+		D3DXVec3Normalize(&thisAABB.normalAxis[2],&D3DXVECTOR3(rotation.x,rotation.y,rotation.y+90));
 
 		D3DXMATRIX worldMatrix;
 		D3DXMATRIX m_Translation;
@@ -93,14 +86,14 @@ public:
 		D3DXMatrixMultiply(&worldMatrix,&m_Rotation,&m_Translation);
 
 
-		D3DXVec3Transform(&thisOBB.transformedVertexPoints[0],&D3DXVECTOR3(LLFPos.x, URBPos.y, LLFPos.z),&worldMatrix);
-		D3DXVec3Transform(&thisOBB.transformedVertexPoints[1],&D3DXVECTOR3(URBPos.x, URBPos.y, LLFPos.z),&worldMatrix);
-		D3DXVec3Transform(&thisOBB.transformedVertexPoints[2],&D3DXVECTOR3(LLFPos.x, LLFPos.y, LLFPos.z),&worldMatrix);
-		D3DXVec3Transform(&thisOBB.transformedVertexPoints[3],&D3DXVECTOR3(URBPos.x, LLFPos.y, LLFPos.z),&worldMatrix);
-		D3DXVec3Transform(&thisOBB.transformedVertexPoints[4],&D3DXVECTOR3(LLFPos.x, URBPos.y, URBPos.z),&worldMatrix);
-		D3DXVec3Transform(&thisOBB.transformedVertexPoints[5],&D3DXVECTOR3(URBPos.x ,URBPos.y, URBPos.z),&worldMatrix);
-		D3DXVec3Transform(&thisOBB.transformedVertexPoints[6],&D3DXVECTOR3(LLFPos.x, LLFPos.y, URBPos.z),&worldMatrix);
-		D3DXVec3Transform(&thisOBB.transformedVertexPoints[7],&D3DXVECTOR3(URBPos.x, LLFPos.y, URBPos.z),&worldMatrix); 
+		D3DXVec3Transform(&thisAABB.transformedVertexPoints[0],&D3DXVECTOR3(LLFPos.x, URBPos.y, LLFPos.z),&worldMatrix);
+		D3DXVec3Transform(&thisAABB.transformedVertexPoints[1],&D3DXVECTOR3(URBPos.x, URBPos.y, LLFPos.z),&worldMatrix);
+		D3DXVec3Transform(&thisAABB.transformedVertexPoints[2],&D3DXVECTOR3(LLFPos.x, LLFPos.y, LLFPos.z),&worldMatrix);
+		D3DXVec3Transform(&thisAABB.transformedVertexPoints[3],&D3DXVECTOR3(URBPos.x, LLFPos.y, LLFPos.z),&worldMatrix);
+		D3DXVec3Transform(&thisAABB.transformedVertexPoints[4],&D3DXVECTOR3(LLFPos.x, URBPos.y, URBPos.z),&worldMatrix);
+		D3DXVec3Transform(&thisAABB.transformedVertexPoints[5],&D3DXVECTOR3(URBPos.x ,URBPos.y, URBPos.z),&worldMatrix);
+		D3DXVec3Transform(&thisAABB.transformedVertexPoints[6],&D3DXVECTOR3(LLFPos.x, LLFPos.y, URBPos.z),&worldMatrix);
+		D3DXVec3Transform(&thisAABB.transformedVertexPoints[7],&D3DXVECTOR3(URBPos.x, LLFPos.y, URBPos.z),&worldMatrix); 
 			  
 
 	}
@@ -130,7 +123,7 @@ public:
 	CollisionResult IsInCylinder(D3DXVECTOR3 pos);
 	CollisionResult DidCubeCollideWith(CollisionGeo* other);
 	CollisionResult DidSphereCollideWith(CollisionGeo* other);
-	CollisionResult DidOBBCollideWithOBB(CollisionGeo* other);
+	CollisionResult DidAABBCollideWithAABB(CollisionGeo* other);
 
 private:
 	GeoType currentType;
@@ -146,7 +139,7 @@ private:
 	float radius;
 	float height;
 
-	OBB thisOBB;
+	AABB thisAABB;
 
 	inline float Vector3Distance(D3DXVECTOR3* a, D3DXVECTOR3* b)
 	{
@@ -156,7 +149,7 @@ private:
 	{
 		return sqrt((pow(a->x,2) + pow(b->x,2))+(pow(a->y,2) + pow(b->y,2)));
 	}
-	void CollisionGeo::Project(OBB* obb,const D3DXVECTOR3& dir, float& min, float& max) const;
+	void CollisionGeo::Project(AABB* aabb,const D3DXVECTOR3& dir, float& min, float& max) const;
 };
 
 

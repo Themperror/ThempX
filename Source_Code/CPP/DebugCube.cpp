@@ -11,7 +11,7 @@ DebugCube::DebugCube(LPDIRECT3DDEVICE9 d3d_Device, D3DXVECTOR3 cubePosition,D3DX
 	collision = NULL;
 	vBuffer = NULL;
 	iBuffer = NULL;
-	texture = resources->GetTexture("Resources/Models/CubeRed.png");
+	texture = resources->GetTexture("Resources/Models/CarTexture.jpg");
 	resource = resources;
 	ZeroMemory(&meshMaterial,sizeof(meshMaterial));
 

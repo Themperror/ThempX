@@ -42,21 +42,14 @@ public:
 	short cubeIndices[36];
 
 
-	inline void AddPosition(float x, float y, float z)
+	inline void AddPositionAndRotation(float x, float y, float z,float rx, float ry, float rz)
 	{
 		position.x += x;
 		position.y += y;
 		position.z += z;
-		if(collision != NULL)
-		{
-			collision->SetPosition(position);
-		}
-	}
-	inline void AddRotation(float x, float y, float z)
-	{
-		rotation.x += x;
-		rotation.y += y;
-		rotation.z += z;
+		rotation.x += rx;
+		rotation.y += ry;
+		rotation.z += rz;
 		if(rotation.x > 360)
 		{
 			rotation.x = 0;
@@ -83,7 +76,7 @@ public:
 		}
 		if(collision != NULL)
 		{
-			collision->SetRotation(rotation);
+			collision->SetAABB(position,rotation);
 		}
 	}
 };
