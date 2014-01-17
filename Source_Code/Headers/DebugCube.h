@@ -38,10 +38,14 @@ public:
 	LPDIRECT3DVERTEXBUFFER9 FillVertices();
 	HWND handleWindow;
 	CollisionGeo* collision;
+	bool didCollide;
 
 	short cubeIndices[36];
 
-
+	inline void setCollide(bool val)
+	{
+	   didCollide = val;
+	}
 	inline void AddPositionAndRotation(float x, float y, float z,float rx, float ry, float rz)
 	{
 		position.x += x;

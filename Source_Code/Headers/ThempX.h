@@ -24,7 +24,7 @@
 #include <string>
 #include <fstream>
 #include <stdio.h>
-//#include <boost/thread.hpp>
+#include <boost/thread.hpp>
 
 #pragma comment(lib, "d3dx9.lib")
 #pragma comment (lib, "d3d9.lib")

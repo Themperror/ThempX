@@ -22,8 +22,6 @@ ThempX::ThempX(HWND handle,HINSTANCE hInstance)
 	//Init variables
 	Initialize();
 
-	//not using until I get Boost:: working for starting with multithreading
-	//boost::thread* t = new boost::thread(&ThempX::CollisionThread,this);
 
 	for(unsigned int x = 0; x < 15; x++)
 	{
@@ -35,7 +33,10 @@ ThempX::ThempX(HWND handle,HINSTANCE hInstance)
 			cube->AddPositionAndRotation(2.5f*x,12,2.5f*y,0,0,0);
 		}
 	}
+	  
 
+
+	boost::thread* t = new boost::thread(&ThempX::CollisionThread,this);
 	//following switch is for testing collisions
 	
 	 /*
@@ -115,12 +116,48 @@ ThempX::ThempX(HWND handle,HINSTANCE hInstance)
 	}
 	p_Device->Release();
 }
-void ThempX::CollisionThread(void)	 // Going to use for seperate thread for collisionhandling
+void ThempX::CollisionThread(void)
 {
 	while(!isDone)
 	{
-		std::cout << "Thread is working" << std::endl;
-		//sleep(0);
+		for(unsigned int x = 0; x < debugCubes.size(); x++)
+		{
+			for(unsigned int y = 0 ;y < debugCubes.size();y++)
+			{
+				if(debugCubes.at(x)->collision != NULL && debugCubes.at(y)->collision != NULL && debugCubes.at(x) != debugCubes.at(y))
+				{
+					if(debugCubes.at(x)->collision->DidAABBCollideWithAABB(debugCubes.at(y)->collision) == CollisionGeo::Collision)
+					{
+						if(debugCubes.at(x)->didCollide == false)
+						{
+							debugCubes.at(x)->ChangeTexture("Resources/Models/CubeRed.png");
+						} 
+						if(debugCubes.at(y)->didCollide == false)
+						{
+							debugCubes.at(y)->ChangeTexture("Resources/Models/CubeRed.png");
+						}
+						debugCubes.at(x)->setCollide(true);
+						debugCubes.at(y)->setCollide(true);
+							
+					}
+					else
+					{
+						if(debugCubes.at(x)->didCollide == false)
+						{
+							debugCubes.at(x)->ChangeTexture("Resources/Models/CubeGreen.png");
+						} 
+						if(debugCubes.at(y)->didCollide == false)
+						{
+							debugCubes.at(y)->ChangeTexture("Resources/Models/CubeGreen.png");
+						}
+					}
+				}
+			}
+		}
+		for(unsigned int i = 0; i < debugCubes.size();i++)
+		{
+			debugCubes.at(i)->setCollide(false);
+		}
 	}
 }
 void ThempX::Update()
@@ -135,30 +172,7 @@ void ThempX::Update()
 		deltaTime = tempDeltaTime*0.001f;
 		DoInput();
 
-		std::vector<DebugCube*> collisionList = debugCubes;
-		for(unsigned int x = 0; x < debugCubes.size(); x++)
-		{
-			for(unsigned int i = collisionList.size()-1 ;i > 0;i--)
-			{
-				if(collisionList.at(i)->collision != NULL && debugCubes.at(x)->collision != NULL)
-				{
-					if(collisionList.at(i) != debugCubes.at(x))
-					{
-						if(collisionList.at(i)->collision->DidAABBCollideWithAABB(debugCubes.at(x)->collision) == CollisionGeo::Collision)
-						{
-							collisionList.at(i)->ChangeTexture("Resources/Models/CubeRed.png"); 
-							debugCubes.at(x)->ChangeTexture("Resources/Models/CubeRed.png");
-						}
-						else
-						{
-							collisionList.at(i)->ChangeTexture("Resources/Models/CubeGreen.png"); 
-							debugCubes.at(x)->ChangeTexture("Resources/Models/CubeGreen.png");
-						}  
-						collisionList.pop_back();
-					}
-				}
-			}
-		}
+		
 		
 
 		bool didCollide = false;

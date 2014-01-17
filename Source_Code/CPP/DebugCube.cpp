@@ -8,6 +8,7 @@ DebugCube::DebugCube(LPDIRECT3DDEVICE9 d3d_Device, D3DXVECTOR3 cubePosition,D3DX
 	LLFPos = D3DXVECTOR3(LLFPosition.x,LLFPosition.y,LLFPosition.z);
 	URBPos = D3DXVECTOR3(URBPosition.x,URBPosition.y,URBPosition.z);
 
+	didCollide = false;
 	collision = NULL;
 	vBuffer = NULL;
 	iBuffer = NULL;
