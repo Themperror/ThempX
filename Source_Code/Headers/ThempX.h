@@ -80,7 +80,13 @@ private:
 	void Update();
 	void LoadLevel();
 	void DestroyLevel();
+
+
+	//CollisionThread
 	void CollisionThread();
+	boost::mutex collisionLock;
+
+
 
 	D3DXVECTOR3 AddVector3(D3DXVECTOR3* a, D3DXVECTOR3* b);
 	D3DXVECTOR3 SubstractVector3(D3DXVECTOR3* a, D3DXVECTOR3* b);

@@ -22,9 +22,11 @@ DebugCube::DebugCube(LPDIRECT3DDEVICE9 d3d_Device, D3DXVECTOR3 cubePosition,D3DX
 	vBuffer= FillVertices();
 	iBuffer = FillIndices();
 }
-void DebugCube::ChangeTexture(char* path)
+void DebugCube::ChangeTexture(char* path,boost::mutex* current)
 {
+	current->lock();
 	texture = resource->GetTexture(path);
+	current->unlock();
 }
 void DebugCube::Release()
 {

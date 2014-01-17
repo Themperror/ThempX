@@ -11,6 +11,7 @@
 #include <D3DX9Mesh.h>
 #include <string>
 #include "CollisionGeo.h"
+#include <boost/thread.hpp>
 
 class ResourceManager
 {

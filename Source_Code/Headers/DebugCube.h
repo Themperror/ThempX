@@ -33,7 +33,7 @@ public:
 	LPDIRECT3DDEVICE9 p_Device;
 	void Release();
 	void Draw();
-	void ChangeTexture(char* path);
+	void ChangeTexture(char* path,boost::mutex* current);
 	LPDIRECT3DINDEXBUFFER9 FillIndices();
 	LPDIRECT3DVERTEXBUFFER9 FillVertices();
 	HWND handleWindow;
@@ -42,12 +42,29 @@ public:
 
 	short cubeIndices[36];
 
-	inline void setCollide(bool val)
+	inline bool HasCollision(boost::mutex* current)
 	{
-	   didCollide = val;
+		current->lock();
+		bool hasCol = (collision != NULL);
+		current->unlock();
+		return hasCol;
 	}
-	inline void AddPositionAndRotation(float x, float y, float z,float rx, float ry, float rz)
+	inline void SetCollide(bool val, boost::mutex* current)
 	{
+		current->lock();
+		didCollide = val;
+		current->unlock();
+	}
+	inline bool DidCollide(boost::mutex* current)
+	{
+		current->lock();
+		bool didCol = didCollide;
+		current->unlock();
+		return didCollide;
+	}
+	inline void AddPositionAndRotation(boost::mutex* current,float x, float y, float z,float rx, float ry, float rz)
+	{
+		current->lock();
 		position.x += x;
 		position.y += y;
 		position.z += z;
@@ -82,6 +99,7 @@ public:
 		{
 			collision->SetAABB(position,rotation);
 		}
+		current->unlock();
 	}
 };
 

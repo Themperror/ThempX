@@ -30,7 +30,7 @@ ThempX::ThempX(HWND handle,HINSTANCE hInstance)
 			DebugCube* cube = new DebugCube(p_Device,D3DXVECTOR3(0,0,0),D3DXVECTOR3(0,0,0),D3DXVECTOR3(-1,-1,-1),D3DXVECTOR3(1,1,1),resources);
 			debugCubes.push_back(cube);
 			cube->collision = new CollisionGeo(D3DXVECTOR3(0,0,0),D3DXVECTOR3(0,0,0),D3DXVECTOR3(-1,-1,-1),D3DXVECTOR3(1,1,1));
-			cube->AddPositionAndRotation(2.5f*x,12,2.5f*y,0,0,0);
+			cube->AddPositionAndRotation(&collisionLock,2.5f*x,12,2.5f*y,0,0,0);
 		}
 	}
 	  
@@ -124,31 +124,31 @@ void ThempX::CollisionThread(void)
 		{
 			for(unsigned int y = 0 ;y < debugCubes.size();y++)
 			{
-				if(debugCubes.at(x)->collision != NULL && debugCubes.at(y)->collision != NULL && debugCubes.at(x) != debugCubes.at(y))
+				if(debugCubes.at(x)->HasCollision(&collisionLock) == true && debugCubes.at(y)->HasCollision(&collisionLock) == true && debugCubes.at(x) != debugCubes.at(y))
 				{
 					if(debugCubes.at(x)->collision->DidAABBCollideWithAABB(debugCubes.at(y)->collision) == CollisionGeo::Collision)
 					{
-						if(debugCubes.at(x)->didCollide == false)
+						if(debugCubes.at(x)->DidCollide(&collisionLock) == false)
 						{
-							debugCubes.at(x)->ChangeTexture("Resources/Models/CubeRed.png");
+							debugCubes.at(x)->ChangeTexture("Resources/Models/CubeRed.png",&collisionLock);
 						} 
-						if(debugCubes.at(y)->didCollide == false)
+						if(debugCubes.at(y)->DidCollide(&collisionLock) == false)
 						{
-							debugCubes.at(y)->ChangeTexture("Resources/Models/CubeRed.png");
+							debugCubes.at(y)->ChangeTexture("Resources/Models/CubeRed.png",&collisionLock);
 						}
-						debugCubes.at(x)->setCollide(true);
-						debugCubes.at(y)->setCollide(true);
+						debugCubes.at(x)->SetCollide(true,&collisionLock);
+						debugCubes.at(y)->SetCollide(true,&collisionLock);
 							
 					}
 					else
 					{
-						if(debugCubes.at(x)->didCollide == false)
+						if(debugCubes.at(x)->DidCollide(&collisionLock) == false)
 						{
-							debugCubes.at(x)->ChangeTexture("Resources/Models/CubeGreen.png");
+							debugCubes.at(x)->ChangeTexture("Resources/Models/CubeGreen.png",&collisionLock);
 						} 
-						if(debugCubes.at(y)->didCollide == false)
+						if(debugCubes.at(y)->DidCollide(&collisionLock) == false)
 						{
-							debugCubes.at(y)->ChangeTexture("Resources/Models/CubeGreen.png");
+							debugCubes.at(y)->ChangeTexture("Resources/Models/CubeGreen.png",&collisionLock);
 						}
 					}
 				}
@@ -156,8 +156,9 @@ void ThempX::CollisionThread(void)
 		}
 		for(unsigned int i = 0; i < debugCubes.size();i++)
 		{
-			debugCubes.at(i)->setCollide(false);
+			debugCubes.at(i)->SetCollide(false,&collisionLock);
 		}
+		Sleep(0);
 	}
 }
 void ThempX::Update()
@@ -354,36 +355,36 @@ void ThempX::DoInput()
 	// for checking the world positions,  handy visual support for when going to place objects in the world
 	if(KeyPressed(DIK_I))
 	{
-		debugCubes.at(0)->AddPositionAndRotation(5*deltaTime,0,0,0,0,0);
+		debugCubes.at(0)->AddPositionAndRotation(&collisionLock,5*deltaTime,0,0,0,0,0);
 	}
 	if(KeyPressed(DIK_K))
 	{
-		debugCubes.at(0)->AddPositionAndRotation(-5*deltaTime,0,0,0,0,0);
+		debugCubes.at(0)->AddPositionAndRotation(&collisionLock,-5*deltaTime,0,0,0,0,0);
 	}
 	if(KeyPressed(DIK_J))
 	{
-		debugCubes.at(0)->AddPositionAndRotation(0,0,5*deltaTime,0,0,0);
+		debugCubes.at(0)->AddPositionAndRotation(&collisionLock,0,0,5*deltaTime,0,0,0);
 	}
 	if(KeyPressed(DIK_L))
 	{
-		debugCubes.at(0)->AddPositionAndRotation(0,0,-5*deltaTime,0,0,0);
+		debugCubes.at(0)->AddPositionAndRotation(&collisionLock,0,0,-5*deltaTime,0,0,0);
 	}
 	if(KeyPressed(DIK_U))
 	{
-		debugCubes.at(0)->AddPositionAndRotation(0,5*deltaTime,0,0,0,0);
+		debugCubes.at(0)->AddPositionAndRotation(&collisionLock,0,5*deltaTime,0,0,0,0);
 	}
 	if(KeyPressed(DIK_O))
 	{
-		debugCubes.at(0)->AddPositionAndRotation(0,-5*deltaTime,0,0,0,0);
+		debugCubes.at(0)->AddPositionAndRotation(&collisionLock,0,-5*deltaTime,0,0,0,0);
 	}
 	if(KeyPressed(DIK_8))
 	{
-		debugCubes.at(0)->AddPositionAndRotation(0,0,0,7*deltaTime,0,0);
+		debugCubes.at(0)->AddPositionAndRotation(&collisionLock,0,0,0,7*deltaTime,0,0);
 		//std::cout << "X Rot: " << debugCubes.at(0)->rotation.x << " Y Rot: " << debugCubes.at(0)->rotation.y << " Z Rot: " << debugCubes.at(0)->rotation.z << std::endl; 
 	}
 	if(KeyPressed(DIK_9))
 	{
-		debugCubes.at(0)->AddPositionAndRotation(0,0,0,-7*deltaTime,0,0);
+		debugCubes.at(0)->AddPositionAndRotation(&collisionLock,0,0,0,-7*deltaTime,0,0);
 		//std::cout << "X Rot: " << debugCubes.at(0)->rotation.x << " Y Rot: " << debugCubes.at(0)->rotation.y << " Z Rot: " << debugCubes.at(0)->rotation.z << std::endl; 
 	} 
 
