@@ -10,6 +10,46 @@ Object2D::Object2D(ResourceManager* resources,LPDIRECT3DDEVICE9 d3d_Device,char*
 	hasAnimation = false;
 	InitVars();
 }
+Object2D::Object2D(ResourceManager* resources, LPDIRECT3DDEVICE9 d3d_Device, char* texturePath, D3DXMATRIXA16* camView, D3DXVECTOR2 LLPos, D3DXVECTOR2 URPos)
+{
+	p_Device = d3d_Device;
+	cameraView = camView;	 
+	quad.texture = NULL;
+	quad.textureName = texturePath;
+	quad.texture = resources->GetTexture(texturePath);
+	hasAnimation = false;
+	
+	if(quad.texture != NULL)
+	{
+		D3DMATERIAL9 mat;
+		mat.Ambient.a = 255;
+		mat.Ambient.r = 128;
+		mat.Ambient.g = 128;
+		mat.Ambient.b = 128;
+		mat.Diffuse.a = 255;
+		mat.Diffuse.r = 128;
+		mat.Diffuse.g = 128;
+		mat.Diffuse.b = 128;
+		quad.meshMaterial = mat;
+	}
+	scaling.x = 1;
+	scaling.y = 1;
+	scaling.z = 1;
+	position.x = 0;
+	position.y = 0;
+	position.z = 0;
+	rotation.x = 0;
+	rotation.y = 0;
+	rotation.z = 0;
+	timeSinceChange = 0;
+	currentXAnimValue = 0;
+	currentYAnimValue = 0;
+
+	quad.vBuffer = NULL;
+	quad.vBuffer = FillCustomVertices(LLPos,URPos);
+	quad.iBuffer = NULL;
+	quad.iBuffer = FillIndices();
+}
 Object2D::Object2D(ResourceManager* resources,LPDIRECT3DDEVICE9 d3d_Device,char* texturePath,D3DXMATRIXA16* camViewMatrix,float tSizeX,float tSizeY,float xRowsAnim,float yRowsAnim)
 {
 	p_Device = d3d_Device;
@@ -319,10 +359,10 @@ LPDIRECT3DVERTEXBUFFER9 Object2D::FillVertices()
 		result = p_dx_VertexBuffer->Lock(0, 4*sizeof(VertexPosNorTex), (void**)&p_Vertices, 0);
 		switch(result)
 		{
-			case D3DERR_INVALIDCALL: 
-				MessageBox(handleWindow,"Error trying to lock","FillVertices()",MB_OK);
-				return NULL;
-				break;
+		case D3DERR_INVALIDCALL: 
+			MessageBox(handleWindow,"Error trying to lock","FillVertices()",MB_OK);
+			return NULL;
+			break;
 		}//we konden de vertexbuffer locken dus ga door
 		memcpy(p_Vertices, triangleVerts, 4*sizeof(VertexPosNorTex));
 		p_dx_VertexBuffer->Unlock();
@@ -331,7 +371,7 @@ LPDIRECT3DVERTEXBUFFER9 Object2D::FillVertices()
 	}
 	else
 	{
-		 VertexPosNorTex triangleVerts[] = 
+		VertexPosNorTex triangleVerts[] = 
 		{
 			{D3DXVECTOR3(-2.5,5,0),D3DXVECTOR3(1,0,0),D3DXVECTOR2(0,0)},
 			{D3DXVECTOR3(2.5,5,0),D3DXVECTOR3(1,0,0),D3DXVECTOR2(0.25,0)},
@@ -361,10 +401,96 @@ LPDIRECT3DVERTEXBUFFER9 Object2D::FillVertices()
 		result = p_dx_VertexBuffer->Lock(0, 4*sizeof(VertexPosNorTex), (void**)&p_Vertices, 0);
 		switch(result)
 		{
-			case D3DERR_INVALIDCALL: 
-				MessageBox(handleWindow,"Error trying to lock","FillVertices()",MB_OK);
-				return NULL;
-				break;
+		case D3DERR_INVALIDCALL: 
+			MessageBox(handleWindow,"Error trying to lock","FillVertices()",MB_OK);
+			return NULL;
+			break;
+		}//we konden de vertexbuffer locken dus ga door
+		memcpy(p_Vertices, triangleVerts, 4*sizeof(VertexPosNorTex));
+		p_dx_VertexBuffer->Unlock();
+
+		return p_dx_VertexBuffer;
+	}
+}
+LPDIRECT3DVERTEXBUFFER9 Object2D::FillCustomVertices(D3DXVECTOR2 LLPos,D3DXVECTOR2 URPos)
+{
+	if(!hasAnimation)
+	{	
+		VertexPosNorTex triangleVerts[] = 
+		{
+			{D3DXVECTOR3(LLPos.x,URPos.y,0),D3DXVECTOR3(1,0,0),D3DXVECTOR2(0,0)},
+			{D3DXVECTOR3(URPos.x,URPos.y,0),D3DXVECTOR3(1,0,0),D3DXVECTOR2(1,0)},
+			{D3DXVECTOR3(LLPos.x,LLPos.y,0),D3DXVECTOR3(1,0,0),D3DXVECTOR2(0,1)},
+			{D3DXVECTOR3(URPos.x,LLPos.y,0),D3DXVECTOR3(1,0,0),D3DXVECTOR2(1,1)},
+		};
+		LPDIRECT3DVERTEXBUFFER9 p_dx_VertexBuffer = NULL; //altijd nieuwe variables op NULL zetten (0x000000) zodat we kunnen zien dat het een nullpointer reference is als we een error krijgen, anders krijgt ie random memory space en kunnen we niet checken op NULL
+
+		HRESULT result = p_Device->CreateVertexBuffer(4*sizeof(VertexPosNorTex), 0, D3DFVF_XYZ |D3DFVF_NORMAL | D3DFVF_TEX1, D3DPOOL_MANAGED, &p_dx_VertexBuffer, NULL);
+		switch(result) //error checking of het gelukt is, zo niet, sluit af, want anders krijgen we dalijk andere soorten errors die niet opgevangen worden. (Access violation of nullpointer references vanwegen random pointers)
+		{
+		case D3DERR_INVALIDCALL: 
+			MessageBox(handleWindow,"Invalid Call while creating VertexBuffer","FillVertices()",MB_OK);
+			return NULL;
+			break;
+		case D3DERR_OUTOFVIDEOMEMORY:
+			MessageBox(handleWindow,"Out of Video Memory while creating VertexBuffer","FillVertices()",MB_OK);
+			return NULL;
+			break;
+		case E_OUTOFMEMORY:
+			MessageBox(handleWindow,"Out of Memory while creating VertexBuffer","FillVertices()",MB_OK);
+			return NULL;
+			break;
+		}
+		void* p_Vertices;
+		result = p_dx_VertexBuffer->Lock(0, 4*sizeof(VertexPosNorTex), (void**)&p_Vertices, 0);
+		switch(result)
+		{
+		case D3DERR_INVALIDCALL: 
+			MessageBox(handleWindow,"Error trying to lock","FillVertices()",MB_OK);
+			return NULL;
+			break;
+		}//we konden de vertexbuffer locken dus ga door
+		memcpy(p_Vertices, triangleVerts, 4*sizeof(VertexPosNorTex));
+		p_dx_VertexBuffer->Unlock();
+
+		return p_dx_VertexBuffer;
+	}
+	else
+	{
+		VertexPosNorTex triangleVerts[] = 
+		{
+			{D3DXVECTOR3(-2.5,5,0),D3DXVECTOR3(1,0,0),D3DXVECTOR2(0,0)},
+			{D3DXVECTOR3(2.5,5,0),D3DXVECTOR3(1,0,0),D3DXVECTOR2(0.25,0)},
+			{D3DXVECTOR3(-2.5,-5,0),D3DXVECTOR3(1,0,0),D3DXVECTOR2(0,1.5)},
+			{D3DXVECTOR3(2.5,-5,0),D3DXVECTOR3(1,0,0),D3DXVECTOR2(0.25,1.5)},
+		};
+		LPDIRECT3DVERTEXBUFFER9 p_dx_VertexBuffer = NULL; //altijd nieuwe variables op NULL zetten (0x000000) zodat we kunnen zien dat het een nullpointer reference is als we een error krijgen, anders krijgt ie random memory space en kunnen we niet checken op NULL
+
+		HRESULT result = p_Device->CreateVertexBuffer(4*sizeof(VertexPosNorTex), 0, D3DFVF_XYZ|D3DFVF_NORMAL | D3DFVF_TEX1, D3DPOOL_MANAGED, &p_dx_VertexBuffer, NULL);
+
+		switch(result) //error checking of het gelukt is, zo niet, sluit af, want anders krijgen we dalijk andere soorten errors die niet opgevangen worden. (Access violation of nullpointer references vanwegen random pointers)
+		{
+		case D3DERR_INVALIDCALL: 
+			MessageBox(handleWindow,"Invalid Call while creating VertexBuffer","FillVertices()",MB_OK);
+			return NULL;
+			break;
+		case D3DERR_OUTOFVIDEOMEMORY:
+			MessageBox(handleWindow,"Out of Video Memory while creating VertexBuffer","FillVertices()",MB_OK);
+			return NULL;
+			break;
+		case E_OUTOFMEMORY:
+			MessageBox(handleWindow,"Out of Memory while creating VertexBuffer","FillVertices()",MB_OK);
+			return NULL;
+			break;
+		}
+		void* p_Vertices;
+		result = p_dx_VertexBuffer->Lock(0, 4*sizeof(VertexPosNorTex), (void**)&p_Vertices, 0);
+		switch(result)
+		{
+		case D3DERR_INVALIDCALL: 
+			MessageBox(handleWindow,"Error trying to lock","FillVertices()",MB_OK);
+			return NULL;
+			break;
 		}//we konden de vertexbuffer locken dus ga door
 		memcpy(p_Vertices, triangleVerts, 4*sizeof(VertexPosNorTex));
 		p_dx_VertexBuffer->Unlock();

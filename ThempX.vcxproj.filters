@@ -54,6 +54,9 @@
     <ClCompile Include="Source_Code\CPP\ThempX.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source_Code\CPP\Particle.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source_Code\Headers\CollisionGeo.h">
@@ -81,6 +84,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Source_Code\Headers\ThempX.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source_Code\Headers\Particle.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

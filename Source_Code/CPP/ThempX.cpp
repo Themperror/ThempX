@@ -22,8 +22,10 @@ ThempX::ThempX(HWND handle,HINSTANCE hInstance)
 	//Init variables
 	Initialize();
 
+	particles.push_back(new Particle(resources,p_Device,"Resources/Particles/Lightning.png",&camera.m_View,D3DXVECTOR3(0,10,10),200,500,1,3));
+	particles.at(0)->SetMovement(D3DXVECTOR3(0,0,0),D3DXVECTOR3(0,3,0));
 
-	for(unsigned int x = 0; x < 15; x++)
+	/*for(unsigned int x = 0; x < 15; x++)
 	{
 		for(unsigned int y = 0; y < 15; y++)
 		{
@@ -33,10 +35,7 @@ ThempX::ThempX(HWND handle,HINSTANCE hInstance)
 			cube->AddPositionAndRotation(&collisionLock,2.5f*x,12,2.5f*y,0,0,0);
 		}
 	}
-	  
-
-
-	boost::thread* t = new boost::thread(&ThempX::CollisionThread,this);
+	boost::thread* t = new boost::thread(&ThempX::CollisionThread,this);  */
 	//following switch is for testing collisions
 	
 	 /*
@@ -96,7 +95,7 @@ ThempX::ThempX(HWND handle,HINSTANCE hInstance)
     }
 
 
-	t->join();
+	//t->join();
 	//release everything
 	resources->ReleaseResources();
 	for(unsigned int i=0;i<modelObjs.size();i++)
@@ -185,6 +184,10 @@ void ThempX::Update()
 		for(unsigned int i =0 ;i<spriteObjs.size(); i++)
 		{
 			spriteObjs.at(i)->Animate(deltaTime);
+		}
+		for(unsigned int i = 0; i < particles.size(); i++)
+		{
+			particles.at(i)->Update(deltaTime);
 		}
 	}
 	
@@ -521,7 +524,10 @@ void ThempX::DrawScene()
 	{
 		spriteObjs.at(i)->Draw();
 	}
-
+	for(unsigned int i = 0; i < particles.size(); i++)
+	{
+		particles.at(i)->Draw();
+	}
 	
 	////////////////////////
 

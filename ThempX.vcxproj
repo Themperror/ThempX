@@ -17,6 +17,7 @@
     <ClCompile Include="Source_Code\CPP\Main.cpp" />
     <ClCompile Include="Source_Code\CPP\Object2D.cpp" />
     <ClCompile Include="Source_Code\CPP\Object3D.cpp" />
+    <ClCompile Include="Source_Code\CPP\Particle.cpp" />
     <ClCompile Include="Source_Code\CPP\ResourceManager.cpp" />
     <ClCompile Include="Source_Code\CPP\SoundHandler.cpp" />
     <ClCompile Include="Source_Code\CPP\ThempX.cpp" />
@@ -28,6 +29,7 @@
     <ClInclude Include="Source_Code\Headers\Main.h" />
     <ClInclude Include="Source_Code\Headers\Object2D.h" />
     <ClInclude Include="Source_Code\Headers\Object3D.h" />
+    <ClInclude Include="Source_Code\Headers\Particle.h" />
     <ClInclude Include="Source_Code\Headers\ResourceManager.h" />
     <ClInclude Include="Source_Code\Headers\SoundHandler.h" />
     <ClInclude Include="Source_Code\Headers\ThempX.h" />

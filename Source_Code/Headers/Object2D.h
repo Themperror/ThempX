@@ -40,6 +40,7 @@ class Object2D
 	
 public:	   
 	Object2D(ResourceManager* resources, LPDIRECT3DDEVICE9 d3d_Device, char* texturePath, D3DXMATRIXA16* camView);
+	Object2D(ResourceManager* resources, LPDIRECT3DDEVICE9 d3d_Device, char* texturePath, D3DXMATRIXA16* camView, D3DXVECTOR2 LLPos, D3DXVECTOR2 URPos);
 	Object2D(ResourceManager* resources,LPDIRECT3DDEVICE9 d3d_Device,char* texturePath,D3DXMATRIXA16* camViewMatrix,float tSizeX,float tSizeY,float xRowsAnim,float yRowsAnim);
 	D3DXVECTOR3 rotation;
 	D3DXVECTOR3 position;
@@ -68,6 +69,7 @@ private:
 	float xRows, yRows, currentXAnimValue,currentYAnimValue,sizeX,sizeY,endXAnimValue,endYAnimValue;
 	float timeSinceChange;
 	LPDIRECT3DVERTEXBUFFER9 FillVertices();
+	LPDIRECT3DVERTEXBUFFER9 FillCustomVertices(D3DXVECTOR2 LLPos,D3DXVECTOR2 URPos);
 	LPDIRECT3DINDEXBUFFER9 FillIndices();
 
 	LPDIRECT3DDEVICE9 p_Device;

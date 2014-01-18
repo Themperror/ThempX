@@ -18,6 +18,7 @@
 #include "CollisionGeo.h"
 #include "InputHandler.h"
 #include "SoundHandler.h"
+#include "Particle.h"
 
 #include <iostream>
 #include <stdlib.h>
@@ -96,6 +97,7 @@ private:
 	std::vector<Object2D*> spriteObjs;
 	std::vector<DebugCube*> debugCubes;
 	std::vector<D3DLIGHT9*> lights;
+	std::vector<Particle*> particles;
 
 	DWORD oldTicks;
 	DWORD newTicks;
