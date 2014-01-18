@@ -15,6 +15,12 @@ public:
 	
 	D3DXVECTOR3 position;
 
+	D3DXVECTOR3 ellipsoid;
+	inline void SetEllipsoid(D3DXVECTOR3 ellipse)
+	{
+		ellipsoid = ellipse;
+	}
+
 	float maxLifeTime;
 	float minLifeTime;
 	inline void SetLifeTime(float min,float max)
@@ -53,6 +59,7 @@ private:
 	struct Part
 	{
 		float currentLife;
+		float maxLife;
 		Object2D* obj;
 	};
 

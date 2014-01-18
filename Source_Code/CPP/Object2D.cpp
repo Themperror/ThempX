@@ -44,6 +44,7 @@ Object2D::Object2D(ResourceManager* resources, LPDIRECT3DDEVICE9 d3d_Device, cha
 	timeSinceChange = 0;
 	currentXAnimValue = 0;
 	currentYAnimValue = 0;
+	ZeroMemory(worldMatrix,sizeof(worldMatrix));
 
 	quad.vBuffer = NULL;
 	quad.vBuffer = FillCustomVertices(LLPos,URPos);
@@ -159,7 +160,6 @@ void Object2D::InitVars()
 void Object2D::Draw()
 {
 	//dit hier zorgt voor rotatie,positie en alles
-	D3DXMatrixIdentity(&worldMatrix);
 	D3DXMATRIX m_ViewScale;
 	D3DXMATRIX m_ViewWorld;
 
@@ -303,9 +303,7 @@ void Object2D::ReleaseResources()
 	{
 		quad.iBuffer->Release();
 	}
-	//delete scaling;
-	//delete rotation;
-	//delete position;
+
 	for(unsigned int i = 0 ; i < animations.size();i++)
 	{
 		animations.at(i).AnimationName.empty();
