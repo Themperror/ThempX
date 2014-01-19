@@ -1,7 +1,9 @@
 #include "../Headers/ThempX.h"
 
+//Entry point of the engine (This class is created in main.cpp where the program entrypoint is).
 ThempX::ThempX(HWND handle,HINSTANCE hInstance)
 {
+	oldTicks = GetTickCount();
 	handleWindow = handle;
 	isDone = false;
 	
@@ -63,8 +65,9 @@ ThempX::ThempX(HWND handle,HINSTANCE hInstance)
 	case CollisionGeo::NotAStaticOrOBBCube:		std::cout << "NotAStaticOrOBBCube" << std::endl; break;
 	}	   */
 
-
 	// Game loop starts here after everything is initialized
+	g = new Game();
+
 	MSG msg;
     while(!isDone)
     {
@@ -89,9 +92,17 @@ ThempX::ThempX(HWND handle,HINSTANCE hInstance)
 			DestroyWindow(handleWindow);
 		}		
 		
-		Update();
-		DrawScene();
-		Sleep(0);
+		
+
+		currentTicks = GetTickCount();
+		FixedUpdate();
+		if(currentTicks > oldTicks+16)
+		{
+			Update();
+			DrawScene();
+			oldTicks = currentTicks;
+		}
+		//Sleep(0);
     }
 
 
@@ -115,6 +126,8 @@ ThempX::ThempX(HWND handle,HINSTANCE hInstance)
 	}
 	p_Device->Release();
 }
+
+//This function is for the extra thread that is (going) to handle all collisions. 
 void ThempX::CollisionThread(void)
 {
 	while(!isDone)
@@ -160,27 +173,17 @@ void ThempX::CollisionThread(void)
 		Sleep(0);
 	}
 }
+
+//Update, this will run every frame (61 fps max)
 void ThempX::Update()
 {
-	oldPos = camera.position;
-	newPos = camera.position;
-	oldTicks = newTicks;
-	newTicks = GetTickCount();
-	DWORD tempDeltaTime = newTicks - oldTicks;
+	oldDelta = newDelta;
+	newDelta = GetTickCount();
+	DWORD tempDeltaTime = newDelta - oldDelta;
 	if(tempDeltaTime < 100)
 	{
 		deltaTime = tempDeltaTime*0.001f;
-		DoInput();
-
-		
-		
-
-		bool didCollide = false;
-		if(!didCollide)
-		{
-			camera.position = newPos;
-		}
-		DoCameraStuff();
+		g->Update(deltaTime);
 		for(unsigned int i =0 ;i<spriteObjs.size(); i++)
 		{
 			spriteObjs.at(i)->Animate(deltaTime);
@@ -190,8 +193,22 @@ void ThempX::Update()
 			particles.at(i)->Update(deltaTime);
 		}
 	}
-	
 }
+//FixedUpdate, this will run every iteration of the main game loop
+void ThempX::FixedUpdate()
+{
+	oldFixedDelta = newFixedDelta;
+    newFixedDelta = GetTickCount();
+    DWORD tempDeltaTime = newFixedDelta - oldFixedDelta;
+	if(tempDeltaTime < 100)
+	{
+		fixedDeltaTime = tempDeltaTime*0.001f;
+		g->FixedUpdate(fixedDeltaTime);
+		DoInput(fixedDeltaTime);
+		DoCameraStuff();
+	}
+}
+//Small vector math functions
 D3DXVECTOR3 ThempX::AddVector3(D3DXVECTOR3* a, D3DXVECTOR3* b)
 {
 	return D3DXVECTOR3(a->x+b->x,a->y+b->y,a->z+b->z);
@@ -200,6 +217,8 @@ D3DXVECTOR3 ThempX::SubstractVector3(D3DXVECTOR3* a, D3DXVECTOR3* b)
 {
 	return D3DXVECTOR3(a->x-b->x,a->y-b->y,a->z-b->z);
 }
+
+//Unused, was used for testing early collisions with camera
 bool ThempX::CheckCamBoxCollision(D3DXVECTOR3 pos, Object3D* obj)
 {
 	//This function will be replaced by the IsInX Functions from CollisionGeo
@@ -213,6 +232,8 @@ bool ThempX::CheckCamBoxCollision(D3DXVECTOR3 pos, Object3D* obj)
 	}  */
 	return false;
 }
+
+//Left Mouse click function (to test things with), will be removed for engine use, as this is a gameplay feature (will be in Game.cpp)
 void ThempX::LeftMouseClick()
 {
 	
@@ -289,7 +310,9 @@ void ThempX::LeftMouseClick()
 		}
 	}
 }
-void ThempX::DoInput()
+
+//Input Handling (for testing, this needs to be in game.cpp when a game is created)
+void ThempX::DoInput(float dT)
 {
 	if(inputHandler->MouseButtonDown(0))
 	{
@@ -326,68 +349,68 @@ void ThempX::DoInput()
 	}
 	if(KeyPressed(DIK_Q))
 	{
-		newPos.y += deltaTime*speed;
+		camera.position.y += dT*speed;
 	}
 	if(KeyPressed(DIK_E))
 	{
-		newPos.y -= deltaTime*speed;
+		camera.position.y -= dT*speed;
 	}
 	if(KeyPressed(DIK_W))
 	{
-		newPos.x += camera.lookDir.x *deltaTime*speed;
-		newPos.z += camera.lookDir.z *deltaTime*speed;
+		camera.position.x += camera.lookDir.x *dT*speed;
+		camera.position.z += camera.lookDir.z *dT*speed;
 	}
 	if(KeyPressed(DIK_S))
 	{
-		newPos.x -= camera.lookDir.x *deltaTime*speed;
-		newPos.z -= camera.lookDir.z *deltaTime*speed;
+		camera.position.x -= camera.lookDir.x *dT*speed;
+		camera.position.z -= camera.lookDir.z *dT*speed;
 	}
 	if(KeyPressed(DIK_D))
 	{
 		D3DXVECTOR3 temp = ReturnDirection(angleX-90,angleY);
-		newPos.x += temp.x *deltaTime*speed;
-		newPos.z += temp.z *deltaTime*speed;
+		camera.position.x += temp.x *dT*speed;
+		camera.position.z += temp.z *dT*speed;
 	}
 	if(KeyPressed(DIK_A))
 	{
 		D3DXVECTOR3 temp = ReturnDirection(angleX+90,angleY);
-		newPos.x += temp.x *deltaTime*speed;
-		newPos.z += temp.z *deltaTime*speed;
+		camera.position.x += temp.x *dT*speed;
+		camera.position.z += temp.z *dT*speed;
 	}
 
 	// for checking the world positions,  handy visual support for when going to place objects in the world
 	if(KeyPressed(DIK_I))
 	{
-		debugCubes.at(0)->AddPositionAndRotation(&collisionLock,5*deltaTime,0,0,0,0,0);
+		debugCubes.at(0)->AddPositionAndRotation(&collisionLock,5*dT,0,0,0,0,0);
 	}
 	if(KeyPressed(DIK_K))
 	{
-		debugCubes.at(0)->AddPositionAndRotation(&collisionLock,-5*deltaTime,0,0,0,0,0);
+		debugCubes.at(0)->AddPositionAndRotation(&collisionLock,-5*dT,0,0,0,0,0);
 	}
 	if(KeyPressed(DIK_J))
 	{
-		debugCubes.at(0)->AddPositionAndRotation(&collisionLock,0,0,5*deltaTime,0,0,0);
+		debugCubes.at(0)->AddPositionAndRotation(&collisionLock,0,0,5*dT,0,0,0);
 	}
 	if(KeyPressed(DIK_L))
 	{
-		debugCubes.at(0)->AddPositionAndRotation(&collisionLock,0,0,-5*deltaTime,0,0,0);
+		debugCubes.at(0)->AddPositionAndRotation(&collisionLock,0,0,-5*dT,0,0,0);
 	}
 	if(KeyPressed(DIK_U))
 	{
-		debugCubes.at(0)->AddPositionAndRotation(&collisionLock,0,5*deltaTime,0,0,0,0);
+		debugCubes.at(0)->AddPositionAndRotation(&collisionLock,0,5*dT,0,0,0,0);
 	}
 	if(KeyPressed(DIK_O))
 	{
-		debugCubes.at(0)->AddPositionAndRotation(&collisionLock,0,-5*deltaTime,0,0,0,0);
+		debugCubes.at(0)->AddPositionAndRotation(&collisionLock,0,-5*dT,0,0,0,0);
 	}
 	if(KeyPressed(DIK_8))
 	{
-		debugCubes.at(0)->AddPositionAndRotation(&collisionLock,0,0,0,7*deltaTime,0,0);
+		debugCubes.at(0)->AddPositionAndRotation(&collisionLock,0,0,0,7*dT,0,0);
 		//std::cout << "X Rot: " << debugCubes.at(0)->rotation.x << " Y Rot: " << debugCubes.at(0)->rotation.y << " Z Rot: " << debugCubes.at(0)->rotation.z << std::endl; 
 	}
 	if(KeyPressed(DIK_9))
 	{
-		debugCubes.at(0)->AddPositionAndRotation(&collisionLock,0,0,0,-7*deltaTime,0,0);
+		debugCubes.at(0)->AddPositionAndRotation(&collisionLock,0,0,0,-7*dT,0,0);
 		//std::cout << "X Rot: " << debugCubes.at(0)->rotation.x << " Y Rot: " << debugCubes.at(0)->rotation.y << " Z Rot: " << debugCubes.at(0)->rotation.z << std::endl; 
 	} 
 
@@ -427,6 +450,7 @@ void ThempX::DoInput()
 	}
 }
 
+//Camera rotation handling, also needs to be in game.cpp)
 void ThempX::DoCameraStuff()
 {
 	angleX-=inputHandler->GetMousePosX()*deltaTime*sensitivity;
@@ -435,28 +459,31 @@ void ThempX::DoCameraStuff()
 
 	SetCameraLookX(angleX,angleY);
 }
+//returns the camera's looking direction
 D3DXVECTOR3 ThempX::ReturnDirection(float anglesX,float anglesY)
 {
 	D3DXVECTOR3 final;
-	D3DXVECTOR3 camPos = oldPos;
-	final.x = 0;
-	final.y = 0;
-	final.z = 0;
+	D3DXVECTOR3 camPos = camera.position;
+    final.x = 0;
+    final.y = 0;
+    final.z = 0;
 
-	float x = 1 * std::cos(anglesX * 3.141592f / 180);
-	float z = 1 * std::sin(anglesX * 3.141592f / 180); 
-	float y = 1 * std::tan(anglesY * 3.141592f / 200);
+    float x = 1 * std::cos(anglesX * 3.141592f / 180);
+    float z = 1 * std::sin(anglesX * 3.141592f / 180); 
+    float y = 1 * std::tan(anglesY * 3.141592f / 200);
 
-	float fX = camPos.x+x;
-	float fY = camPos.y+y;
-	float fZ = camPos.z+z;
+    float fX = camPos.x+x;
+    float fY = camPos.y+y;
+    float fZ = camPos.z+z;
 
-	final.x = fX - camPos.x;
-	final.y = fY - camPos.y;
-	final.z = fZ - camPos.z;																			  
+    final.x = fX - camPos.x;
+    final.y = fY - camPos.y;
+    final.z = fZ - camPos.z;                                                                                                                                                          
 
-	return final;
+    return final;
 }
+
+//used in DoCameraStuff
 void ThempX::SetCameraLookX(float anglesX,float anglesY)
 {
 	float x = 1 * std::cos(anglesX * 3.141592f / 180);
@@ -470,6 +497,8 @@ void ThempX::SetCameraLookX(float anglesX,float anglesY)
 	camera.lookDir.y = camera.lookAt.y - camera.position.y;
 	camera.lookDir.z = camera.lookAt.z - camera.position.z;
 }
+
+//sets all variables
 void ThempX::Initialize()
 {
 	camera.lookDir.x = 0;
@@ -479,8 +508,6 @@ void ThempX::Initialize()
 	soundHandler->LoadWaveFile("test.wav","test",11025,8,1);
 	angleX = 0;
 	angleY = 0;
-	oldTicks = 0;
-	newTicks = 0;
 	camera.position.x = 10;
 	camera.position.y = 10;
 	camera.position.z = 0;
@@ -490,6 +517,8 @@ void ThempX::Initialize()
 	camera.lookAt.z = 0;
 	keys.resize(256,0);
 }
+
+//draws the scene
 void ThempX::DrawScene()
 {
 	////////////////////////
@@ -499,6 +528,8 @@ void ThempX::DrawScene()
 
     p_Device->BeginScene();
 
+	g->Render();
+	
 	SetUpCamera();
 
     ////////////////////////
@@ -537,6 +568,8 @@ void ThempX::DrawScene()
     p_Device->Present(NULL, NULL, NULL, NULL);
 	////////////////////////
 }
+
+//sets the camera for use
 void ThempX::SetUpCamera()
 {
 	D3DXVECTOR3 m_UpVector(0, 1, 0);
@@ -546,6 +579,7 @@ void ThempX::SetUpCamera()
 	p_Device->SetTransform(D3DTS_PROJECTION, &camera.m_Projection);
 }
 
+//claims the graphics device
 LPDIRECT3DDEVICE9 ThempX::InitializeDevice(HWND han_WindowToBindTo) 
 {
 	//////////////////////////////////////////
@@ -645,6 +679,7 @@ LPDIRECT3DDEVICE9 ThempX::InitializeDevice(HWND han_WindowToBindTo)
 	//////////////////////////////////////////
 }
 
+//easy-for-use function for testing keys to be pressed
 int ThempX::KeyPressed(int key)
 {
 	if(inputHandler->KeyPressed(key))
@@ -663,6 +698,8 @@ int ThempX::KeyPressed(int key)
 	}
 	return 0;
 }
+
+//speaks for itself
 void ThempX::DestroyLevel()
 {
 	for(unsigned int i=0;i<modelObjs.size();i++)
@@ -684,6 +721,8 @@ void ThempX::DestroyLevel()
 	}
 	lights.clear();
 }
+
+//speaks for itself
 void ThempX::LoadLevel()
 {
 	ifstream fin("Resources/level.txt");
@@ -754,6 +793,8 @@ void ThempX::LoadLevel()
 		
 	}
 }
+
+//unused light function
 D3DLIGHT9* ThempX::CreateLight(D3DXVECTOR3 position,D3DXVECTOR3 direction, D3DLIGHTTYPE lightType,D3DXCOLOR lightColor,float range,float falloff)
 {
 	D3DLIGHT9* light = new D3DLIGHT9();

@@ -39,7 +39,7 @@ void Particle::Update(float deltaTime)
 
 void Particle::Draw()
 {
-	RenderParticle();
+	RenderParticle(); //Render memory can be reduced by making 1 MATRIX for each necessary and pointing em to each particle for re-use
 }
 
 

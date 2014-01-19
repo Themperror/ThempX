@@ -11,6 +11,7 @@
 #include <d3dx9.h>
 #include <d3d9.h>
 #include <D3DCommon.h>
+
 #include "ResourceManager.h"
 #include "Object3D.h"
 #include "Object2D.h"
@@ -19,6 +20,7 @@
 #include "InputHandler.h"
 #include "SoundHandler.h"
 #include "Particle.h"
+#include "Game.h"
 
 #include <iostream>
 #include <stdlib.h>
@@ -74,20 +76,27 @@ private:
 	bool CheckCamBoxCollision(D3DXVECTOR3 pos,Object3D* obj);
 
 	void DoCameraStuff();
-	void DoInput();
+	void DoInput(float deltaTime);
 	void LeftMouseClick();
 	void SetUpCamera();
 	void Initialize();
-	void Update();
+	void Update(); // runs every frame (61fps max)
+	void FixedUpdate(); //runs every iterations of the main loop
 	void LoadLevel();
 	void DestroyLevel();
 
+	Game* g;
 
 	//CollisionThread
 	void CollisionThread();
 	boost::mutex collisionLock;
 
-
+	DWORD currentTicks;
+	DWORD oldTicks;
+	DWORD oldDelta;
+	DWORD newDelta;
+	DWORD oldFixedDelta;
+	DWORD newFixedDelta;
 
 	D3DXVECTOR3 AddVector3(D3DXVECTOR3* a, D3DXVECTOR3* b);
 	D3DXVECTOR3 SubstractVector3(D3DXVECTOR3* a, D3DXVECTOR3* b);
@@ -99,9 +108,8 @@ private:
 	std::vector<D3DLIGHT9*> lights;
 	std::vector<Particle*> particles;
 
-	DWORD oldTicks;
-	DWORD newTicks;
 	float deltaTime;
+	float fixedDeltaTime;
 
 	bool snapCursor;
 
