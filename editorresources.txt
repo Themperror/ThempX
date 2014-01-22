@@ -1,0 +1,6 @@
+path 	hasAnimation 	sizeX 	sizeY 	xRows 	yRows
+Resources/Models/CityPart1.x 	false 	0 	0 	0 	0
+Resources/Models/Car.x 	false 	0 	0 	0 	0
+Resources/Sprites/enemy.png 	false 	0 	0 	0 	0
+Resources/Sprites/toiletmonster.png 	false 	0 	0	0	0
+Resources/AnimationPNG/DukeAnimAlien.png 	true 	4 	1 	8 	8

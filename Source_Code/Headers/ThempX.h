@@ -50,6 +50,8 @@ public:
 		char* path;
 	};
 
+	bool EditorMode;
+	bool pressedEditorKey;
 
 	LPDIRECT3DDEVICE9 p_Device;
 	bool isDone;
@@ -84,6 +86,16 @@ private:
 	void FixedUpdate(); //runs every iterations of the main loop
 	void LoadLevel();
 	void DestroyLevel();
+
+	//editor mode
+	void CreateLevelFile();
+	void SetUpEditorMode();
+	struct EditorObj
+	{
+		Object2D* obj2D;
+		Object3D* obj3D;
+	};
+	std::vector<EditorObj> editorObjs;
 
 	Game* g;
 

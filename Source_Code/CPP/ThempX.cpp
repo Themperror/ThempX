@@ -378,63 +378,22 @@ void ThempX::DoInput(float dT)
 		camera.position.z += temp.z *dT*speed;
 	}
 
-	// for checking the world positions,  handy visual support for when going to place objects in the world
-	if(KeyPressed(DIK_I))
+	if(KeyPressed(DIK_0))
 	{
-		debugCubes.at(0)->AddPositionAndRotation(&collisionLock,5*dT,0,0,0,0,0);
-	}
-	if(KeyPressed(DIK_K))
-	{
-		debugCubes.at(0)->AddPositionAndRotation(&collisionLock,-5*dT,0,0,0,0,0);
-	}
-	if(KeyPressed(DIK_J))
-	{
-		debugCubes.at(0)->AddPositionAndRotation(&collisionLock,0,0,5*dT,0,0,0);
-	}
-	if(KeyPressed(DIK_L))
-	{
-		debugCubes.at(0)->AddPositionAndRotation(&collisionLock,0,0,-5*dT,0,0,0);
-	}
-	if(KeyPressed(DIK_U))
-	{
-		debugCubes.at(0)->AddPositionAndRotation(&collisionLock,0,5*dT,0,0,0,0);
-	}
-	if(KeyPressed(DIK_O))
-	{
-		debugCubes.at(0)->AddPositionAndRotation(&collisionLock,0,-5*dT,0,0,0,0);
-	}
-	if(KeyPressed(DIK_8))
-	{
-		debugCubes.at(0)->AddPositionAndRotation(&collisionLock,0,0,0,7*dT,0,0);
-		//std::cout << "X Rot: " << debugCubes.at(0)->rotation.x << " Y Rot: " << debugCubes.at(0)->rotation.y << " Z Rot: " << debugCubes.at(0)->rotation.z << std::endl; 
-	}
-	if(KeyPressed(DIK_9))
-	{
-		debugCubes.at(0)->AddPositionAndRotation(&collisionLock,0,0,0,-7*dT,0,0);
-		//std::cout << "X Rot: " << debugCubes.at(0)->rotation.x << " Y Rot: " << debugCubes.at(0)->rotation.y << " Z Rot: " << debugCubes.at(0)->rotation.z << std::endl; 
-	} 
-
-
-	//animation testing
-	if(KeyPressed(DIK_1))
-	{
-		for(unsigned int i = 0; i < spriteObjs.size();i++)
+		if(pressedEditorKey == false)
 		{
-			if(spriteObjs.at(i)->hasAnimation)
+			EditorMode = !EditorMode;
+			if(EditorMode == true)
 			{
-				spriteObjs.at(i)->PlayAnimation("Idle");
+				SetUpEditorMode();
 			}
+			std::cout <<"Editor Mode has been set to: "<< EditorMode << std::endl;
 		}
+		pressedEditorKey = true;
 	}
-	if(KeyPressed(DIK_2))
+	else
 	{
-		for(unsigned int i = 0; i < spriteObjs.size();i++)
-		{
-			if(spriteObjs.at(i)->hasAnimation)
-			{
-				spriteObjs.at(i)->PlayAnimation("Walk");
-			}
-		}
+		pressedEditorKey = false;
 	}
 
 	if(KeyPressed(DIK_SPACE))
@@ -722,6 +681,101 @@ void ThempX::DestroyLevel()
 	lights.clear();
 }
 
+
+void ThempX::SetUpEditorMode()
+{
+	ifstream fin("editorresources.txt");
+	if (!fin.good())
+	{
+		MessageBox(handleWindow,"Could Not Find editorresources.txt, Editor won't work", "ThempX()",MB_OK);
+		cout << "Cannot find editorresources.txt" << endl;
+	}
+	else
+	{
+
+		int animatedSpriteNr = 0;
+		int staticSpriteNr = 0;
+		int modelNr = 0;
+
+		fin.clear();
+
+		string str;
+		while(getline(fin, str))
+		{
+			EditorObj obj;
+			string name;
+			float sizeX,sizeY,xRows,yRows;
+			bool hasAnim = false;
+			string check = "x";
+			fin >> name >> hasAnim >> sizeX >> sizeY >> xRows >> yRows;
+			if(name.at(name.size()-1) == check[0])
+			{
+				modelNr++;
+				Object3D* modelObj = new Object3D(resources,_strdup(name.c_str()),p_Device);
+				std::ostringstream oss;
+				oss<<"Model"<<modelNr;
+				modelObj->objName = oss.str();
+				obj.obj3D = modelObj;
+				obj.obj2D = NULL;
+				editorObjs.push_back(obj);
+			}
+			else
+			{
+				std::cout << "did get here" << std::endl;
+				if(hasAnim == false)
+				{
+					staticSpriteNr++;
+					Object2D* spriteObj = new Object2D(resources,p_Device,_strdup(name.c_str()),&camera.m_View);
+					std::ostringstream oss;
+					oss<<"StaticSprite"<<staticSpriteNr;
+					spriteObj->objName = oss.str();
+					spriteObj->handleWindow = handleWindow;
+					obj.obj2D = spriteObj;
+					obj.obj3D = NULL;
+					editorObjs.push_back(obj);
+
+				}
+				else
+				{
+					animatedSpriteNr++;
+					Object2D* spriteObj = new Object2D(resources,p_Device,_strdup(name.c_str()),&camera.m_View,sizeX,sizeY,xRows,yRows);
+					spriteObj->handleWindow = handleWindow;
+					std::ostringstream oss;
+					oss<<"AnimatedSprite"<<animatedSpriteNr;
+					spriteObj->objName = oss.str();
+					obj.obj2D = spriteObj;
+					obj.obj3D = NULL;
+					editorObjs.push_back(obj);
+				}
+			}
+		}
+		fin.close();
+	}
+}
+void ThempX::CreateLevelFile()
+{
+	ofstream level("level.txt");
+	if (level.is_open())
+	{
+		level << "name" << "\t"<< "objName" << "\t"<< "posx" << "\t"<< "posy" << "\t"<< "posz" << "\t"<< "scalex" << "\t"<< "scaley" << "\t"<< "scalez" << "\t"<< "rotx" << "\t"<< "roty" << "\t"<< "rotz" << "\t"<< "sizeX" << "\t"<< "sizeY" << "\t"<< "XAnimRows" << "\t"<< "YAnimRows" << "\n";
+		for(unsigned int i = 0; i < modelObjs.size();i++)
+		{
+			Object3D* obj = modelObjs.at(i);
+			level << obj->model.meshPath << "\t" << obj->objName << "\t" << obj->position.x << "\t" << obj->position.y << "\t" << obj->position.z << "\t" << obj->scaling.x << "\t" << obj->scaling.y << "\t" << obj->scaling.z << "\t" << obj->rotation.x << "\t" << obj->rotation.y << "\t" << obj->rotation.z << "\t" << 0 << "\t" << 0 << "\t" << 0 << "\t" <<0 << "\n";
+		}
+		for(unsigned int i = 0; i < spriteObjs.size();i++)
+		{
+			Object2D* obj = spriteObjs.at(i);
+			level << obj->quad.textureName << "\t" << obj->objName << "\t" << obj->position.x << "\t" << obj->position.y << "\t" << obj->position.z << "\t" << obj->scaling.x << "\t" << obj->scaling.y << "\t" << obj->scaling.z << "\t" << obj->rotation.x << "\t" << obj->rotation.y << "\t" << obj->rotation.z << "\t" << obj->GetXSize() << "\t" << obj->GetYSize() << "\t" << obj->GetXRows() << "\t" << obj->GetYRows() << "\n";
+		}
+		
+		level.close();
+	}
+	else
+	{
+		std::cout << "Unable to create/open file" << std::endl;
+	}
+}
 //speaks for itself
 void ThempX::LoadLevel()
 {
@@ -790,7 +844,7 @@ void ThempX::LoadLevel()
 			}
 		}
 		fin.close();
-		
+		CreateLevelFile();
 	}
 }
 

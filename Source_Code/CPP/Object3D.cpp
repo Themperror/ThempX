@@ -21,6 +21,7 @@ Object3D::Object3D(ResourceManager* resources,char* path, LPDIRECT3DDEVICE9 d3d_
 	model.d3dxMaterials = NULL;
 	model.materialBuffer = NULL;
     model.numMaterials = 0;
+	model.meshPath = path;
 	switch(LoadModel(path))
 	{
 		case true: std::cout << "Model Loaded Succesfully" << std::endl; break;

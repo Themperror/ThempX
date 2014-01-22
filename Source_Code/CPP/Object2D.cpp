@@ -8,6 +8,10 @@ Object2D::Object2D(ResourceManager* resources,LPDIRECT3DDEVICE9 d3d_Device,char*
 	quad.textureName = texturePath;
 	quad.texture = resources->GetTexture(texturePath);
 	hasAnimation = false;
+	sizeX = 0;
+	sizeY = 0;
+	yRows = 0;
+	xRows = 0;
 	InitVars();
 }
 Object2D::Object2D(ResourceManager* resources, LPDIRECT3DDEVICE9 d3d_Device, char* texturePath, D3DXMATRIXA16* camView, D3DXVECTOR2 LLPos, D3DXVECTOR2 URPos)
@@ -45,6 +49,10 @@ Object2D::Object2D(ResourceManager* resources, LPDIRECT3DDEVICE9 d3d_Device, cha
 	currentXAnimValue = 0;
 	currentYAnimValue = 0;
 	ZeroMemory(worldMatrix,sizeof(worldMatrix));
+	sizeX = 0;
+	sizeY = 0;
+	yRows = 0;
+	xRows = 0;
 
 	quad.vBuffer = NULL;
 	quad.vBuffer = FillCustomVertices(LLPos,URPos);

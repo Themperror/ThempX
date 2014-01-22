@@ -4,11 +4,11 @@ Game::Game()
 {
 
 }
-void Game::Update()
+void Game::Update(float deltaTime)
 {
 
 }
-void Game::FixedUpdate()
+void Game::FixedUpdate(float deltaTime)
 {
 
 }

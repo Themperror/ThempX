@@ -6,8 +6,8 @@ class Game
 {
 public:
 	Game();
-	void Update();
-	void FixedUpdate();
+	void Update(float deltaTime);
+	void FixedUpdate(float deltaTime);
 	void Render();
 private:
 

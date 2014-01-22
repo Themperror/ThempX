@@ -13,6 +13,7 @@
   <ItemGroup>
     <ClCompile Include="Source_Code\CPP\CollisionGeo.cpp" />
     <ClCompile Include="Source_Code\CPP\DebugCube.cpp" />
+    <ClCompile Include="Source_Code\CPP\Game.cpp" />
     <ClCompile Include="Source_Code\CPP\InputHandler.cpp" />
     <ClCompile Include="Source_Code\CPP\Main.cpp" />
     <ClCompile Include="Source_Code\CPP\Object2D.cpp" />
@@ -25,6 +26,7 @@
   <ItemGroup>
     <ClInclude Include="Source_Code\Headers\CollisionGeo.h" />
     <ClInclude Include="Source_Code\Headers\DebugCube.h" />
+    <ClInclude Include="Source_Code\Headers\Game.h" />
     <ClInclude Include="Source_Code\Headers\InputHandler.h" />
     <ClInclude Include="Source_Code\Headers\Main.h" />
     <ClInclude Include="Source_Code\Headers\Object2D.h" />

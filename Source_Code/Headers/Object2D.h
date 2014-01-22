@@ -62,6 +62,23 @@ public:
 	bool PlayAnimation(std::string name);
 	std::string currentlyPlayingAnimation;
 
+	inline float GetXRows()
+	{
+		return xRows;
+	}
+	inline float GetYRows()
+	{
+		return yRows;
+	}
+	inline float GetXSize()
+	{
+		return sizeX;
+	}
+	inline float GetYSize()
+	{
+		return sizeY;
+	}
+
 private:
 	void InitVars(); 
 	void LoadAnimation();
