@@ -96,6 +96,8 @@ private:
 		Object3D* obj3D;
 	};
 	std::vector<EditorObj> editorObjs;
+	EditorObj* currentEditorObj;
+	int currentEditorObjIndex;
 
 	Game* g;
 
@@ -110,8 +112,18 @@ private:
 	DWORD oldFixedDelta;
 	DWORD newFixedDelta;
 
-	D3DXVECTOR3 AddVector3(D3DXVECTOR3* a, D3DXVECTOR3* b);
-	D3DXVECTOR3 SubstractVector3(D3DXVECTOR3* a, D3DXVECTOR3* b);
+	inline D3DXVECTOR3 AddVector3(D3DXVECTOR3* a, D3DXVECTOR3* b)
+	{
+		return D3DXVECTOR3(a->x+b->x,a->y+b->y,a->z+b->z);
+	}
+	inline D3DXVECTOR3 SubstractVector3(D3DXVECTOR3* a, D3DXVECTOR3* b)
+	{
+		return D3DXVECTOR3(a->x-b->x,a->y-b->y,a->z-b->z);
+	}
+	inline D3DXVECTOR3 MultiplyVector3(D3DXVECTOR3* a,float val)
+	{
+		return D3DXVECTOR3(a->x*val,a->y*val, a->z*val);
+	}
 	D3DXVECTOR3 ReturnDirection(float anglesX,float anglesY);
 
 	std::vector<Object3D*> modelObjs;

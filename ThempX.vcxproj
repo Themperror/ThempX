@@ -37,6 +37,7 @@
     <ClInclude Include="Source_Code\Headers\ThempX.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="editorresources.txt" />
     <None Include="Resources\AnimationPNG\DukeAnimAlien.png" />
     <None Include="Resources\AnimationPNG\DukeAnimAlien.txt" />
     <None Include="Resources\level.txt" />

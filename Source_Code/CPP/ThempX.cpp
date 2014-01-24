@@ -91,8 +91,6 @@ ThempX::ThempX(HWND handle,HINSTANCE hInstance)
 			isDone = true;
 			DestroyWindow(handleWindow);
 		}		
-		
-		
 
 		currentTicks = GetTickCount();
 		FixedUpdate();
@@ -192,6 +190,17 @@ void ThempX::Update()
 		{
 			particles.at(i)->Update(deltaTime);
 		}
+		if(EditorMode)
+		{
+			if(currentEditorObj->obj2D != NULL)
+			{
+				currentEditorObj->obj2D->position = AddVector3(&camera.lookAt,&MultiplyVector3(&camera.lookDir,15));
+			}
+			else
+			{
+				currentEditorObj->obj3D->position = AddVector3(&camera.lookAt,&MultiplyVector3(&camera.lookDir,15));
+			}
+		}
 	}
 }
 //FixedUpdate, this will run every iteration of the main game loop
@@ -208,16 +217,6 @@ void ThempX::FixedUpdate()
 		DoCameraStuff();
 	}
 }
-//Small vector math functions
-D3DXVECTOR3 ThempX::AddVector3(D3DXVECTOR3* a, D3DXVECTOR3* b)
-{
-	return D3DXVECTOR3(a->x+b->x,a->y+b->y,a->z+b->z);
-}
-D3DXVECTOR3 ThempX::SubstractVector3(D3DXVECTOR3* a, D3DXVECTOR3* b)
-{
-	return D3DXVECTOR3(a->x-b->x,a->y-b->y,a->z-b->z);
-}
-
 //Unused, was used for testing early collisions with camera
 bool ThempX::CheckCamBoxCollision(D3DXVECTOR3 pos, Object3D* obj)
 {
@@ -236,78 +235,33 @@ bool ThempX::CheckCamBoxCollision(D3DXVECTOR3 pos, Object3D* obj)
 //Left Mouse click function (to test things with), will be removed for engine use, as this is a gameplay feature (will be in Game.cpp)
 void ThempX::LeftMouseClick()
 {
-	
-	for(unsigned int i = 0; i < debugCubes.size();i++)
+	if(EditorMode)
 	{
-		DebugCube* obj = debugCubes.at(i);
-
-		if(obj->collision != NULL && Vector3Distance(&obj->position,&camera.position) < 100)
-		{	
-			if(obj->collision->GetType() == CollisionGeo::OBBCube || obj->collision->GetType() == CollisionGeo::StaticCube)
-			{
-				D3DXVECTOR3 LLFPos = AddVector3(&obj->collision->GetLowerLeftFrontPos(),&obj->position);
-				D3DXVECTOR3 URBPos = AddVector3(&obj->collision->GetUpperRightBackPos(),&obj->position);
-				
-				std::vector<D3DXVECTOR3> vertices;
-
-				vertices.push_back(D3DXVECTOR3(LLFPos.x, LLFPos.y, URBPos.z));
-				vertices.push_back(D3DXVECTOR3(URBPos.x, LLFPos.y, URBPos.z));
-				vertices.push_back(D3DXVECTOR3(LLFPos.x, URBPos.y, URBPos.z));
-				vertices.push_back(D3DXVECTOR3(URBPos.x, URBPos.y, URBPos.z));
-				vertices.push_back(D3DXVECTOR3(LLFPos.x, LLFPos.y, LLFPos.z));
-				vertices.push_back(D3DXVECTOR3(LLFPos.x, URBPos.y, LLFPos.z));
-				vertices.push_back(D3DXVECTOR3(URBPos.x, LLFPos.y, LLFPos.z));
-				vertices.push_back(D3DXVECTOR3(URBPos.x, URBPos.y, LLFPos.z));
-				vertices.push_back(D3DXVECTOR3(LLFPos.x, URBPos.y, LLFPos.z));
-				vertices.push_back(D3DXVECTOR3(LLFPos.x, URBPos.y, URBPos.z));
-				vertices.push_back(D3DXVECTOR3(URBPos.x, URBPos.y, LLFPos.z));
-				vertices.push_back(D3DXVECTOR3(URBPos.x, URBPos.y, URBPos.z));
-				vertices.push_back(D3DXVECTOR3(LLFPos.x, LLFPos.y, LLFPos.z));
-				vertices.push_back(D3DXVECTOR3(URBPos.x, LLFPos.y, LLFPos.z));
-				vertices.push_back(D3DXVECTOR3(LLFPos.x, LLFPos.y, URBPos.z));
-				vertices.push_back(D3DXVECTOR3(URBPos.x, LLFPos.y, URBPos.z));
-				vertices.push_back(D3DXVECTOR3(URBPos.x, LLFPos.y, LLFPos.z));
-				vertices.push_back(D3DXVECTOR3(URBPos.x, URBPos.y, LLFPos.z));
-				vertices.push_back(D3DXVECTOR3(URBPos.x, LLFPos.y, URBPos.z));
-				vertices.push_back(D3DXVECTOR3(URBPos.x, URBPos.y, URBPos.z));
-				vertices.push_back(D3DXVECTOR3(LLFPos.x, LLFPos.y, LLFPos.z));
-				vertices.push_back(D3DXVECTOR3(LLFPos.x, LLFPos.y, URBPos.z));
-				vertices.push_back(D3DXVECTOR3(LLFPos.x, URBPos.y, LLFPos.z));
-				vertices.push_back(D3DXVECTOR3(LLFPos.x, URBPos.y, URBPos.z));
-
-				float distToHit = 0;
-				for(unsigned int x=0;x < 36; x+=3)
-				{
-					if(D3DXIntersectTri(&vertices[obj->cubeIndices[x]],&vertices[obj->cubeIndices[x+1]],&vertices[obj->cubeIndices[x+2]],&camera.position,&camera.lookDir,NULL,NULL,&distToHit)) 
-					{
-						cout << "hit target debugcube, NR: "<<i << "  at distance: " << distToHit << endl;
-					}
-				}
-			} 
-		}
-	}
-	for(unsigned int i = 0; i < spriteObjs.size();i++)
-	{
-		if(Vector3Distance(&spriteObjs.at(i)->position,&camera.position) < 150)
+		if(currentEditorObj->obj2D != NULL)
 		{
-			BOOL hit = FALSE;
-			FLOAT distToHit = 100;
-
-			float x = 1 * std::cos((angleX+90) * 3.141592f / 180);
-			float z = 1 * std::sin((angleX+90) * 3.141592f / 180);
-			D3DXVECTOR3 v1 = D3DXVECTOR3((-2.5f	*spriteObjs.at(i)->scaling.x / 2)* x	+ spriteObjs.at(i)->position.x	,( 2.5f *spriteObjs.at(i)->scaling.y)	+spriteObjs.at(i)->position.y		,(-2.5f	*spriteObjs.at(i)->scaling.z / 2)* z + spriteObjs.at(i)->position.z);//
-			D3DXVECTOR3 v2 = D3DXVECTOR3(( 2.5f	*spriteObjs.at(i)->scaling.x / 2)* x	+ spriteObjs.at(i)->position.x	,( 2.5f *spriteObjs.at(i)->scaling.y)	+spriteObjs.at(i)->position.y		,( 2.5f	*spriteObjs.at(i)->scaling.z / 2)* z + spriteObjs.at(i)->position.z);
-			D3DXVECTOR3 v3 = D3DXVECTOR3((-2.5f	*spriteObjs.at(i)->scaling.x / 2)* x	+ spriteObjs.at(i)->position.x	,( -2.5f *spriteObjs.at(i)->scaling.y)	+spriteObjs.at(i)->position.y		,(-2.5f	*spriteObjs.at(i)->scaling.z / 2)* z + spriteObjs.at(i)->position.z);
-			D3DXVECTOR3 v4 = D3DXVECTOR3(( 2.5f	*spriteObjs.at(i)->scaling.x / 2)* x	+ spriteObjs.at(i)->position.x	,( -2.5f *spriteObjs.at(i)->scaling.y)	+spriteObjs.at(i)->position.y		,( 2.5f	*spriteObjs.at(i)->scaling.z / 2)* z + spriteObjs.at(i)->position.z);
-			if(D3DXIntersectTri(&v1,&v2,&v3,&camera.position,&camera.lookDir,NULL,NULL,&distToHit)) 
+			if(!currentEditorObj->obj2D->hasAnimation)
 			{
-				cout << "hit target: "<<spriteObjs.at(i)->objName << "  at distance: " << distToHit << endl;
+				Object2D* obj = new Object2D(resources,p_Device,currentEditorObj->obj2D->quad.textureName,&camera.m_View);
+				obj->SetPosition(currentEditorObj->obj2D->position.x,currentEditorObj->obj2D->position.y,currentEditorObj->obj2D->position.z);
+				obj->objName = currentEditorObj->obj2D->objName;
+				spriteObjs.push_back(obj);
 			}
-			if(D3DXIntersectTri(&v2,&v3,&v4,&camera.position,&camera.lookDir,NULL,NULL,&distToHit)) 
+			else
 			{
-				cout << "hit target: "<<spriteObjs.at(i)->objName << "  at distance: " << distToHit << endl;
+				Object2D* obj = new Object2D(resources,p_Device,currentEditorObj->obj2D->quad.textureName,&camera.m_View,currentEditorObj->obj2D->GetXSize(),currentEditorObj->obj2D->GetYSize(),currentEditorObj->obj2D->GetXRows(),currentEditorObj->obj2D->GetYRows());
+				obj->SetPosition(currentEditorObj->obj2D->position.x,currentEditorObj->obj2D->position.y,currentEditorObj->obj2D->position.z);
+				obj->objName = currentEditorObj->obj2D->objName;
+				spriteObjs.push_back(obj);
 			}
 		}
+		else
+		{
+			Object3D* obj = new Object3D(resources,currentEditorObj->obj3D->model.meshPath,p_Device);
+			obj->objName = currentEditorObj->obj3D->objName;
+			obj->SetPosition(currentEditorObj->obj3D->position.x,currentEditorObj->obj3D->position.y,currentEditorObj->obj3D->position.z);
+			modelObjs.push_back(obj);
+		}
+		CreateLevelFile();
 	}
 }
 
@@ -318,7 +272,7 @@ void ThempX::DoInput(float dT)
 	{
 		if(mouseLeftJustDown == false)
 		{
-			LeftMouseClick();		//currently disabled the function because this is a raycast and not needed atm
+			LeftMouseClick();
 			mouseLeftJustDown = true;
 		}
 	}
@@ -378,22 +332,32 @@ void ThempX::DoInput(float dT)
 		camera.position.z += temp.z *dT*speed;
 	}
 
-	if(KeyPressed(DIK_0))
+	if(KeyPressed(DIK_0) == 2)
 	{
-		if(pressedEditorKey == false)
+		EditorMode = !EditorMode;
+		if(EditorMode == true)
 		{
-			EditorMode = !EditorMode;
-			if(EditorMode == true)
-			{
-				SetUpEditorMode();
-			}
-			std::cout <<"Editor Mode has been set to: "<< EditorMode << std::endl;
+			SetUpEditorMode();
 		}
-		pressedEditorKey = true;
+		std::cout <<"Editor Mode has been set to: "<< EditorMode << std::endl;
 	}
-	else
+	if(KeyPressed(DIK_8) == 2)
 	{
-		pressedEditorKey = false;
+		currentEditorObjIndex--;
+		if(currentEditorObjIndex < 0)
+		{
+			currentEditorObjIndex = editorObjs.size()-1;
+		}
+		currentEditorObj = &editorObjs.at(currentEditorObjIndex);
+	}
+	if(KeyPressed(DIK_9) == 2)
+	{
+		currentEditorObjIndex++;
+		if(currentEditorObjIndex >= editorObjs.size())
+		{
+			currentEditorObjIndex = 0;
+		}
+		currentEditorObj = &editorObjs.at(currentEditorObjIndex);
 	}
 
 	if(KeyPressed(DIK_SPACE))
@@ -464,6 +428,7 @@ void ThempX::Initialize()
 	camera.lookDir.y = 1;
 	camera.lookDir.z = 0;
 	sensitivity = 5;
+	EditorMode = false;
 	soundHandler->LoadWaveFile("test.wav","test",11025,8,1);
 	angleX = 0;
 	angleY = 0;
@@ -517,6 +482,21 @@ void ThempX::DrawScene()
 	for(unsigned int i = 0; i < particles.size(); i++)
 	{
 		particles.at(i)->Draw();
+	}
+	if(EditorMode)
+	{
+		if(currentEditorObj->obj2D != NULL)
+		{
+			p_Device->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_CLAMP);
+			p_Device->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP);
+			currentEditorObj->obj2D->Draw();
+		}
+		else
+		{
+			p_Device->SetSamplerState(0,D3DSAMP_ADDRESSU,D3DTADDRESS_WRAP);
+			p_Device->SetSamplerState(0,D3DSAMP_ADDRESSV,D3DTADDRESS_WRAP);
+			currentEditorObj->obj3D->DrawModel();
+		}
 	}
 	
 	////////////////////////
@@ -684,31 +664,29 @@ void ThempX::DestroyLevel()
 
 void ThempX::SetUpEditorMode()
 {
-	ifstream fin("editorresources.txt");
-	if (!fin.good())
+	string line;
+	ifstream myfile ("editorresources.txt");
+	if (!myfile.good())
 	{
-		MessageBox(handleWindow,"Could Not Find editorresources.txt, Editor won't work", "ThempX()",MB_OK);
+		MessageBox(handleWindow,"Could Not Find editorresources.txt, EditorMode won't work", "ThempX()",MB_OK);
 		cout << "Cannot find editorresources.txt" << endl;
+		return;
 	}
-	else
+	if (myfile.is_open())
 	{
-
 		int animatedSpriteNr = 0;
 		int staticSpriteNr = 0;
 		int modelNr = 0;
-
-		fin.clear();
-
-		string str;
-		while(getline(fin, str))
+		while ( getline (myfile,line) )
 		{
+			std::cout << "read a line" << std::endl;
 			EditorObj obj;
 			string name;
 			float sizeX,sizeY,xRows,yRows;
 			bool hasAnim = false;
 			string check = "x";
-			fin >> name >> hasAnim >> sizeX >> sizeY >> xRows >> yRows;
-			if(name.at(name.size()-1) == check[0])
+			myfile >> name >> hasAnim >> sizeX >> sizeY >> xRows >> yRows;
+			if(name[name.size()-1] == check[0])
 			{
 				modelNr++;
 				Object3D* modelObj = new Object3D(resources,_strdup(name.c_str()),p_Device);
@@ -721,7 +699,6 @@ void ThempX::SetUpEditorMode()
 			}
 			else
 			{
-				std::cout << "did get here" << std::endl;
 				if(hasAnim == false)
 				{
 					staticSpriteNr++;
@@ -749,7 +726,11 @@ void ThempX::SetUpEditorMode()
 				}
 			}
 		}
-		fin.close();
+		myfile.close();
+		if(editorObjs.size() > 0)
+		{
+			currentEditorObj = &editorObjs.at(0);
+		}
 	}
 }
 void ThempX::CreateLevelFile()
@@ -860,3 +841,80 @@ D3DLIGHT9* ThempX::CreateLight(D3DXVECTOR3 position,D3DXVECTOR3 direction, D3DLI
 	lights.push_back(light);
 	return light;
 }
+
+
+/*  //raycasting for cubes and sprites
+for(unsigned int i = 0; i < debugCubes.size();i++)
+{
+DebugCube* obj = debugCubes.at(i);
+
+if(obj->collision != NULL && Vector3Distance(&obj->position,&camera.position) < 100)
+{	
+if(obj->collision->GetType() == CollisionGeo::OBBCube || obj->collision->GetType() == CollisionGeo::StaticCube)
+{
+D3DXVECTOR3 LLFPos = AddVector3(&obj->collision->GetLowerLeftFrontPos(),&obj->position);
+D3DXVECTOR3 URBPos = AddVector3(&obj->collision->GetUpperRightBackPos(),&obj->position);
+
+std::vector<D3DXVECTOR3> vertices;
+
+vertices.push_back(D3DXVECTOR3(LLFPos.x, LLFPos.y, URBPos.z));
+vertices.push_back(D3DXVECTOR3(URBPos.x, LLFPos.y, URBPos.z));
+vertices.push_back(D3DXVECTOR3(LLFPos.x, URBPos.y, URBPos.z));
+vertices.push_back(D3DXVECTOR3(URBPos.x, URBPos.y, URBPos.z));
+vertices.push_back(D3DXVECTOR3(LLFPos.x, LLFPos.y, LLFPos.z));
+vertices.push_back(D3DXVECTOR3(LLFPos.x, URBPos.y, LLFPos.z));
+vertices.push_back(D3DXVECTOR3(URBPos.x, LLFPos.y, LLFPos.z));
+vertices.push_back(D3DXVECTOR3(URBPos.x, URBPos.y, LLFPos.z));
+vertices.push_back(D3DXVECTOR3(LLFPos.x, URBPos.y, LLFPos.z));
+vertices.push_back(D3DXVECTOR3(LLFPos.x, URBPos.y, URBPos.z));
+vertices.push_back(D3DXVECTOR3(URBPos.x, URBPos.y, LLFPos.z));
+vertices.push_back(D3DXVECTOR3(URBPos.x, URBPos.y, URBPos.z));
+vertices.push_back(D3DXVECTOR3(LLFPos.x, LLFPos.y, LLFPos.z));
+vertices.push_back(D3DXVECTOR3(URBPos.x, LLFPos.y, LLFPos.z));
+vertices.push_back(D3DXVECTOR3(LLFPos.x, LLFPos.y, URBPos.z));
+vertices.push_back(D3DXVECTOR3(URBPos.x, LLFPos.y, URBPos.z));
+vertices.push_back(D3DXVECTOR3(URBPos.x, LLFPos.y, LLFPos.z));
+vertices.push_back(D3DXVECTOR3(URBPos.x, URBPos.y, LLFPos.z));
+vertices.push_back(D3DXVECTOR3(URBPos.x, LLFPos.y, URBPos.z));
+vertices.push_back(D3DXVECTOR3(URBPos.x, URBPos.y, URBPos.z));
+vertices.push_back(D3DXVECTOR3(LLFPos.x, LLFPos.y, LLFPos.z));
+vertices.push_back(D3DXVECTOR3(LLFPos.x, LLFPos.y, URBPos.z));
+vertices.push_back(D3DXVECTOR3(LLFPos.x, URBPos.y, LLFPos.z));
+vertices.push_back(D3DXVECTOR3(LLFPos.x, URBPos.y, URBPos.z));
+
+float distToHit = 0;
+for(unsigned int x=0;x < 36; x+=3)
+{
+if(D3DXIntersectTri(&vertices[obj->cubeIndices[x]],&vertices[obj->cubeIndices[x+1]],&vertices[obj->cubeIndices[x+2]],&camera.position,&camera.lookDir,NULL,NULL,&distToHit)) 
+{
+cout << "hit target debugcube, NR: "<<i << "  at distance: " << distToHit << endl;
+}
+}
+} 
+}
+}
+for(unsigned int i = 0; i < spriteObjs.size();i++)
+{
+if(Vector3Distance(&spriteObjs.at(i)->position,&camera.position) < 150)
+{
+BOOL hit = FALSE;
+FLOAT distToHit = 100;
+
+float x = 1 * std::cos((angleX+90) * 3.141592f / 180);
+float z = 1 * std::sin((angleX+90) * 3.141592f / 180);
+D3DXVECTOR3 v1 = D3DXVECTOR3((-2.5f	*spriteObjs.at(i)->scaling.x / 2)* x	+ spriteObjs.at(i)->position.x	,( 2.5f *spriteObjs.at(i)->scaling.y)	+spriteObjs.at(i)->position.y		,(-2.5f	*spriteObjs.at(i)->scaling.z / 2)* z + spriteObjs.at(i)->position.z);//
+D3DXVECTOR3 v2 = D3DXVECTOR3(( 2.5f	*spriteObjs.at(i)->scaling.x / 2)* x	+ spriteObjs.at(i)->position.x	,( 2.5f *spriteObjs.at(i)->scaling.y)	+spriteObjs.at(i)->position.y		,( 2.5f	*spriteObjs.at(i)->scaling.z / 2)* z + spriteObjs.at(i)->position.z);
+D3DXVECTOR3 v3 = D3DXVECTOR3((-2.5f	*spriteObjs.at(i)->scaling.x / 2)* x	+ spriteObjs.at(i)->position.x	,( -2.5f *spriteObjs.at(i)->scaling.y)	+spriteObjs.at(i)->position.y		,(-2.5f	*spriteObjs.at(i)->scaling.z / 2)* z + spriteObjs.at(i)->position.z);
+D3DXVECTOR3 v4 = D3DXVECTOR3(( 2.5f	*spriteObjs.at(i)->scaling.x / 2)* x	+ spriteObjs.at(i)->position.x	,( -2.5f *spriteObjs.at(i)->scaling.y)	+spriteObjs.at(i)->position.y		,( 2.5f	*spriteObjs.at(i)->scaling.z / 2)* z + spriteObjs.at(i)->position.z);
+if(D3DXIntersectTri(&v1,&v2,&v3,&camera.position,&camera.lookDir,NULL,NULL,&distToHit)) 
+{
+cout << "hit target: "<<spriteObjs.at(i)->objName << "  at distance: " << distToHit << endl;
+}
+if(D3DXIntersectTri(&v2,&v3,&v4,&camera.position,&camera.lookDir,NULL,NULL,&distToHit)) 
+{
+cout << "hit target: "<<spriteObjs.at(i)->objName << "  at distance: " << distToHit << endl;
+}
+}
+}
+
+*/

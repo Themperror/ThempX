@@ -1,6 +1,6 @@
-path 	hasAnimation 	sizeX 	sizeY 	xRows 	yRows
-Resources/Models/CityPart1.x 	false 	0 	0 	0 	0
-Resources/Models/Car.x 	false 	0 	0 	0 	0
-Resources/Sprites/enemy.png 	false 	0 	0 	0 	0
-Resources/Sprites/toiletmonster.png 	false 	0 	0	0	0
-Resources/AnimationPNG/DukeAnimAlien.png 	true 	4 	1 	8 	8
+﻿path 										hasanim (animspriteonly)RowsToX (animspriteonly)RowsToY	(animspriteonly)TotalXRows 	(animspriteonly)TotalYRows
+Resources/Models/CityPart1.x				0 			0				0					0			0
+Resources/Models/Car.x	 					0 			0				0					0			0
+Resources/Sprites/enemy.png 				0 			0				0					0			0
+Resources/Sprites/toiletmonster.png 		0 			0				0					0			0
+Resources/AnimationPNG/DukeAnimAlien.png	1 			4				1					8			8
