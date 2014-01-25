@@ -1,20 +1,113 @@
 #include "../Headers/Particle.h"
 
-Particle::Particle(ResourceManager* res,LPDIRECT3DDEVICE9 device,char* texture,D3DXMATRIXA16* camView, D3DXVECTOR3 pos,int minParticles,int maxParticles, float minLife, float maxLife)
+Particle::Particle(ResourceManager* res,LPDIRECT3DDEVICE9 device,char* textureP,D3DXMATRIXA16* camView, D3DXVECTOR3 pos,int minParticles,int maxParticles, float minLife, float maxLife)
 {
 	resources = res;
 	p_Device = device;
-	texturePath = texture;
+	texturePath = textureP;
 	cameraView = camView;
 	position = pos;
-
+	texture = res->GetTexture(texturePath);
 	SetEllipsoid(D3DXVECTOR3(5,1,5));
 	SetLifeTime(minLife,maxLife);
 	SetParticleCount(minParticles,maxParticles);
 	SetCreationSpeed(0.005f);
 	updateTimer = 0;
+	D3DMATERIAL9 m;
+	ZeroMemory(&m,sizeof(m));
+	m.Ambient = D3DXCOLOR(128,128,128,128);
+	m.Diffuse = D3DXCOLOR(128,128,128,128);
+	mat = m;
+	vBuffer = FillCustomVertices(D3DXVECTOR2(-0.5f,-0.5f),D3DXVECTOR2(0.5f,0.5f));
+	iBuffer = FillIndices();
+
+}
+LPDIRECT3DVERTEXBUFFER9 Particle::FillCustomVertices(D3DXVECTOR2 LLPos,D3DXVECTOR2 URPos)
+{
+	VertexPosNorTex triangleVerts[] = 
+	{
+		{D3DXVECTOR3(LLPos.x,URPos.y,0),D3DXVECTOR3(1,0,0),D3DXVECTOR2(0,0)},
+		{D3DXVECTOR3(URPos.x,URPos.y,0),D3DXVECTOR3(1,0,0),D3DXVECTOR2(1,0)},
+		{D3DXVECTOR3(LLPos.x,LLPos.y,0),D3DXVECTOR3(1,0,0),D3DXVECTOR2(0,1)},
+		{D3DXVECTOR3(URPos.x,LLPos.y,0),D3DXVECTOR3(1,0,0),D3DXVECTOR2(1,1)},
+	};
+	LPDIRECT3DVERTEXBUFFER9 p_dx_VertexBuffer = NULL; //altijd nieuwe variables op NULL zetten (0x000000) zodat we kunnen zien dat het een nullpointer reference is als we een error krijgen, anders krijgt ie random memory space en kunnen we niet checken op NULL
+
+	HRESULT result = p_Device->CreateVertexBuffer(4*sizeof(VertexPosNorTex), 0, D3DFVF_XYZ |D3DFVF_NORMAL | D3DFVF_TEX1, D3DPOOL_MANAGED, &p_dx_VertexBuffer, NULL);
+	switch(result) //error checking of het gelukt is, zo niet, sluit af, want anders krijgen we dalijk andere soorten errors die niet opgevangen worden. (Access violation of nullpointer references vanwegen random pointers)
+	{
+	case D3DERR_INVALIDCALL: 
+		MessageBox(handleWindow,"Invalid Call while creating VertexBuffer","FillVertices()",MB_OK);
+		return NULL;
+		break;
+	case D3DERR_OUTOFVIDEOMEMORY:
+		MessageBox(handleWindow,"Out of Video Memory while creating VertexBuffer","FillVertices()",MB_OK);
+		return NULL;
+		break;
+	case E_OUTOFMEMORY:
+		MessageBox(handleWindow,"Out of Memory while creating VertexBuffer","FillVertices()",MB_OK);
+		return NULL;
+		break;
+	}
+	void* p_Vertices;
+	result = p_dx_VertexBuffer->Lock(0, 4*sizeof(VertexPosNorTex), (void**)&p_Vertices, 0);
+	switch(result)
+	{
+	case D3DERR_INVALIDCALL: 
+		MessageBox(handleWindow,"Error trying to lock","FillVertices()",MB_OK);
+		return NULL;
+		break;
+	}//we konden de vertexbuffer locken dus ga door
+	memcpy(p_Vertices, triangleVerts, 4*sizeof(VertexPosNorTex));
+	p_dx_VertexBuffer->Unlock();
+
+	return p_dx_VertexBuffer;
+	
+	
 }
 
+LPDIRECT3DINDEXBUFFER9 Particle::FillIndices() //zelfde als FillVertices, zie uitleg daar
+{
+	short s_Indices[4];
+	s_Indices[0]=0;
+	s_Indices[1]=1;
+	s_Indices[2]=2;
+	s_Indices[3]=3;
+
+
+	LPDIRECT3DINDEXBUFFER9 p_dx_IndexBuffer = NULL;
+	HRESULT result = p_Device->CreateIndexBuffer(4*sizeof(short), D3DUSAGE_WRITEONLY,D3DFMT_INDEX16,D3DPOOL_MANAGED,&p_dx_IndexBuffer,NULL);
+	switch(result)
+	{
+	case D3DERR_INVALIDCALL: 
+		MessageBox(handleWindow,"Invalid Call while creating IndexBuffer","FillIndices()",MB_OK);
+		return NULL;
+		break;
+	case D3DERR_OUTOFVIDEOMEMORY:
+		MessageBox(handleWindow,"Out of Video Memory while creating IndexBuffer","FillIndices()",MB_OK);
+		return NULL;
+		break;
+	case E_OUTOFMEMORY:
+		MessageBox(handleWindow,"Out of Memory while creating IndexBuffer","FillIndices()",MB_OK);
+		return NULL;
+		break;
+	}
+
+	void* p_Indices;
+	result = p_dx_IndexBuffer->Lock(0, 4*sizeof(short), (void**)&p_Indices, 0);
+
+	switch(result)
+	{
+	case D3DERR_INVALIDCALL: 
+		MessageBox(handleWindow,"Error trying to lock","FillIndices()",MB_OK);
+		return NULL;
+		break;
+	}
+	memcpy(p_Indices, s_Indices, 4*sizeof(short));
+	p_dx_IndexBuffer->Unlock();
+
+	return p_dx_IndexBuffer;
+}
 void Particle::Update(float deltaTime)
 {
 	updateTimer+=deltaTime;
@@ -47,50 +140,38 @@ void Particle::RenderParticle()
 {
 	for(unsigned int i = 0; i < GetSize();i++)
 	{
-		Object2D* obj = particles.at(i).obj;
-		obj->Draw();
+		particles.at(i)->Draw();
 	}
 }
 void Particle::CreateParticle()
 {
-	Part p;
-	p.currentLife = 0;
-	p.maxLife = RandomFloat(minLifeTime,maxLifeTime);
-	p.obj = new Object2D(resources,p_Device,texturePath,cameraView,D3DXVECTOR2(-0.5f,-0.5f),D3DXVECTOR2(0.5f,0.5f));
-	
-	int i = rand();
-	p.obj->position.x = (i%2==TRUE ? RandomFloat(0,ellipsoid.x) : -RandomFloat(0,ellipsoid.x)) + position.x;
-	i = rand();
-	p.obj->position.y = (i%2==TRUE ? RandomFloat(0,ellipsoid.y) : -RandomFloat(0,ellipsoid.y)) + position.y;
-	i = rand();
-	p.obj->position.z = (i%2==TRUE ? RandomFloat(0,ellipsoid.z) : -RandomFloat(0,ellipsoid.z)) + position.z;
-
+	Particle2D* p = new Particle2D(p_Device,cameraView,vBuffer,iBuffer);
+	p->SetTexture(texture);
+	p->SetMaterial(&mat);
+	p->SetLife(0);
+	p->SetMaxLife(RandomFloat(minLifeTime,maxLifeTime));
+	p->SetPosition((rand()%2==TRUE ? RandomFloat(0,ellipsoid.x) : -RandomFloat(0,ellipsoid.x)) + position.x,(rand()%2==TRUE ? RandomFloat(0,ellipsoid.y) : -RandomFloat(0,ellipsoid.y)) + position.y,(rand()%2==TRUE ? RandomFloat(0,ellipsoid.z) : -RandomFloat(0,ellipsoid.z)) + position.z);
 	particles.push_back(p);
 }
 void Particle::DestroyParticle(int index)
 {
-	Part* p = &particles.at(index);
-	p->obj->ReleaseResources();
-	p = NULL;
+	Particle2D* p = particles.at(index);
+	delete p;
 	particles.erase (particles.begin()+index);
-	//std::cout << particles.size() << std::endl;
 }
 void Particle::MoveParticle(D3DXVECTOR3 min, D3DXVECTOR3 max,float deltaTime)											 
 {
 	for(unsigned int i = 0; i < GetSize();i++)
 	{
-		Object2D* obj = particles.at(i).obj;
-		obj->position.x += RandomFloat(min.x,max.x)*deltaTime;
-		obj->position.y += RandomFloat(min.y,max.y)*deltaTime;
-		obj->position.z += RandomFloat(min.z,max.z)*deltaTime;
-			
+		Particle2D* obj = particles.at(i);
+		obj->AddPosition(RandomFloat(min.x,max.x)*deltaTime, RandomFloat(min.y,max.y)*deltaTime, RandomFloat(min.z,max.z)*deltaTime);
 	}
 }
 void Particle::CheckLifeTime()
 {
 	for(unsigned int i = 0; i < GetSize();i++)
 	{								  
-		if(particles.at(i).currentLife > particles.at(i).maxLife)
+		if(particles.at(i)->GetLife() > particles.at(i)->GetMaxLife())
 		{
 			DestroyParticle(i);
 		}
@@ -100,7 +181,6 @@ void Particle::AddLifeTime(float deltaTime)
 {
 	for(unsigned int i = 0; i < GetSize();i++)
 	{
-		Part* obj = &particles.at(i);
-		obj->currentLife += deltaTime;
+		particles.at(i)->AddLife(deltaTime);
 	}
 }

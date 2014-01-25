@@ -97,7 +97,7 @@ private:
 	};
 	std::vector<EditorObj> editorObjs;
 	EditorObj* currentEditorObj;
-	int currentEditorObjIndex;
+	unsigned int currentEditorObjIndex;
 
 	Game* g;
 

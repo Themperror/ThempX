@@ -1,8 +1,19 @@
 #ifndef _PARTICLE2D_H_
 #define _PARTICLE2D_H_
 
+#include "Object2D.h"
+
+
+struct PosNorTex
+{
+	D3DXVECTOR3 pos;
+	D3DXVECTOR3 normal;
+	D3DXVECTOR2 texC;
+};
+
 class Particle2D
 {
+	
 public:
 	//get/set voor alles dat nodig is maken
 	Particle2D(LPDIRECT3DDEVICE9 device, D3DXMATRIXA16* camView, LPDIRECT3DVERTEXBUFFER9 vertexBuffer,LPDIRECT3DINDEXBUFFER9 indexBuffer);
@@ -15,7 +26,13 @@ public:
 	{
 		return scaling;
 	}
-	inline void SetPosition(float x,float y,float z)
+	inline void AddPosition(float x, float y, float z)
+	{
+		position.x += x;
+		position.y += y;
+		position.z += z;
+	}
+	inline void SetPosition(float x, float y, float z)
 	{
 		position.x = x;
 		position.y = y;
@@ -39,17 +56,21 @@ public:
 		scaling.y = y;
 		scaling.z = z;
 	}
-	inline void SetViewMatrix(D3DXMATRIXA16* viewmatrix)
+	inline void SetViewMatrix(D3DXMATRIX* matrix)
 	{
-		viewMatrix = viewmatrix;
+		viewMatrix = matrix;
 	}
-	inline D3DXMATRIXA16* GetViewMatrix()
+	inline D3DXMATRIX* GetViewMatrix()
 	{
 		return viewMatrix;
 	}
 	inline void SetLife(float x)
 	{
 		currentLife = x;
+	}
+	inline void SetMaxLife(float x)
+	{
+		maxLife = x;
 	}
 	inline void AddLife(float x)
 	{
@@ -59,6 +80,10 @@ public:
 	{
 		return currentLife;
 	}
+	inline float GetMaxLife()
+	{
+		return maxLife;
+	}
 	inline void SetIndexBuffer(LPDIRECT3DINDEXBUFFER9 buffer)
 	{
 		iBuffer = buffer;
@@ -67,15 +92,26 @@ public:
 	{
 		vBuffer = buffer;
 	}
+	inline void SetTexture(LPDIRECT3DTEXTURE9 text)
+	{
+		texture  = text;
+	}
+	inline void SetMaterial(D3DMATERIAL9* material)
+	{
+		mat = material;
+	}
 private:
 	D3DXVECTOR3 position;
 	D3DXVECTOR3 scaling;
 	D3DXMATRIX* viewMatrix;
 	float currentLife;
+	float maxLife;
+	LPDIRECT3DTEXTURE9 texture;
+	D3DMATERIAL9* mat;
 	LPDIRECT3DINDEXBUFFER9 iBuffer;
 	LPDIRECT3DVERTEXBUFFER9 vBuffer;
 	LPDIRECT3DDEVICE9 p_Device;
-	D3DXMATRIXA16* cameraView;
+	D3DXMATRIX* cameraView;
 
 };
 #endif

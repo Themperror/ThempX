@@ -1,13 +1,13 @@
 #ifndef _PARTICLE_H_
 #define _PARTICLE_H_
 
-#include "Object2D.h"
+#include "Particle2D.h"
 //#include <boost/random.hpp>
 //#include <boost/random/lagged_fibonacci.hpp>
 class Particle
 {
 public:
-	Particle(ResourceManager* res,LPDIRECT3DDEVICE9 device,char* texture,D3DXMATRIXA16* camView, D3DXVECTOR3 pos,int minParticles,int maxParticles, float minLife, float maxLife);
+	Particle(ResourceManager* res,LPDIRECT3DDEVICE9 device,char* textureP,D3DXMATRIXA16* camView, D3DXVECTOR3 pos,int minParticles,int maxParticles, float minLife, float maxLife);
 	
 	
 	void Update(float deltaTime);
@@ -55,17 +55,21 @@ public:
 		return particles.size();
 	}
 private:						   
-
+	HWND handleWindow;
 	LPDIRECT3DINDEXBUFFER9 iBuffer;
 	LPDIRECT3DVERTEXBUFFER9 vBuffer;
 	float maxLife;
 	float updateTimer;
 	ResourceManager* resources;
 	char* texturePath;
+	D3DMATERIAL9 mat;
+	LPDIRECT3DTEXTURE9 texture;
 	std::vector<Particle2D*> particles;
 	LPDIRECT3DDEVICE9 p_Device;
 	D3DXMATRIXA16* cameraView;
 
+	LPDIRECT3DVERTEXBUFFER9 FillCustomVertices(D3DXVECTOR2 LLPos,D3DXVECTOR2 URPos);
+	LPDIRECT3DINDEXBUFFER9 FillIndices();
 	void RenderParticle();
 	void CreateParticle();
 	void DestroyParticle(int index);
