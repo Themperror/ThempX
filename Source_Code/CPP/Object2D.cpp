@@ -167,18 +167,18 @@ void Object2D::InitVars()
 }
 void Object2D::Draw()
 {
-	//dit hier zorgt voor rotatie,positie en alles
+	//Matrixes are used for rotation/scaling/position and everything
 	D3DXMATRIX m_ViewScale;
 	D3DXMATRIX m_ViewWorld;
 
 	
-	D3DXMatrixInverse(&m_ViewWorld, 0, cameraView); //draaien naar camera
+	D3DXMatrixInverse(&m_ViewWorld, 0, cameraView); //turns toward camera
 
 	D3DXMATRIX m_Scale;
 	D3DXMatrixScaling(&m_Scale,scaling.x,scaling.y,scaling.z); //scaling
 
 	D3DXMATRIX m_Translation;
-	D3DXMatrixTranslation(&m_Translation,position.x,position.y,position.z); //positie
+	D3DXMatrixTranslation(&m_Translation,position.x,position.y,position.z); //posittioning
 
 
 	D3DXMatrixMultiply(&m_ViewScale, &m_ViewWorld, &m_Scale);

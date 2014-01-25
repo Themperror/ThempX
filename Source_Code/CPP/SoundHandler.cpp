@@ -51,14 +51,13 @@ bool SoundHandler::InitializeDirectSound(HWND hwnd)
 	DSBUFFERDESC bufferDesc;
 	WAVEFORMATEX waveFormat;
  
-	// Initialize the direct sound interface pointer for the default sound device.
 	result = DirectSoundCreate8(NULL, &m_DirectSound, NULL);
 	if(FAILED(result))
 	{
 		return false;
 	}
  
-	// Set the cooperative level to priority so the format of the primary sound buffer can be modified.
+	// Set the cooperative level
 	result = m_DirectSound->SetCooperativeLevel(hwnd, DSSCL_PRIORITY);
 	if(FAILED(result))
 	{
@@ -72,7 +71,7 @@ bool SoundHandler::InitializeDirectSound(HWND hwnd)
 	bufferDesc.lpwfxFormat = NULL;
 	bufferDesc.guid3DAlgorithm = GUID_NULL;
  
-	// Get control of the primary sound buffer on the default sound device.
+	// Get the default sound device.
 	result = m_DirectSound->CreateSoundBuffer(&bufferDesc, &m_primaryBuffer, NULL);
 	if(FAILED(result))
 	{
@@ -106,7 +105,7 @@ void SoundHandler::ShutdownDirectSound()
 		m_primaryBuffer = 0;
 	}
  
-	// Release the direct sound interface pointer.
+	// Release the direct sound pointer.
 	if(m_DirectSound)
 	{
 		m_DirectSound->Release();

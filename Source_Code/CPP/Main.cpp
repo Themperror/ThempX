@@ -3,7 +3,7 @@
 ThempX* engine;
 HWND NewWindow(LPCTSTR windowName,int posX,int posY, int sizeX,int sizeY);
 LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-			//alles wordt in de constructor van ThempX uitgevoerd
+			//Everything is called and initiated in the constructor of ThempX
 LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	if(message == WM_DESTROY)
@@ -51,7 +51,7 @@ void GetDesktopResolution(int& horizontal, int& vertical)
 }
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
-	//Begin of the function //init
+	//start of the program here.
 
 	int horizontal = 0;
 	int vertical = 0;

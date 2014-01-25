@@ -127,7 +127,7 @@ LPDIRECT3DVERTEXBUFFER9 DebugCube::FillVertices()
 	return p_dx_VertexBuffer;
 }
 
-LPDIRECT3DINDEXBUFFER9 DebugCube::FillIndices() //zelfde als FillVertices, zie uitleg daar
+LPDIRECT3DINDEXBUFFER9 DebugCube::FillIndices()
 {
 	cubeIndices[0]	 = 0;
 	cubeIndices[1]	 = 1;

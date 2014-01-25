@@ -17,7 +17,7 @@ class Particle2D
 public:
 	//get/set voor alles dat nodig is maken
 	Particle2D(LPDIRECT3DDEVICE9 device, D3DXMATRIXA16* camView, LPDIRECT3DVERTEXBUFFER9 vertexBuffer,LPDIRECT3DINDEXBUFFER9 indexBuffer);
-	void Draw();
+	void Draw(D3DXMATRIX m_ViewScale,D3DXMATRIX m_ViewWorld, D3DXMATRIX worldMatrix,D3DXMATRIX m_Scale,D3DXMATRIX m_Translation);
 	inline D3DXVECTOR3 GetPosition()
 	{
 		return position;

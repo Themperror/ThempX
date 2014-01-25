@@ -31,10 +31,10 @@ LPDIRECT3DVERTEXBUFFER9 Particle::FillCustomVertices(D3DXVECTOR2 LLPos,D3DXVECTO
 		{D3DXVECTOR3(LLPos.x,LLPos.y,0),D3DXVECTOR3(1,0,0),D3DXVECTOR2(0,1)},
 		{D3DXVECTOR3(URPos.x,LLPos.y,0),D3DXVECTOR3(1,0,0),D3DXVECTOR2(1,1)},
 	};
-	LPDIRECT3DVERTEXBUFFER9 p_dx_VertexBuffer = NULL; //altijd nieuwe variables op NULL zetten (0x000000) zodat we kunnen zien dat het een nullpointer reference is als we een error krijgen, anders krijgt ie random memory space en kunnen we niet checken op NULL
+	LPDIRECT3DVERTEXBUFFER9 p_dx_VertexBuffer = NULL;
 
 	HRESULT result = p_Device->CreateVertexBuffer(4*sizeof(VertexPosNorTex), 0, D3DFVF_XYZ |D3DFVF_NORMAL | D3DFVF_TEX1, D3DPOOL_MANAGED, &p_dx_VertexBuffer, NULL);
-	switch(result) //error checking of het gelukt is, zo niet, sluit af, want anders krijgen we dalijk andere soorten errors die niet opgevangen worden. (Access violation of nullpointer references vanwegen random pointers)
+	switch(result) 
 	{
 	case D3DERR_INVALIDCALL: 
 		MessageBox(handleWindow,"Invalid Call while creating VertexBuffer","FillVertices()",MB_OK);
@@ -57,7 +57,7 @@ LPDIRECT3DVERTEXBUFFER9 Particle::FillCustomVertices(D3DXVECTOR2 LLPos,D3DXVECTO
 		MessageBox(handleWindow,"Error trying to lock","FillVertices()",MB_OK);
 		return NULL;
 		break;
-	}//we konden de vertexbuffer locken dus ga door
+	}
 	memcpy(p_Vertices, triangleVerts, 4*sizeof(VertexPosNorTex));
 	p_dx_VertexBuffer->Unlock();
 
@@ -66,7 +66,7 @@ LPDIRECT3DVERTEXBUFFER9 Particle::FillCustomVertices(D3DXVECTOR2 LLPos,D3DXVECTO
 	
 }
 
-LPDIRECT3DINDEXBUFFER9 Particle::FillIndices() //zelfde als FillVertices, zie uitleg daar
+LPDIRECT3DINDEXBUFFER9 Particle::FillIndices()
 {
 	short s_Indices[4];
 	s_Indices[0]=0;
@@ -134,13 +134,16 @@ void Particle::Draw()
 {
 	RenderParticle(); //Render memory can be reduced by making 1 MATRIX for each necessary and pointing em to each particle for re-use
 }
-
-
 void Particle::RenderParticle()
 {
+	D3DXMATRIX m_ViewScale;
+	D3DXMATRIX m_ViewWorld;
+	D3DXMATRIX worldMatrix;
+	D3DXMATRIX m_Scale;
+	D3DXMATRIX m_Translation;
 	for(unsigned int i = 0; i < GetSize();i++)
 	{
-		particles.at(i)->Draw();
+		particles.at(i)->Draw(m_ViewScale,m_ViewWorld,worldMatrix,m_Scale,m_Translation);
 	}
 }
 void Particle::CreateParticle()
