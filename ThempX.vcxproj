@@ -11,34 +11,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Source_Code\CPP\CollisionGeo.cpp" />
-    <ClCompile Include="Source_Code\CPP\DebugCube.cpp" />
-    <ClCompile Include="Source_Code\CPP\Game.cpp" />
-    <ClCompile Include="Source_Code\CPP\InputHandler.cpp" />
-    <ClCompile Include="Source_Code\CPP\Main.cpp" />
-    <ClCompile Include="Source_Code\CPP\Object2D.cpp" />
-    <ClCompile Include="Source_Code\CPP\Object3D.cpp" />
-    <ClCompile Include="Source_Code\CPP\Particle.cpp" />
-    <ClCompile Include="Source_Code\CPP\Particle2D.cpp" />
-    <ClCompile Include="Source_Code\CPP\ResourceManager.cpp" />
-    <ClCompile Include="Source_Code\CPP\SoundHandler.cpp" />
-    <ClCompile Include="Source_Code\CPP\ThempX.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Source_Code\Headers\CollisionGeo.h" />
-    <ClInclude Include="Source_Code\Headers\DebugCube.h" />
-    <ClInclude Include="Source_Code\Headers\Game.h" />
-    <ClInclude Include="Source_Code\Headers\InputHandler.h" />
-    <ClInclude Include="Source_Code\Headers\Main.h" />
-    <ClInclude Include="Source_Code\Headers\Object2D.h" />
-    <ClInclude Include="Source_Code\Headers\Object3D.h" />
-    <ClInclude Include="Source_Code\Headers\Particle.h" />
-    <ClInclude Include="Source_Code\Headers\Particle2D.h" />
-    <ClInclude Include="Source_Code\Headers\ResourceManager.h" />
-    <ClInclude Include="Source_Code\Headers\SoundHandler.h" />
-    <ClInclude Include="Source_Code\Headers\ThempX.h" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="editorresources.txt" />
     <None Include="Resources\AnimationPNG\DukeAnimAlien.png" />
     <None Include="Resources\AnimationPNG\DukeAnimAlien.txt" />
@@ -53,6 +25,34 @@
     <None Include="Resources\Sound\test.wav" />
     <None Include="Resources\Sprites\enemy.png" />
     <None Include="Resources\Sprites\toiletmonster.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\Headers\CollisionGeo.h" />
+    <ClInclude Include="src\Headers\DebugCube.h" />
+    <ClInclude Include="src\Headers\Game.h" />
+    <ClInclude Include="src\Headers\InputHandler.h" />
+    <ClInclude Include="src\Headers\Main.h" />
+    <ClInclude Include="src\Headers\Object2D.h" />
+    <ClInclude Include="src\Headers\Object3D.h" />
+    <ClInclude Include="src\Headers\Particle.h" />
+    <ClInclude Include="src\Headers\Particle2D.h" />
+    <ClInclude Include="src\Headers\ResourceManager.h" />
+    <ClInclude Include="src\Headers\SoundHandler.h" />
+    <ClInclude Include="src\Headers\ThempX.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\CPP\CollisionGeo.cpp" />
+    <ClCompile Include="src\CPP\DebugCube.cpp" />
+    <ClCompile Include="src\CPP\Game.cpp" />
+    <ClCompile Include="src\CPP\InputHandler.cpp" />
+    <ClCompile Include="src\CPP\Main.cpp" />
+    <ClCompile Include="src\CPP\Object2D.cpp" />
+    <ClCompile Include="src\CPP\Object3D.cpp" />
+    <ClCompile Include="src\CPP\Particle.cpp" />
+    <ClCompile Include="src\CPP\Particle2D.cpp" />
+    <ClCompile Include="src\CPP\ResourceManager.cpp" />
+    <ClCompile Include="src\CPP\SoundHandler.cpp" />
+    <ClCompile Include="src\CPP\ThempX.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{468A34F8-DC49-45B5-9F55-6F96F1C885C5}</ProjectGuid>
