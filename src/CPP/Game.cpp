@@ -1,14 +1,14 @@
 #include "../Headers/Game.h"
 
-Game::Game(bool* b,ResourceManager* resMan,InputHandler* inputHand,SoundHandler* soundHand, LPDIRECT3DDEVICE9 d3dDev)
+Game::Game(Game::TrueStruct* b,HWND windowHandle,ResourceManager* resMan,InputHandler* inputHand,SoundHandler* soundHand, LPDIRECT3DDEVICE9 d3dDev)
 {
 	isFinished = b;
+	handleWindow = windowHandle;
 	resources = resMan;
 	inputHandler = inputHand;
 	soundHandler = soundHand;
 	p_Device = d3dDev;
 	LoadLevel();
-	SetUpCamera();
 	Initialize();
 
 	particles.push_back(new Particle(resources,p_Device,"Resources/Particles/Lightning.png",&camera.m_View,D3DXVECTOR3(0,10,10),200,500,1,3));
@@ -56,6 +56,7 @@ void Game::Update(float deltaTime)
 }
 void Game::FixedUpdate(float deltaTime)
 {
+	inputHandler->Update();
 	DoInput(deltaTime);
 	DoCameraStuff(deltaTime);
 }
@@ -346,7 +347,7 @@ D3DXVECTOR3 Game::ReturnDirection(float anglesX,float anglesY)
 	return final;
 }
 //used in DoCameraStuff
-void Game::SetCameraLookX(float anglesX,float anglesY)
+void Game::SetCameraLook(float anglesX,float anglesY)
 {
 	float x = 1 * std::cos(anglesX * 3.141592f / 180);
 	float z = 1 * std::sin(anglesX * 3.141592f / 180);
@@ -372,10 +373,9 @@ void Game::SetUpCamera()
 void Game::DoCameraStuff(float deltaTime)
 {
 	angleX-=inputHandler->GetMousePosX()*deltaTime*sensitivity;
-	(angleY < -50 ? angleY = -50 : (angleY> 50 ? angleY = 50 : 0));
 	angleY-=inputHandler->GetMousePosY()*deltaTime*sensitivity;
-
-	SetCameraLookX(angleX,angleY);
+	(angleY < -50 ? angleY = -50 : (angleY> 50 ? angleY = 50 : 0));
+	SetCameraLook(angleX,angleY);
 }
 //Input Handling (for testing, this needs to be in game.cpp when a game is created)
 void Game::DoInput(float dT)
@@ -477,11 +477,9 @@ void Game::DoInput(float dT)
 		DestroyLevel();	 //This will destroy the current level 
 		LoadLevel();	//load the level in level.txt (if edited, the changes will reflect on the world)
 	}
-
 	if(inputHandler->KeyPressed(DIK_ESCAPE))
 	{
-		bool trueBool = true;
-		isFinished = &trueBool;
+		isFinished->val = false;
 	}
 }
 

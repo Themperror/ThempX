@@ -44,7 +44,7 @@ public:
 	ThempX(HWND handle,HINSTANCE hInstance);
 
 	ResourceManager* resources;
-
+	void SetIsDone(void);
 private:
 	//DirectX Init
 	LPDIRECT3DDEVICE9 InitializeDevice(HWND han_WindowToBindTo);

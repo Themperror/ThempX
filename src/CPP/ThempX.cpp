@@ -6,7 +6,7 @@ ThempX::ThempX(HWND handle,HINSTANCE hInstance)
 	oldTicks = GetTickCount();
 	handleWindow = handle;
 	isDone = false;
-	
+	lockCursor = false;
 	//claim graphics device
 	p_Device = InitializeDevice(handleWindow);
 	
@@ -16,11 +16,13 @@ ThempX::ThempX(HWND handle,HINSTANCE hInstance)
 	soundHandler = new SoundHandler(handle,44100,16,2);
 
 	WINDOWINFO winInfo;
-	
+	Game::TrueStruct loop;
+	loop.val = true;
 	// Game loop starts here after everything is initialized
-	g = new Game(&isDone,resources,inputHandler,soundHandler,p_Device);
+	g = new Game(&loop,handleWindow,resources,inputHandler,soundHandler,p_Device);
+
 	MSG msg;
-    while(!isDone)
+    while(loop.val)
     {
 		if(lockCursor)
 		{
@@ -31,7 +33,6 @@ ThempX::ThempX(HWND handle,HINSTANCE hInstance)
 			windowPosY = winInfo.rcWindow.top;
 			SetCursorPos(windowPosX+(windowSizeX/2),windowPosY+(windowSizeY/2));
 		}
-		inputHandler->Update();
 		while(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
         {
             TranslateMessage(&msg);
@@ -62,7 +63,6 @@ ThempX::ThempX(HWND handle,HINSTANCE hInstance)
 	g->ReleaseAll();
 	p_Device->Release();
 }
-
 
 //Update, this will run every frame (61 fps max)
 void ThempX::Update()

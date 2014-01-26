@@ -41,7 +41,11 @@ public:
 		D3DXMATRIX m_Projection;
 		D3DXVECTOR3 lookDir;
 	};
-	Game(bool* b,ResourceManager* resMan,InputHandler* inputHand,SoundHandler* soundHand, LPDIRECT3DDEVICE9 d3dDev);
+	struct TrueStruct
+	{
+		bool val;
+	};
+	Game(TrueStruct* b,HWND windowHandle,ResourceManager* resMan,InputHandler* inputHand,SoundHandler* soundHand, LPDIRECT3DDEVICE9 d3dDev);
 	void Update(float deltaTime);
 	void FixedUpdate(float deltaTime);
 	void Render();
@@ -49,7 +53,7 @@ public:
 	void ReleaseAll();
 private:
 	//object holders
-	bool* isFinished;
+	TrueStruct* isFinished;
 	std::vector<Object3D*> modelObjs;
 	std::vector<Object2D*> spriteObjs;
 	std::vector<DebugCube*> debugCubes;
@@ -76,7 +80,7 @@ private:
 	void DoCameraStuff(float deltaTime);
 	void SetUpCamera();
 	D3DXVECTOR3 ReturnDirection(float anglesX,float anglesY);
-	void SetCameraLookX(float anglesX,float anglesY);
+	void SetCameraLook(float anglesX,float anglesY);
 
 
 	//input stuff
