@@ -40,12 +40,13 @@ ThempX::ThempX(HWND handle,HINSTANCE hInstance)
         }
 		if(msg.message == WM_QUIT)
 		{
-			isDone = true;
+			loop.val = false;
 			DestroyWindow(handleWindow);
 		}		
 
-		currentTicks = GetTickCount();
 		FixedUpdate();
+
+		currentTicks = GetTickCount();
 		if(currentTicks > oldTicks+16)
 		{
 			Update();
@@ -69,24 +70,26 @@ void ThempX::Update()
 {
 	oldDelta = newDelta;
 	newDelta = GetTickCount();
+	//cout << "old Delta: " << oldDelta<<"   new delta: " << newDelta << endl;
+	
 	DWORD tempDeltaTime = newDelta - oldDelta;
-	if(tempDeltaTime < 100)
-	{
-		deltaTime = tempDeltaTime*0.001f;
-		g->Update(deltaTime);
-	}
+
+	deltaTime = tempDeltaTime*0.001f;
+	g->Update(tempDeltaTime*0.001f);
 }
 //FixedUpdate, this will run every iteration of the main game loop
 void ThempX::FixedUpdate()
 {
 	oldFixedDelta = newFixedDelta;
+	
     newFixedDelta = GetTickCount();
     DWORD tempDeltaTime = newFixedDelta - oldFixedDelta;
-	if(tempDeltaTime < 100)
+	if(oldFixedDelta == newFixedDelta)
 	{
-		fixedDeltaTime = tempDeltaTime*0.001f;
-		g->FixedUpdate(fixedDeltaTime);
+		cout << "No Difference, you need more precision" << endl;
 	}
+	fixedDeltaTime = tempDeltaTime*0.001f;
+	g->FixedUpdate(tempDeltaTime*0.001f);
 }
 
 

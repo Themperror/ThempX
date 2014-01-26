@@ -375,6 +375,10 @@ void Game::DoCameraStuff(float deltaTime)
 	angleX-=inputHandler->GetMousePosX()*deltaTime*sensitivity;
 	angleY-=inputHandler->GetMousePosY()*deltaTime*sensitivity;
 	(angleY < -50 ? angleY = -50 : (angleY> 50 ? angleY = 50 : 0));
+	if(inputHandler->GetMousePosX() > 0 || inputHandler->GetMousePosX() < 0)
+	{
+		cout <<"deltatime: " <<deltaTime << endl;
+	}
 	SetCameraLook(angleX,angleY);
 }
 //Input Handling (for testing, this needs to be in game.cpp when a game is created)
