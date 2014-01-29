@@ -1,8 +1,9 @@
 #include "../Headers/Game.h"
 
-Game::Game(Game::TrueStruct* b,HWND windowHandle,ResourceManager* resMan,InputHandler* inputHand,SoundHandler* soundHand, LPDIRECT3DDEVICE9 d3dDev)
+Game::Game(Game::DataStruct* b,HWND windowHandle,ResourceManager* resMan,InputHandler* inputHand,SoundHandler* soundHand, LPDIRECT3DDEVICE9 d3dDev)
 {
-	isFinished = b;
+	data = b;
+
 	handleWindow = windowHandle;
 	resources = resMan;
 	inputHandler = inputHand;
@@ -19,7 +20,7 @@ void Game::Initialize()
 	camera.lookDir.x = 0;
 	camera.lookDir.y = 1;
 	camera.lookDir.z = 0;
-	sensitivity = 5;
+	sensitivity = 50;
 	EditorMode = false;
 	soundHandler->LoadWaveFile("test.wav","test",11025,8,1);
 	angleX = 0;
@@ -32,7 +33,7 @@ void Game::Initialize()
 	camera.lookAt.z = 0;
 	keys.resize(256,0);
 }
-void Game::Update(float deltaTime)
+void Game::Update(double deltaTime)
 {
 	for(unsigned int i =0 ;i<spriteObjs.size(); i++)
 	{
@@ -54,7 +55,7 @@ void Game::Update(float deltaTime)
 		}
 	}
 }
-void Game::FixedUpdate(float deltaTime)
+void Game::FixedUpdate(double deltaTime)
 {
 	inputHandler->Update();
 	DoInput(deltaTime);
@@ -370,14 +371,14 @@ void Game::SetUpCamera()
 	p_Device->SetTransform(D3DTS_PROJECTION, &camera.m_Projection);
 }
 //Camera rotation handling, also needs to be in game.cpp)
-void Game::DoCameraStuff(float deltaTime)
+void Game::DoCameraStuff(double deltaTime)
 {
 	angleX-=inputHandler->GetMousePosX()*deltaTime*sensitivity;
 	angleY-=inputHandler->GetMousePosY()*deltaTime*sensitivity;
 	(angleY < -50 ? angleY = -50 : (angleY> 50 ? angleY = 50 : 0));
 	if(inputHandler->GetMousePosX() > 0 || inputHandler->GetMousePosX() < 0)
 	{
-		cout <<"deltatime: " <<deltaTime << endl;
+		//cout <<"deltatime: " <<deltaTime << endl;
 	}
 	SetCameraLook(angleX,angleY);
 }
@@ -400,7 +401,7 @@ void Game::DoInput(float dT)
 	{
 		if(mouseRightJustDown == false)
 		{
-			lockCursor = !lockCursor;
+			data->lockCursor = !data->lockCursor;
 			mouseRightJustDown = true;
 		}
 	}
@@ -483,7 +484,7 @@ void Game::DoInput(float dT)
 	}
 	if(inputHandler->KeyPressed(DIK_ESCAPE))
 	{
-		isFinished->val = false;
+		data->loop = false;
 	}
 }
 
@@ -522,7 +523,7 @@ void Game::LeftMouseClick()
 //This function is for the extra thread that is (going) to handle all collisions. 
 void Game::CollisionThread(void)
 {
-	while(!isFinished)
+	while(data->loop)
 	{
 		for(unsigned int x = 0; x < debugCubes.size(); x++)
 		{

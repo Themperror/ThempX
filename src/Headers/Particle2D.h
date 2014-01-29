@@ -64,23 +64,23 @@ public:
 	{
 		return viewMatrix;
 	}
-	inline void SetLife(float x)
+	inline void SetLife(double x)
 	{
 		currentLife = x;
 	}
-	inline void SetMaxLife(float x)
+	inline void SetMaxLife(double x)
 	{
 		maxLife = x;
 	}
-	inline void AddLife(float x)
+	inline void AddLife(double x)
 	{
 		currentLife += x;
 	}
-	inline float GetLife()
+	inline double GetLife()
 	{
 		return currentLife;
 	}
-	inline float GetMaxLife()
+	inline double GetMaxLife()
 	{
 		return maxLife;
 	}
@@ -104,8 +104,8 @@ private:
 	D3DXVECTOR3 position;
 	D3DXVECTOR3 scaling;
 	D3DXMATRIX* viewMatrix;
-	float currentLife;
-	float maxLife;
+	double currentLife;
+	double maxLife;
 	LPDIRECT3DTEXTURE9 texture;
 	D3DMATERIAL9* mat;
 	LPDIRECT3DINDEXBUFFER9 iBuffer;

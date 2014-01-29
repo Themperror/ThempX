@@ -6,7 +6,6 @@ ThempX::ThempX(HWND handle,HINSTANCE hInstance)
 	oldTicks = GetTickCount();
 	handleWindow = handle;
 	isDone = false;
-	lockCursor = false;
 	//claim graphics device
 	p_Device = InitializeDevice(handleWindow);
 	
@@ -16,15 +15,17 @@ ThempX::ThempX(HWND handle,HINSTANCE hInstance)
 	soundHandler = new SoundHandler(handle,44100,16,2);
 
 	WINDOWINFO winInfo;
-	Game::TrueStruct loop;
-	loop.val = true;
+	Game::DataStruct data;
+	ZeroMemory(&data,sizeof(data));
+	data.lockCursor = true;
+	data.loop = true;
 	// Game loop starts here after everything is initialized
-	g = new Game(&loop,handleWindow,resources,inputHandler,soundHandler,p_Device);
+	g = new Game(&data,handleWindow,resources,inputHandler,soundHandler,p_Device);
 
 	MSG msg;
-    while(loop.val)
+    while(data.loop)
     {
-		if(lockCursor)
+		if(data.lockCursor)
 		{
 			GetWindowInfo(handle,&winInfo);
 			windowSizeX = winInfo.rcWindow.right-winInfo.rcWindow.left;
@@ -40,15 +41,16 @@ ThempX::ThempX(HWND handle,HINSTANCE hInstance)
         }
 		if(msg.message == WM_QUIT)
 		{
-			loop.val = false;
+			data.loop = false;
 			DestroyWindow(handleWindow);
 		}		
 
 		FixedUpdate();
 
-		currentTicks = GetTickCount();
+		currentTicks = timeGetTime();
 		if(currentTicks > oldTicks+16)
 		{
+			//cout << "update normal, ticks:  "<<currentTicks << endl;
 			Update();
 			DrawScene();
 			oldTicks = currentTicks;
@@ -69,34 +71,34 @@ ThempX::ThempX(HWND handle,HINSTANCE hInstance)
 void ThempX::Update()
 {
 	oldDelta = newDelta;
-	newDelta = GetTickCount();
-	//cout << "old Delta: " << oldDelta<<"   new delta: " << newDelta << endl;
-	
-	DWORD tempDeltaTime = newDelta - oldDelta;
+	QueryPerformanceFrequency(&frequency);
+	QueryPerformanceCounter(&newDelta);
+	newDelta.QuadPart = newDelta.QuadPart*10000 / frequency.QuadPart;
 
-	deltaTime = tempDeltaTime*0.001f;
-	g->Update(tempDeltaTime*0.001f);
+	double delta;
+	delta = oldDelta.QuadPart - newDelta.QuadPart;
+	delta = abs(delta/10000);
+	cout << delta << ".\n";
+	g->Update(delta);
 }
 //FixedUpdate, this will run every iteration of the main game loop
 void ThempX::FixedUpdate()
 {
 	oldFixedDelta = newFixedDelta;
-	
-    newFixedDelta = GetTickCount();
-    DWORD tempDeltaTime = newFixedDelta - oldFixedDelta;
-	if(oldFixedDelta == newFixedDelta)
-	{
-		cout << "No Difference, you need more precision" << endl;
-	}
-	fixedDeltaTime = tempDeltaTime*0.001f;
-	g->FixedUpdate(tempDeltaTime*0.001f);
+	QueryPerformanceFrequency(&fixedFrequency);
+	QueryPerformanceCounter(&newFixedDelta);
+	newFixedDelta.QuadPart = newFixedDelta.QuadPart*10000 / fixedFrequency.QuadPart;
+	double fixedDelta;
+	fixedDelta = oldFixedDelta.QuadPart - newFixedDelta.QuadPart ;
+	fixedDelta = abs(fixedDelta/10000);
+	//cout << fixedDelta << " ms.\n";
+	g->FixedUpdate(fixedDelta);
 }
-
 
 //sets all variables
 void ThempX::Initialize()
 {
-	lockCursor = false;
+	
 }
 
 //draws the scene

@@ -6,6 +6,11 @@ Resources/Models/Car.x	Car3	-20	7.5	30	5	5	4	0	0	0	0	0	0	0
 Resources/Models/Car.x	Car4	41	7.5	-31	5	5	4	0	0	0	0	0	0	0
 Resources/Models/Car.x	Car5	10	7.5	-31	5	5	4	0	0	0	0	0	0	0
 Resources/Models/Car.x	Car6	-20	7.5	-31	5	5	4	0	0	0	0	0	0	0
+Resources/Models/Car.x	Model2	-2.592	7.5598	-15.6121	1	1	1	0	0	0	0	0	0	0
+Resources/Models/Car.x	Model2	-15.4205	5.92938	1.95562	1	1	1	0	0	0	0	0	0	0
+Resources/Models/Car.x	Model2	-35.0135	5.86241	19.5004	1	1	1	0	0	0	0	0	0	0
+Resources/Models/Car.x	Model2	-45.9983	6.16406	2.88124	1	1	1	0	0	0	0	0	0	0
+Resources/Models/Car.x	Model2	-40.8716	5.19444	-28.9322	1	1	1	0	0	0	0	0	0	0
 Resources/Sprites/enemy.png	Duke1	30	8.4	42	2	2	2	0	0	0	0	0	0	0
 Resources/Sprites/enemy.png	Duke2	12	8.4	42	2	2	2	0	0	0	0	0	0	0
 Resources/Sprites/enemy.png	Duke3	9	8.4	42	2	2	2	0	0	0	0	0	0	0

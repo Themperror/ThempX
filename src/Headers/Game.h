@@ -41,19 +41,20 @@ public:
 		D3DXMATRIX m_Projection;
 		D3DXVECTOR3 lookDir;
 	};
-	struct TrueStruct
+	struct DataStruct
 	{
-		bool val;
+		bool loop;
+		bool lockCursor;
 	};
-	Game(TrueStruct* b,HWND windowHandle,ResourceManager* resMan,InputHandler* inputHand,SoundHandler* soundHand, LPDIRECT3DDEVICE9 d3dDev);
-	void Update(float deltaTime);
-	void FixedUpdate(float deltaTime);
+	Game(DataStruct* b,HWND windowHandle,ResourceManager* resMan,InputHandler* inputHand,SoundHandler* soundHand, LPDIRECT3DDEVICE9 d3dDev);
+	void Update(double deltaTime);
+	void FixedUpdate(double deltaTime);
 	void Render();
 	void Initialize();
 	void ReleaseAll();
 private:
 	//object holders
-	TrueStruct* isFinished;
+	DataStruct* data;
 	std::vector<Object3D*> modelObjs;
 	std::vector<Object2D*> spriteObjs;
 	std::vector<DebugCube*> debugCubes;
@@ -77,7 +78,7 @@ private:
 	//////game functions
 
 	//camera functions
-	void DoCameraStuff(float deltaTime);
+	void DoCameraStuff(double deltaTime);
 	void SetUpCamera();
 	D3DXVECTOR3 ReturnDirection(float anglesX,float anglesY);
 	void SetCameraLook(float anglesX,float anglesY);
@@ -90,10 +91,9 @@ private:
 	int KeyPressed(int key);
 	bool mouseLeftJustDown;
 	bool mouseRightJustDown;
-	bool lockCursor;
-	float sensitivity;
-	float angleX;
-	float angleY;
+	double sensitivity;
+	double angleX;
+	double angleY;
 
 	//editor mode
 	void CreateLevelFile();

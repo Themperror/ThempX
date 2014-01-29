@@ -49,7 +49,7 @@ public:
 
 	void Draw();
 	 
-	void Animate(float dTime);
+	void Animate(double dTime);
 	
 	bool hasAnimation;
 	void ReleaseResources();
@@ -84,7 +84,7 @@ private:
 	void LoadAnimation();
 	std::vector<Animation> animations; 
 	float xRows, yRows, currentXAnimValue,currentYAnimValue,sizeX,sizeY,endXAnimValue,endYAnimValue;
-	float timeSinceChange;
+	double timeSinceChange;
 	LPDIRECT3DVERTEXBUFFER9 FillVertices();
 	LPDIRECT3DVERTEXBUFFER9 FillCustomVertices(D3DXVECTOR2 LLPos,D3DXVECTOR2 URPos);
 	LPDIRECT3DINDEXBUFFER9 FillIndices();

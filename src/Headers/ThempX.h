@@ -64,18 +64,15 @@ private:
 
 	Game* g;
 
+
+	LARGE_INTEGER fixedFrequency;        // ticks per second
+	LARGE_INTEGER newFixedDelta, oldFixedDelta;           // ticks
+
 	DWORD currentTicks;
 	DWORD oldTicks;
-	DWORD oldDelta;
-	DWORD newDelta;
-	DWORD oldFixedDelta;
-	DWORD newFixedDelta;
 
-
-	float deltaTime;
-	float fixedDeltaTime;
-
-	bool lockCursor;
+	LARGE_INTEGER frequency;
+	LARGE_INTEGER oldDelta,newDelta;
 
 
 };

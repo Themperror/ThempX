@@ -1,6 +1,6 @@
 #include "../Headers/Particle.h"
 
-Particle::Particle(ResourceManager* res,LPDIRECT3DDEVICE9 device,char* textureP,D3DXMATRIXA16* camView, D3DXVECTOR3 pos,int minParticles,int maxParticles, float minLife, float maxLife)
+Particle::Particle(ResourceManager* res,LPDIRECT3DDEVICE9 device,char* textureP,D3DXMATRIXA16* camView, D3DXVECTOR3 pos,int minParticles,int maxParticles, double minLife, double maxLife)
 {
 	resources = res;
 	p_Device = device;
@@ -108,7 +108,7 @@ LPDIRECT3DINDEXBUFFER9 Particle::FillIndices()
 
 	return p_dx_IndexBuffer;
 }
-void Particle::Update(float deltaTime)
+void Particle::Update(double deltaTime)
 {
 	updateTimer+=deltaTime;
 	unsigned int pSize = GetSize();
@@ -162,12 +162,12 @@ void Particle::DestroyParticle(int index)
 	delete p;
 	particles.erase (particles.begin()+index);
 }
-void Particle::MoveParticle(D3DXVECTOR3 min, D3DXVECTOR3 max,float deltaTime)											 
+void Particle::MoveParticle(D3DXVECTOR3 min, D3DXVECTOR3 max,double deltaTime)											 
 {
 	for(unsigned int i = 0; i < GetSize();i++)
 	{
 		Particle2D* obj = particles.at(i);
-		obj->AddPosition(RandomFloat(min.x,max.x)*deltaTime, RandomFloat(min.y,max.y)*deltaTime, RandomFloat(min.z,max.z)*deltaTime);
+		obj->AddPosition((float)RandomFloat(min.x,max.x)*deltaTime, (float)RandomFloat(min.y,max.y)*deltaTime, (float)RandomFloat(min.z,max.z)*deltaTime);
 	}
 }
 void Particle::CheckLifeTime()
@@ -180,7 +180,7 @@ void Particle::CheckLifeTime()
 		}
 	}
 }
-void Particle::AddLifeTime(float deltaTime)
+void Particle::AddLifeTime(double deltaTime)
 {
 	for(unsigned int i = 0; i < GetSize();i++)
 	{

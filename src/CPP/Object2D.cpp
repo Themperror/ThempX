@@ -210,7 +210,7 @@ void Object2D::Draw()
 			break;
 	}
 }
-void Object2D::Animate(float dTime)
+void Object2D::Animate(double dTime)
 {		
 	if(hasAnimation)
 	{
