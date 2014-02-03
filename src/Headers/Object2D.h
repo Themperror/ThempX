@@ -49,7 +49,7 @@ public:
 
 	void Draw();
 	 
-	void Animate(double dTime);
+	void Animate(float dTime);
 	
 	bool hasAnimation;
 	void ReleaseResources();
@@ -61,7 +61,7 @@ public:
 	std::string objName;
 	bool PlayAnimation(std::string name);
 	std::string currentlyPlayingAnimation;
-
+	
 	inline float GetXRows()
 	{
 		return xRows;
@@ -78,13 +78,20 @@ public:
 	{
 		return sizeY;
 	}
-
+	inline CollisionGeo* GetCollision()
+	{
+		return collision;
+	}
+	inline void SetCollision(void* col)
+	{
+		collision = collision;
+	}
 private:
 	void InitVars(); 
 	void LoadAnimation();
 	std::vector<Animation> animations; 
 	float xRows, yRows, currentXAnimValue,currentYAnimValue,sizeX,sizeY,endXAnimValue,endYAnimValue;
-	double timeSinceChange;
+	float timeSinceChange;
 	LPDIRECT3DVERTEXBUFFER9 FillVertices();
 	LPDIRECT3DVERTEXBUFFER9 FillCustomVertices(D3DXVECTOR2 LLPos,D3DXVECTOR2 URPos);
 	LPDIRECT3DINDEXBUFFER9 FillIndices();
@@ -92,6 +99,6 @@ private:
 	LPDIRECT3DDEVICE9 p_Device;
 
 	HRESULT result;
-	
+	CollisionGeo* collision;
 };
 #endif

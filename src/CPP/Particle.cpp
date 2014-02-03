@@ -1,6 +1,6 @@
 #include "../Headers/Particle.h"
 
-Particle::Particle(ResourceManager* res,LPDIRECT3DDEVICE9 device,char* textureP,D3DXMATRIXA16* camView, D3DXVECTOR3 pos,int minParticles,int maxParticles, double minLife, double maxLife)
+Particle::Particle(ResourceManager* res,LPDIRECT3DDEVICE9 device,char* textureP,D3DXMATRIXA16* camView, D3DXVECTOR3 pos,int minParticles,int maxParticles, float minLife, float maxLife)
 {
 	resources = res;
 	p_Device = device;
@@ -108,7 +108,7 @@ LPDIRECT3DINDEXBUFFER9 Particle::FillIndices()
 
 	return p_dx_IndexBuffer;
 }
-void Particle::Update(double deltaTime)
+void Particle::Update(float deltaTime)
 {
 	updateTimer+=deltaTime;
 	unsigned int pSize = GetSize();
@@ -162,7 +162,7 @@ void Particle::DestroyParticle(int index)
 	delete p;
 	particles.erase (particles.begin()+index);
 }
-void Particle::MoveParticle(D3DXVECTOR3 min, D3DXVECTOR3 max,double deltaTime)											 
+void Particle::MoveParticle(D3DXVECTOR3 min, D3DXVECTOR3 max,float deltaTime)											 
 {
 	for(unsigned int i = 0; i < GetSize();i++)
 	{
@@ -180,7 +180,7 @@ void Particle::CheckLifeTime()
 		}
 	}
 }
-void Particle::AddLifeTime(double deltaTime)
+void Particle::AddLifeTime(float deltaTime)
 {
 	for(unsigned int i = 0; i < GetSize();i++)
 	{

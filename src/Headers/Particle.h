@@ -7,16 +7,16 @@
 class Particle
 {
 public:
-	Particle(ResourceManager* res,LPDIRECT3DDEVICE9 device,char* textureP,D3DXMATRIXA16* camView, D3DXVECTOR3 pos,int minParticles,int maxParticles, double minLife, double maxLife);
+	Particle(ResourceManager* res,LPDIRECT3DDEVICE9 device,char* textureP,D3DXMATRIXA16* camView, D3DXVECTOR3 pos,int minParticles,int maxParticles, float minLife, float maxLife);
 	
-	void Update(double deltaTime);
+	void Update(float deltaTime);
 	void Draw();
 
 	inline void SetEllipsoid(D3DXVECTOR3 ellipse)
 	{
 		ellipsoid = ellipse;
 	}
-	inline void SetLifeTime(double min,double max)
+	inline void SetLifeTime(float min,float max)
 	{
 		maxLifeTime = max;
 		minLifeTime = min;
@@ -31,7 +31,7 @@ public:
 		minMovement = min;
 		maxMovement = max;
 	}
-	inline void SetCreationSpeed(double speed)
+	inline void SetCreationSpeed(float speed)
 	{
 		creationSpeed = speed;
 	}
@@ -48,15 +48,15 @@ private:
 	unsigned int maxParticlesAmount;
 	unsigned int minParticlesAmount;
 	D3DXVECTOR3 position;
-	double maxLifeTime;
-	double minLifeTime;
+	float maxLifeTime;
+	float minLifeTime;
 	D3DXVECTOR3 ellipsoid;
 
 	HWND handleWindow;
 	LPDIRECT3DINDEXBUFFER9 iBuffer;
 	LPDIRECT3DVERTEXBUFFER9 vBuffer;
-	double maxLife;
-	double updateTimer;
+	float maxLife;
+	float updateTimer;
 	ResourceManager* resources;
 	char* texturePath;
 	D3DMATERIAL9 mat;
@@ -70,9 +70,9 @@ private:
 	void RenderParticle();
 	void CreateParticle();
 	void DestroyParticle(int index);
-	void MoveParticle(D3DXVECTOR3 min, D3DXVECTOR3 max,double deltaTime);
+	void MoveParticle(D3DXVECTOR3 min, D3DXVECTOR3 max,float deltaTime);
 	void CheckLifeTime();
-	void AddLifeTime(double deltaTime);
+	void AddLifeTime(float deltaTime);
 
 	float RandomFloat(float min, float max)
 	{

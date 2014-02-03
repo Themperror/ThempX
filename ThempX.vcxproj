@@ -11,22 +11,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <None Include="editorresources.txt" />
-    <None Include="Resources\AnimationPNG\DukeAnimAlien.png" />
-    <None Include="Resources\AnimationPNG\DukeAnimAlien.txt" />
-    <None Include="Resources\level.txt" />
-    <None Include="Resources\Models\Car.x" />
-    <None Include="Resources\Models\CarTexture.jpg" />
-    <None Include="Resources\Models\CityPart1.jpg" />
-    <None Include="Resources\Models\CityPart1.x" />
-    <None Include="Resources\Models\CubeGreen.png" />
-    <None Include="Resources\Models\CubeRed.png" />
-    <None Include="Resources\Models\DebugTexture.png" />
-    <None Include="Resources\Sound\test.wav" />
-    <None Include="Resources\Sprites\enemy.png" />
-    <None Include="Resources\Sprites\toiletmonster.png" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="src\Headers\CollisionGeo.h" />
     <ClInclude Include="src\Headers\DebugCube.h" />
     <ClInclude Include="src\Headers\Game.h" />

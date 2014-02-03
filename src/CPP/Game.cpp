@@ -17,10 +17,12 @@ Game::Game(Game::DataStruct* b,HWND windowHandle,ResourceManager* resMan,InputHa
 }
 void Game::Initialize()
 {
+	currentEditorObjIndex = 0;
 	camera.lookDir.x = 0;
 	camera.lookDir.y = 1;
 	camera.lookDir.z = 0;
-	sensitivity = 50;
+	sensitivity = 500;
+	
 	EditorMode = false;
 	soundHandler->LoadWaveFile("test.wav","test",11025,8,1);
 	angleX = 0;
@@ -35,13 +37,14 @@ void Game::Initialize()
 }
 void Game::Update(double deltaTime)
 {
+	float deltaTimeF = (float)deltaTime;
 	for(unsigned int i =0 ;i<spriteObjs.size(); i++)
 	{
-		spriteObjs.at(i)->Animate(deltaTime);
+		spriteObjs.at(i)->Animate(deltaTimeF);
 	}
 	for(unsigned int i = 0; i < particles.size(); i++)
 	{
-		particles.at(i)->Update(deltaTime);
+		particles.at(i)->Update(deltaTimeF);
 	}
 	if(EditorMode)
 	{
@@ -57,13 +60,14 @@ void Game::Update(double deltaTime)
 }
 void Game::FixedUpdate(double deltaTime)
 {
+	//cout << "array size is : "<<editorObjs.size() << endl;
+	float deltaTimeF = (float)deltaTime;
 	inputHandler->Update();
-	DoInput(deltaTime);
-	DoCameraStuff(deltaTime);
+	DoInput(deltaTimeF);
+	DoCameraStuff(deltaTimeF);
 }
 void Game::Render()
 {
-
 	p_Device->SetSamplerState(0,D3DSAMP_ADDRESSU,D3DTADDRESS_WRAP);
 	p_Device->SetSamplerState(0,D3DSAMP_ADDRESSV,D3DTADDRESS_WRAP);
 	for(unsigned int i = 0; i < modelObjs.size();i++)
@@ -102,251 +106,6 @@ void Game::Render()
 	//Make sure this is last, as setting this before any renders/changes it will make the scene behind 1 frame;
 	SetUpCamera();
 }
-
-//easy-for-use function for testing keys to be pressed
-int Game::KeyPressed(int key)
-{
-	if(inputHandler->KeyPressed(key))
-	{
-		if(keys[key] == 0)
-		{
-			keys[key] = 1;
-			return 2 ;
-		}
-		return 1;
-	}
-	else
-	{
-		keys[key] = 0;
-		return 0;
-	}
-	return 0;
-}
-//speaks for itself
-void Game::DestroyLevel()
-{
-	for(unsigned int i=0;i<modelObjs.size();i++)
-	{
-		modelObjs.at(i)->ReleaseResources();
-		delete modelObjs.at(i);
-	}
-	modelObjs.clear(); 
-	for(unsigned int i=0;i<spriteObjs.size();i++)
-	{
-		spriteObjs.at(i)->ReleaseResources();
-		delete spriteObjs.at(i);
-	}
-	spriteObjs.clear();
-	for(unsigned int i=0;i<lights.size();i++)
-	{
-		free(lights.at(i));
-		delete lights.at(i);
-	}
-	lights.clear();
-}
-void Game::SetUpEditorMode()
-{
-	string line;
-	ifstream myfile ("editorresources.txt");
-	if (!myfile.good())
-	{
-		MessageBox(handleWindow,"Could Not Find editorresources.txt, EditorMode won't work", "ThempX()",MB_OK);
-		cout << "Cannot find editorresources.txt" << endl;
-		return;
-	}
-	if (myfile.is_open())
-	{
-		int animatedSpriteNr = 0;
-		int staticSpriteNr = 0;
-		int modelNr = 0;
-		while ( getline (myfile,line) )
-		{
-			std::cout << "read a line" << std::endl;
-			EditorObj obj;
-			string name;
-			float sizeX,sizeY,xRows,yRows;
-			bool hasAnim = false;
-			string check = "x";
-			myfile >> name >> hasAnim >> sizeX >> sizeY >> xRows >> yRows;
-			if(name[name.size()-1] == check[0])
-			{
-				modelNr++;
-				Object3D* modelObj = new Object3D(resources,_strdup(name.c_str()),p_Device);
-				std::ostringstream oss;
-				oss<<"Model"<<modelNr;
-				modelObj->objName = oss.str();
-				obj.obj3D = modelObj;
-				obj.obj2D = NULL;
-				editorObjs.push_back(obj);
-			}
-			else
-			{
-				if(hasAnim == false)
-				{
-					staticSpriteNr++;
-					Object2D* spriteObj = new Object2D(resources,p_Device,_strdup(name.c_str()),&camera.m_View);
-					std::ostringstream oss;
-					oss<<"StaticSprite"<<staticSpriteNr;
-					spriteObj->objName = oss.str();
-					spriteObj->handleWindow = handleWindow;
-					obj.obj2D = spriteObj;
-					obj.obj3D = NULL;
-					editorObjs.push_back(obj);
-
-				}
-				else
-				{
-					animatedSpriteNr++;
-					Object2D* spriteObj = new Object2D(resources,p_Device,_strdup(name.c_str()),&camera.m_View,sizeX,sizeY,xRows,yRows);
-					spriteObj->handleWindow = handleWindow;
-					std::ostringstream oss;
-					oss<<"AnimatedSprite"<<animatedSpriteNr;
-					spriteObj->objName = oss.str();
-					obj.obj2D = spriteObj;
-					obj.obj3D = NULL;
-					editorObjs.push_back(obj);
-				}
-			}
-		}
-		myfile.close();
-		if(editorObjs.size() > 0)
-		{
-			currentEditorObj = &editorObjs.at(0);
-		}
-	}
-}
-void Game::CreateLevelFile()
-{
-	ofstream level("level.txt");
-	if (level.is_open())
-	{
-		level << "name" << "\t"<< "objName" << "\t"<< "posx" << "\t"<< "posy" << "\t"<< "posz" << "\t"<< "scalex" << "\t"<< "scaley" << "\t"<< "scalez" << "\t"<< "rotx" << "\t"<< "roty" << "\t"<< "rotz" << "\t"<< "sizeX" << "\t"<< "sizeY" << "\t"<< "XAnimRows" << "\t"<< "YAnimRows" << "\n";
-		for(unsigned int i = 0; i < modelObjs.size();i++)
-		{
-			Object3D* obj = modelObjs.at(i);
-			level << obj->model.meshPath << "\t" << obj->objName << "\t" << obj->position.x << "\t" << obj->position.y << "\t" << obj->position.z << "\t" << obj->scaling.x << "\t" << obj->scaling.y << "\t" << obj->scaling.z << "\t" << obj->rotation.x << "\t" << obj->rotation.y << "\t" << obj->rotation.z << "\t" << 0 << "\t" << 0 << "\t" << 0 << "\t" <<0 << "\n";
-		}
-		for(unsigned int i = 0; i < spriteObjs.size();i++)
-		{
-			Object2D* obj = spriteObjs.at(i);
-			level << obj->quad.textureName << "\t" << obj->objName << "\t" << obj->position.x << "\t" << obj->position.y << "\t" << obj->position.z << "\t" << obj->scaling.x << "\t" << obj->scaling.y << "\t" << obj->scaling.z << "\t" << obj->rotation.x << "\t" << obj->rotation.y << "\t" << obj->rotation.z << "\t" << obj->GetXSize() << "\t" << obj->GetYSize() << "\t" << obj->GetXRows() << "\t" << obj->GetYRows() << "\n";
-		}
-
-		level.close();
-	}
-	else
-	{
-		std::cout << "Unable to create/open file" << std::endl;
-	}
-}
-//speaks for itself
-void Game::LoadLevel()
-{
-	ifstream fin("Resources/level.txt");
-	if (!fin.good())
-	{
-		MessageBox(handleWindow,"Could Not Find Level.txt, scene will be empty", "ThempX()",MB_OK);
-		cout << "Cannot find level.txt" << endl;
-	}
-	else
-	{
-		string str;
-		while(getline(fin, str))
-		{
-			string name;
-			string check = "x";
-			string objName;
-			float XAnimRows;
-			float YAnimRows;
-			float sizeX;
-			float sizeY;
-			float posx,posy,posz,scalex,scaley,scalez,rotx,roty,rotz;
-			fin >> name >> objName >>posx >> posy >> posz >> scalex >> scaley >> scalez >> rotx >> roty >> rotz >> sizeX >> sizeY >> XAnimRows >> YAnimRows;
-			if(name.at(name.size()-1) == check[0])
-			{
-				Object3D* obj = new Object3D(resources,_strdup(name.c_str()),p_Device);
-				obj->objName = objName;
-				obj->SetPosition(posx,posy,posz);
-				if(rotx != 0 && roty != 0 && rotz != 0)
-				{
-					obj->SetRotation(rotx,roty,rotz);
-				}
-				if(scalex != 1 && scaley != 1 && scalex != 1)
-				{
-					obj->SetScale(scalex,scaley,scalez);
-				}
-				modelObjs.push_back(obj);
-			}
-			else
-			{
-				if(XAnimRows == 0 && YAnimRows == 0)
-				{
-					Object2D* obj = new Object2D(resources,p_Device,_strdup(name.c_str()),&camera.m_View);
-					obj->handleWindow = handleWindow;
-					obj->objName = objName;
-					obj->SetPosition(posx,posy,posz);
-					if(scalex != 1 && scaley != 1 && scalex != 1)
-					{
-						obj->SetScale(scalex,scaley,scalez);
-					}
-					spriteObjs.push_back(obj);
-
-				}
-				else
-				{
-					Object2D* obj = new Object2D(resources,p_Device,_strdup(name.c_str()),&camera.m_View,sizeX,sizeY,XAnimRows,YAnimRows);
-					obj->handleWindow = handleWindow;
-					obj->objName = objName;
-					obj->SetPosition(posx,posy,posz);
-					if(scalex != 1 && scaley != 1 && scalex != 1)
-					{
-						obj->SetScale(scalex,scaley,scalez);
-					}
-					spriteObjs.push_back(obj);
-				}
-			}
-		}
-		fin.close();
-		CreateLevelFile();
-	}
-}
-//unused light function
-D3DLIGHT9* Game::CreateLight(D3DXVECTOR3 position,D3DXVECTOR3 direction, D3DLIGHTTYPE lightType,D3DXCOLOR lightColor,float range,float falloff)
-{
-	D3DLIGHT9* light = new D3DLIGHT9();
-	light->Diffuse = lightColor;
-	light->Position = position;
-	light->Range = range;
-	light->Falloff = falloff;
-	light->Type = lightType;
-	lights.push_back(light);
-	return light;
-}
-
-
-//returns the camera's looking direction
-D3DXVECTOR3 Game::ReturnDirection(float anglesX,float anglesY)
-{
-	D3DXVECTOR3 final;
-	D3DXVECTOR3 camPos = camera.position;
-	final.x = 0;
-	final.y = 0;
-	final.z = 0;
-
-	float x = 1 * std::cos(anglesX * 3.141592f / 180);
-	float z = 1 * std::sin(anglesX * 3.141592f / 180); 
-	float y = 1 * std::tan(anglesY * 3.141592f / 200);
-
-	float fX = camPos.x+x;
-	float fY = camPos.y+y;
-	float fZ = camPos.z+z;
-
-	final.x = fX - camPos.x;
-	final.y = fY - camPos.y;
-	final.z = fZ - camPos.z;                                                                                                                                                          
-
-	return final;
-}
 //used in DoCameraStuff
 void Game::SetCameraLook(float anglesX,float anglesY)
 {
@@ -371,14 +130,14 @@ void Game::SetUpCamera()
 	p_Device->SetTransform(D3DTS_PROJECTION, &camera.m_Projection);
 }
 //Camera rotation handling, also needs to be in game.cpp)
-void Game::DoCameraStuff(double deltaTime)
+void Game::DoCameraStuff(float deltaTime)
 {
 	angleX-=inputHandler->GetMousePosX()*deltaTime*sensitivity;
 	angleY-=inputHandler->GetMousePosY()*deltaTime*sensitivity;
 	(angleY < -50 ? angleY = -50 : (angleY> 50 ? angleY = 50 : 0));
 	if(inputHandler->GetMousePosX() > 0 || inputHandler->GetMousePosX() < 0)
 	{
-		//cout <<"deltatime: " <<deltaTime << endl;
+		cout <<"angleX: " <<angleX << endl;
 	}
 	SetCameraLook(angleX,angleY);
 }
@@ -409,14 +168,14 @@ void Game::DoInput(float dT)
 	{
 		mouseRightJustDown = false;
 	}
-	int speed = 15;
+	int speed = 60;
 	if(KeyPressed(DIK_LSHIFT))
 	{
-		speed = 35;
+		speed = 70;
 	}
 	else
 	{
-		speed = 15;
+		speed = 40;
 	}
 	if(KeyPressed(DIK_Q))
 	{
@@ -454,6 +213,7 @@ void Game::DoInput(float dT)
 		EditorMode = !EditorMode;
 		if(EditorMode == true)
 		{
+			currentEditorObjIndex = 0;
 			SetUpEditorMode();
 		}
 		std::cout <<"Editor Mode has been set to: "<< EditorMode << std::endl;
@@ -461,6 +221,7 @@ void Game::DoInput(float dT)
 	if(KeyPressed(DIK_8) == 2)
 	{
 		currentEditorObjIndex--;
+		cout << currentEditorObjIndex << endl;
 		if(currentEditorObjIndex < 0)
 		{
 			currentEditorObjIndex = editorObjs.size()-1;
@@ -470,6 +231,8 @@ void Game::DoInput(float dT)
 	if(KeyPressed(DIK_9) == 2)
 	{
 		currentEditorObjIndex++;
+		cout << currentEditorObjIndex << endl;
+		cout << "pressed 9 " << endl;
 		if(currentEditorObjIndex >= editorObjs.size())
 		{
 			currentEditorObjIndex = 0;
@@ -583,4 +346,269 @@ void Game::ReleaseAll()
 		debugCubes.at(i)->Release(); 
 		delete debugCubes.at(i);
 	}
+}
+//easy-for-use function for testing keys to be pressed
+int Game::KeyPressed(int key)
+{
+	if(inputHandler->KeyPressed(key))
+	{
+		if(keys[key] == 0)
+		{
+			keys[key] = 1;
+			return 2 ;
+		}
+		return 1;
+	}
+	else
+	{
+		keys[key] = 0;
+		return 0;
+	}
+	return 0;
+}
+//speaks for itself
+void Game::DestroyLevel()
+{
+	for(unsigned int i=0;i<modelObjs.size();i++)
+	{
+		modelObjs.at(i)->ReleaseResources();
+		delete modelObjs.at(i);
+	}
+	modelObjs.clear(); 
+	for(unsigned int i=0;i<spriteObjs.size();i++)
+	{
+		spriteObjs.at(i)->ReleaseResources();
+		delete spriteObjs.at(i);
+	}
+	spriteObjs.clear();
+	for(unsigned int i=0;i<lights.size();i++)
+	{
+		free(lights.at(i));
+		delete lights.at(i);
+	}
+	lights.clear();
+}
+void Game::SetUpEditorMode()
+{
+	for(unsigned int i = 0; i < editorObjs.size(); i++)
+	{
+		if(editorObjs.at(i).obj2D != NULL)
+		{
+			editorObjs.at(i).obj2D->ReleaseResources();
+			delete editorObjs.at(i).obj2D;
+		}
+		else
+		{
+			editorObjs.at(i).obj3D->ReleaseResources();
+			delete editorObjs.at(i).obj3D;
+		}
+	}
+	editorObjs.clear();
+
+	string line;
+	ifstream myfile ("editorresources.txt");
+	if (!myfile.good())
+	{
+		MessageBox(handleWindow,"Could Not Find editorresources.txt, EditorMode won't work", "ThempX()",MB_OK);
+		cout << "Cannot find editorresources.txt" << endl;
+		return;
+	}
+	if (myfile.is_open())
+	{
+		int animatedSpriteNr = 0;
+		int staticSpriteNr = 0;
+		int modelNr = 0;
+		while ( getline (myfile,line) )
+		{
+			std::cout << "read a line" << std::endl;
+			EditorObj obj;
+			string name;
+			float sizeX,sizeY,xRows,yRows;
+			bool hasAnim = false;
+			string check = "x";
+			myfile >> name >> hasAnim >> sizeX >> sizeY >> xRows >> yRows;
+			if(name[name.size()-1] == check[0])
+			{
+				modelNr++;
+				Object3D* modelObj = new Object3D(resources,_strdup(name.c_str()),p_Device);
+				std::ostringstream oss;
+				oss<<"Model"<<modelNr;
+				modelObj->objName = oss.str();
+				obj.obj3D = modelObj;
+				obj.obj2D = NULL;
+				editorObjs.push_back(obj);
+			}
+			else
+			{
+				if(hasAnim == false)
+				{
+					staticSpriteNr++;
+					Object2D* spriteObj = new Object2D(resources,p_Device,_strdup(name.c_str()),&camera.m_View);
+					std::ostringstream oss;
+					oss<<"StaticSprite"<<staticSpriteNr;
+					spriteObj->objName = oss.str();
+					spriteObj->handleWindow = handleWindow;
+					obj.obj2D = spriteObj;
+					obj.obj3D = NULL;
+					editorObjs.push_back(obj);
+
+				}
+				else
+				{
+					animatedSpriteNr++;
+					Object2D* spriteObj = new Object2D(resources,p_Device,_strdup(name.c_str()),&camera.m_View,sizeX,sizeY,xRows,yRows);
+					spriteObj->handleWindow = handleWindow;
+					std::ostringstream oss;
+					oss<<"AnimatedSprite"<<animatedSpriteNr;
+					spriteObj->objName = oss.str();
+					obj.obj2D = spriteObj;
+					obj.obj3D = NULL;
+					editorObjs.push_back(obj);
+				}
+			}
+		}
+		myfile.close();
+		if(editorObjs.size() > 0)
+		{
+			currentEditorObj = &editorObjs.at(0);
+		}
+	}
+	currentEditorObjIndex = 0;
+	cout <<"array size is: "<< editorObjs.size() << endl;
+}
+void Game::CreateLevelFile()
+{
+	ofstream level("level.txt");
+	if (level.is_open())
+	{
+		level << "name" << "\t"<< "objName" << "\t"<< "posx" << "\t"<< "posy" << "\t"<< "posz" << "\t"<< "scalex" << "\t"<< "scaley" << "\t"<< "scalez" << "\t"<< "rotx" << "\t"<< "roty" << "\t"<< "rotz" << "\t"<< "sizeX" << "\t"<< "sizeY" << "\t"<< "XAnimRows" << "\t"<< "YAnimRows" << "\n";
+		for(unsigned int i = 0; i < modelObjs.size();i++)
+		{
+			Object3D* obj = modelObjs.at(i);
+			level << obj->model.meshPath << "\t" << obj->objName << "\t" << obj->position.x << "\t" << obj->position.y << "\t" << obj->position.z << "\t" << obj->scaling.x << "\t" << obj->scaling.y << "\t" << obj->scaling.z << "\t" << obj->rotation.x << "\t" << obj->rotation.y << "\t" << obj->rotation.z << "\t" << 0 << "\t" << 0 << "\t" << 0 << "\t" <<0 << "\n";
+		}
+		for(unsigned int i = 0; i < spriteObjs.size();i++)
+		{
+			Object2D* obj = spriteObjs.at(i);
+			level << obj->quad.textureName << "\t" << obj->objName << "\t" << obj->position.x << "\t" << obj->position.y << "\t" << obj->position.z << "\t" << obj->scaling.x << "\t" << obj->scaling.y << "\t" << obj->scaling.z << "\t" << obj->rotation.x << "\t" << obj->rotation.y << "\t" << obj->rotation.z << "\t" << obj->GetXSize() << "\t" << obj->GetYSize() << "\t" << obj->GetXRows() << "\t" << obj->GetYRows() << "\n";
+		}
+
+		level.close();
+	}
+	else
+	{
+		std::cout << "Unable to create/open file" << std::endl;
+	}
+}
+//speaks for itself
+void Game::LoadLevel()
+{
+	ifstream fin("Resources/level.txt");
+	if (!fin.good())
+	{
+		MessageBox(handleWindow,"Could Not Find Level.txt, scene will be empty", "ThempX()",MB_OK);
+		cout << "Cannot find level.txt" << endl;
+	}
+	else
+	{
+		string str;
+		while(getline(fin, str))
+		{
+			string name;
+			string check = "x";
+			string objName;
+			float XAnimRows;
+			float YAnimRows;
+			float sizeX;
+			float sizeY;
+			float posx,posy,posz,scalex,scaley,scalez,rotx,roty,rotz;
+
+			fin >> name >> objName >>posx >> posy >> posz >> scalex >> scaley >> scalez >> rotx >> roty >> rotz >> sizeX >> sizeY >> XAnimRows >> YAnimRows;
+
+			if(name.at(name.size()-1) == check[0])
+			{
+				char* mName = _strdup(name.c_str());
+				Object3D* obj = new Object3D(resources,mName,p_Device);
+
+				obj->objName = objName;
+				obj->SetPosition(posx,posy,posz);
+				if(rotx != 0 && roty != 0 && rotz != 0)
+				{
+					obj->SetRotation(rotx,roty,rotz);
+				}
+				if(scalex != 1 && scaley != 1 && scalex != 1)
+				{
+					obj->SetScale(scalex,scaley,scalez);
+				}
+				modelObjs.push_back(obj);
+			}
+			else
+			{
+				if(XAnimRows == 0 && YAnimRows == 0)
+				{
+					Object2D* obj = new Object2D(resources,p_Device,_strdup(name.c_str()),&camera.m_View);
+					obj->handleWindow = handleWindow;
+					obj->objName = objName;
+					obj->SetPosition(posx,posy,posz);
+					if(scalex != 1 && scaley != 1 && scalex != 1)
+					{
+						obj->SetScale(scalex,scaley,scalez);
+					}
+					spriteObjs.push_back(obj);
+
+				}
+				else
+				{
+					Object2D* obj = new Object2D(resources,p_Device,_strdup(name.c_str()),&camera.m_View,sizeX,sizeY,XAnimRows,YAnimRows);
+					obj->handleWindow = handleWindow;
+					obj->objName = objName;
+					obj->SetPosition(posx,posy,posz);
+					if(scalex != 1 && scaley != 1 && scalex != 1)
+					{
+						obj->SetScale(scalex,scaley,scalez);
+					}
+					spriteObjs.push_back(obj);
+				}
+			}
+		}
+		fin.close();
+		CreateLevelFile();
+	}
+}
+//unused light function
+D3DLIGHT9* Game::CreateLight(D3DXVECTOR3 position,D3DXVECTOR3 direction, D3DLIGHTTYPE lightType,D3DXCOLOR lightColor,float range,float falloff)
+{
+	D3DLIGHT9* light = new D3DLIGHT9();
+	light->Diffuse = lightColor;
+	light->Position = position;
+	light->Range = range;
+	light->Falloff = falloff;
+	light->Type = lightType;
+	lights.push_back(light);
+	return light;
+}
+
+
+//returns the camera's looking direction
+D3DXVECTOR3 Game::ReturnDirection(float anglesX,float anglesY)
+{
+	D3DXVECTOR3 final;
+	D3DXVECTOR3 camPos = camera.position;
+	final.x = 0;
+	final.y = 0;
+	final.z = 0;
+
+	float x = 1 * std::cos(anglesX * 3.141592f / 180);
+	float z = 1 * std::sin(anglesX * 3.141592f / 180); 
+	float y = 1 * std::tan(anglesY * 3.141592f / 200);
+
+	float fX = camPos.x+x;
+	float fY = camPos.y+y;
+	float fZ = camPos.z+z;
+
+	final.x = fX - camPos.x;
+	final.y = fY - camPos.y;
+	final.z = fZ - camPos.z;                                                                                                                                                          
+
+	return final;
 }

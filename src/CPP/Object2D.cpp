@@ -210,7 +210,7 @@ void Object2D::Draw()
 			break;
 	}
 }
-void Object2D::Animate(double dTime)
+void Object2D::Animate(float dTime)
 {		
 	if(hasAnimation)
 	{
@@ -311,7 +311,11 @@ void Object2D::ReleaseResources()
 	{
 		quad.iBuffer->Release();
 	}
-
+	if(collision != NULL)
+	{
+		delete collision;
+		collision = NULL;
+	}
 	for(unsigned int i = 0 ; i < animations.size();i++)
 	{
 		animations.at(i).AnimationName.empty();

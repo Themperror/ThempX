@@ -16,9 +16,9 @@ InputHandler::~InputHandler()
 {
 	if(m_pDIKeyboardDevice != NULL)
 	{
-		m_pDIKeyboardDevice->Unacquire(); //unacquire device (NEW)
-		m_pDIKeyboardDevice->Release();   //release keyboard stuff (NEW)
-		m_pDIKeyboardDevice = NULL;       //pointer to NULL (NEW)
+		m_pDIKeyboardDevice->Unacquire(); //unacquire device
+		m_pDIKeyboardDevice->Release();   //release keyboard stuff
+		m_pDIKeyboardDevice = NULL;       //pointer to NULL
 	}
 	if(m_pDIMouseDevice != NULL)
 	{

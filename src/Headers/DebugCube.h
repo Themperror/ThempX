@@ -62,6 +62,14 @@ public:
 		current->unlock();
 		return didCollide;
 	}
+	inline CollisionGeo* GetCollision()
+	{
+		return collision;
+	}
+	inline void SetCollision(void* col)
+	{
+		collision = collision;
+	}
 	inline void AddPositionAndRotation(boost::mutex* current,float x, float y, float z,float rx, float ry, float rz)
 	{
 		current->lock();

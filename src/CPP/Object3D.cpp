@@ -35,12 +35,14 @@ bool Object3D::LoadModel(LPSTR pathName)
 	model.meshTextures = NULL;
 	model.numMaterials = 0;
 	model.mesh = NULL;
+
 	HRESULT result = D3DXLoadMeshFromX(pathName, D3DXMESH_SYSTEMMEM,p_Device, NULL, &model.materialBuffer,NULL, &model.numMaterials,  &model.mesh );
 	switch(result)
 	{
 		case D3DERR_INVALIDCALL: std::cout << "invalid call" << std::endl; break;
 		case E_OUTOFMEMORY: std::cout << "out of memory" << std::endl;break;
 	}
+
 	if(model.materialBuffer != NULL)
 	{
 		model.d3dxMaterials = (D3DXMATERIAL*)model.materialBuffer->GetBufferPointer();
@@ -60,18 +62,25 @@ bool Object3D::LoadModel(LPSTR pathName)
 
 		// Create the texture if it exists - it may not
 		model.meshTextures[i] = NULL;
-		std::string texturePath = model.d3dxMaterials[i].pTextureFilename; 
-		texturePath = "Resources/Models/"+texturePath;
-		if (texturePath != "")
+
+		if(model.d3dxMaterials[i].pTextureFilename != NULL)
 		{
-			result = D3DXCreateTextureFromFile(p_Device, texturePath.c_str(), &model.meshTextures[i]);
-			switch(result)
+			std::string texturePath = model.d3dxMaterials[i].pTextureFilename; 
+
+			std::cout << model.d3dxMaterials[i].pTextureFilename << std::endl;
+			texturePath = "Resources/Models/"+texturePath;
+
+			if (texturePath != "")
 			{
+				result = D3DXCreateTextureFromFile(p_Device, texturePath.c_str(), &model.meshTextures[i]);
+				switch(result)
+				{
 				case D3DERR_NOTAVAILABLE:		std::cout << "Err: Not Available" << std::endl;			return false;  break;
 				case D3DERR_OUTOFVIDEOMEMORY:	std::cout << "Err: Out of Video Memory" << std::endl;	return false;  break;
 				case D3DERR_INVALIDCALL:		std::cout << "Err: Invalid Call" << std::endl;			return false;  break;
 				case D3DXERR_INVALIDDATA:		std::cout << "XErr: Invalid Data" << std::endl;			return false;  break;
 				case E_OUTOFMEMORY:				std::cout << "Err: Out of Memory" << std::endl;			return false;  break;
+				}
 			}
 		}
 	}
@@ -123,6 +132,11 @@ void Object3D::ReleaseResources()
 	if(model.materialBuffer != NULL)
 	{
 		model.materialBuffer->Release();
+	}
+	if(collision != NULL)
+	{
+		delete collision;
+		collision = NULL;
 	}
 	for(unsigned int x=0; x < model.numMaterials;x++)
 	{

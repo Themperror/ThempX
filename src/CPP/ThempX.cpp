@@ -78,7 +78,7 @@ void ThempX::Update()
 	double delta;
 	delta = oldDelta.QuadPart - newDelta.QuadPart;
 	delta = abs(delta/10000);
-	cout << delta << ".\n";
+	//cout << delta << ".\n";
 	g->Update(delta);
 }
 //FixedUpdate, this will run every iteration of the main game loop

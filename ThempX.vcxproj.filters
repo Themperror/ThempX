@@ -13,62 +13,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Resource Files\AnimationPNG">
-      <UniqueIdentifier>{9c114a79-6a85-4fad-9786-bacdb7926aca}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Resource Files\Models">
-      <UniqueIdentifier>{245b2b63-b20e-40ce-ab9e-46658bb8e238}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Resource Files\Sprites">
-      <UniqueIdentifier>{c98a8e97-91f2-4ffb-baf0-15848235f7e2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Resource Files\Sound">
-      <UniqueIdentifier>{a922570a-1af9-4718-8312-fdde1860d937}</UniqueIdentifier>
-    </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\level.txt">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="Resources\AnimationPNG\DukeAnimAlien.png">
-      <Filter>Resource Files\AnimationPNG</Filter>
-    </None>
-    <None Include="Resources\AnimationPNG\DukeAnimAlien.txt">
-      <Filter>Resource Files\AnimationPNG</Filter>
-    </None>
-    <None Include="Resources\Models\Car.x">
-      <Filter>Resource Files\Models</Filter>
-    </None>
-    <None Include="Resources\Models\CarTexture.jpg">
-      <Filter>Resource Files\Models</Filter>
-    </None>
-    <None Include="Resources\Models\CityPart1.jpg">
-      <Filter>Resource Files\Models</Filter>
-    </None>
-    <None Include="Resources\Models\CityPart1.x">
-      <Filter>Resource Files\Models</Filter>
-    </None>
-    <None Include="Resources\Models\CubeGreen.png">
-      <Filter>Resource Files\Models</Filter>
-    </None>
-    <None Include="Resources\Models\CubeRed.png">
-      <Filter>Resource Files\Models</Filter>
-    </None>
-    <None Include="Resources\Models\DebugTexture.png">
-      <Filter>Resource Files\Models</Filter>
-    </None>
-    <None Include="Resources\Sprites\enemy.png">
-      <Filter>Resource Files\Sprites</Filter>
-    </None>
-    <None Include="Resources\Sprites\toiletmonster.png">
-      <Filter>Resource Files\Sprites</Filter>
-    </None>
-    <None Include="Resources\Sound\test.wav">
-      <Filter>Resource Files\Sound</Filter>
-    </None>
-    <None Include="editorresources.txt">
-      <Filter>Resource Files</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Headers\CollisionGeo.h">

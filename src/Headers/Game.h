@@ -78,7 +78,7 @@ private:
 	//////game functions
 
 	//camera functions
-	void DoCameraStuff(double deltaTime);
+	void DoCameraStuff(float deltaTime);
 	void SetUpCamera();
 	D3DXVECTOR3 ReturnDirection(float anglesX,float anglesY);
 	void SetCameraLook(float anglesX,float anglesY);
@@ -91,9 +91,9 @@ private:
 	int KeyPressed(int key);
 	bool mouseLeftJustDown;
 	bool mouseRightJustDown;
-	double sensitivity;
-	double angleX;
-	double angleY;
+	float sensitivity;
+	float angleX;
+	float angleY;
 
 	//editor mode
 	void CreateLevelFile();
@@ -105,7 +105,7 @@ private:
 	};
 	std::vector<EditorObj> editorObjs;
 	EditorObj* currentEditorObj;
-	unsigned int currentEditorObjIndex;
+	int currentEditorObjIndex;
 	bool EditorMode;
 	bool pressedEditorKey;
 
