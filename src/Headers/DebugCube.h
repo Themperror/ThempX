@@ -21,6 +21,7 @@ public:
 	DebugCube(LPDIRECT3DDEVICE9 d3d_Device,D3DXVECTOR3 cubePosition,	D3DXVECTOR3 cubeRotation, D3DXVECTOR3 LLFPosition, D3DXVECTOR3 URBPosition, ResourceManager* resources);
 	D3DXVECTOR3 position;
 	D3DXVECTOR3 rotation;
+	D3DXVECTOR3 scaling;
 	D3DXVECTOR3 LLFPos;
 	D3DXVECTOR3 URBPos;
 	LPDIRECT3DINDEXBUFFER9 iBuffer;
@@ -38,6 +39,7 @@ public:
 	LPDIRECT3DVERTEXBUFFER9 FillVertices();
 	HWND handleWindow;
 	CollisionGeo* collision;
+	std::string objName;
 	bool didCollide;
 
 	short cubeIndices[36];
@@ -49,13 +51,13 @@ public:
 		current->unlock();
 		return hasCol;
 	}
-	inline void SetCollide(bool val, boost::mutex* current)
+	inline void SetCollide(bool val, boost::mutex* current) // only used for collision debugging
 	{
 		current->lock();
 		didCollide = val;
 		current->unlock();
 	}
-	inline bool DidCollide(boost::mutex* current)
+	inline bool DidCollide(boost::mutex* current)  // only used for collision debugging
 	{
 		current->lock();
 		bool didCol = didCollide;
@@ -70,7 +72,42 @@ public:
 	{
 		collision = collision;
 	}
-	inline void AddPositionAndRotation(boost::mutex* current,float x, float y, float z,float rx, float ry, float rz)
+
+	//this function expects you to manually have set the variables before execution, failing in doing so will give in-accurate collisions
+	inline bool HardUpdateCollisionGeo(boost::mutex* current) //safe version
+	{
+		current->lock();
+		if(collision != NULL)
+		{
+			collision->SetAABB(position,rotation,scaling);
+			current->unlock();
+			return true;
+		}
+		current->unlock();
+		return false;
+	}
+	inline bool HardUpdateCollisionGeo() //unsafe version
+	{
+		if(collision != NULL)
+		{
+			collision->SetAABB(position,rotation,scaling);
+			return true;
+		}
+		return false;
+	}
+	inline bool SetPosRotScale(boost::mutex* current,D3DXVECTOR3 pos, D3DXVECTOR3 rot, D3DXVECTOR3 scale) //safe version
+	{
+		position = pos;
+		rotation = rot;
+		scaling = scale;
+		if(collision != NULL)
+		{
+			collision->SetAABB(pos,rot,scale);
+			return true;
+		}
+		return false;
+	}
+	inline bool AddPositionAndRotation(boost::mutex* current,float x, float y, float z,float rx, float ry, float rz)
 	{
 		current->lock();
 		position.x += x;
@@ -105,9 +142,12 @@ public:
 		}
 		if(collision != NULL)
 		{
-			collision->SetAABB(position,rotation);
+			collision->SetAABB(position,rotation,scaling);
+			current->unlock();
+			return true;
 		}
 		current->unlock();
+		return false;
 	}
 };
 

@@ -63,11 +63,12 @@ public:
 	{
 		return &thisAABB;
 	}
-	inline void SetAABB(D3DXVECTOR3 newValuePos,D3DXVECTOR3 newValueRot)
+	inline void SetAABB(D3DXVECTOR3 newValuePos,D3DXVECTOR3 newValueRot,D3DXVECTOR3 newValueScale)
 	{
 		position = newValuePos;
 		rotation = newValueRot;
-		
+		scaling = newValueScale;
+
 		D3DXVECTOR3 radianRot = rotation;
 
 		radianRot.x *=ToRadian;
@@ -81,9 +82,12 @@ public:
 		D3DXMATRIX worldMatrix;
 		D3DXMATRIX m_Translation;
 		D3DXMATRIX m_Rotation;
+		D3DXMATRIX m_Scaling;
+		D3DXMATRIX m_RotScale;
 		D3DXMatrixRotationYawPitchRoll(&m_Rotation,radianRot.x,radianRot.y,radianRot.z);
 		D3DXMatrixTranslation(&m_Translation,position.x,position.y,position.z);
-		D3DXMatrixMultiply(&worldMatrix,&m_Rotation,&m_Translation);
+		D3DXMatrixMultiply(&m_RotScale,&m_Rotation,&m_Scaling); //scaling added, MIGHT fuck up collisions, havent tested it yet
+		D3DXMatrixMultiply(&worldMatrix,&m_RotScale,&m_Translation);
 
 
 		D3DXVec3Transform(&thisAABB.transformedVertexPoints[0],&D3DXVECTOR3(LLFPos.x, URBPos.y, LLFPos.z),&worldMatrix);
@@ -130,6 +134,7 @@ private:
 
 	//general data
 	D3DXVECTOR3 position;
+	D3DXVECTOR3 scaling;
 	D3DXVECTOR3 rotation;
 	//cube data
 	D3DXVECTOR3 LLFPos;

@@ -11,6 +11,7 @@ void Object3D::InitVars()
 	rotation.x = 0;
 	rotation.y = 0;
 	rotation.z = 0;
+	collision = NULL;
 }
 Object3D::Object3D(ResourceManager* resources,char* path, LPDIRECT3DDEVICE9 d3d_Device)
 {
@@ -135,7 +136,7 @@ void Object3D::ReleaseResources()
 	}
 	if(collision != NULL)
 	{
-		delete collision;
+		free( collision);
 		collision = NULL;
 	}
 	for(unsigned int x=0; x < model.numMaterials;x++)

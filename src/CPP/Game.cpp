@@ -21,7 +21,7 @@ void Game::Initialize()
 	camera.lookDir.x = 0;
 	camera.lookDir.y = 1;
 	camera.lookDir.z = 0;
-	sensitivity = 500;
+	sensitivity = 50;
 	
 	EditorMode = false;
 	soundHandler->LoadWaveFile("test.wav","test",11025,8,1);
@@ -52,9 +52,15 @@ void Game::Update(double deltaTime)
 		{
 			currentEditorObj->obj2D->position = AddVector3(&camera.lookAt,&MultiplyVector3(&camera.lookDir,15));
 		}
-		else
+		else if(currentEditorObj->obj3D != NULL)
 		{
 			currentEditorObj->obj3D->position = AddVector3(&camera.lookAt,&MultiplyVector3(&camera.lookDir,15));
+		}
+		else
+		{
+			currentEditorObj->col->position = AddVector3(&camera.lookAt,&MultiplyVector3(&camera.lookDir,15));
+			currentEditorObj->col->scaling = D3DXVECTOR3(1,1,1);
+			currentEditorObj->col->HardUpdateCollisionGeo(&collisionLock);
 		}
 	}
 }
@@ -96,11 +102,15 @@ void Game::Render()
 			p_Device->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP);
 			currentEditorObj->obj2D->Draw();
 		}
-		else
+		else if(currentEditorObj->obj3D != NULL)
 		{
 			p_Device->SetSamplerState(0,D3DSAMP_ADDRESSU,D3DTADDRESS_WRAP);
 			p_Device->SetSamplerState(0,D3DSAMP_ADDRESSV,D3DTADDRESS_WRAP);
 			currentEditorObj->obj3D->DrawModel();
+		}
+		else
+		{
+			currentEditorObj->col->Draw();
 		}
 	}
 	//Make sure this is last, as setting this before any renders/changes it will make the scene behind 1 frame;
@@ -132,7 +142,25 @@ void Game::SetUpCamera()
 //Camera rotation handling, also needs to be in game.cpp)
 void Game::DoCameraStuff(float deltaTime)
 {
-	angleX-=inputHandler->GetMousePosX()*deltaTime*sensitivity;
+	if(angleX < -360 || angleX > 720)
+	{
+		angleX = 0;
+	}
+	float xMod = inputHandler->GetMousePosX()*deltaTime*sensitivity;
+	if(angleX-xMod < 0) 
+	{
+		float rest = xMod - angleX;
+		angleX = 360-rest;
+	}
+	else if(angleX-xMod > 360)
+	{
+		float rest = abs(360 - angleX+xMod);
+		angleX = rest;
+	}
+	else
+	{
+		angleX -= xMod;
+	}
 	angleY-=inputHandler->GetMousePosY()*deltaTime*sensitivity;
 	(angleY < -50 ? angleY = -50 : (angleY> 50 ? angleY = 50 : 0));
 	if(inputHandler->GetMousePosX() > 0 || inputHandler->GetMousePosX() < 0)
@@ -273,12 +301,19 @@ void Game::LeftMouseClick()
 				spriteObjs.push_back(obj);
 			}
 		}
-		else
+		else if(currentEditorObj->obj3D != NULL)
 		{
 			Object3D* obj = new Object3D(resources,currentEditorObj->obj3D->model.meshPath,p_Device);
 			obj->objName = currentEditorObj->obj3D->objName;
 			obj->SetPosition(currentEditorObj->obj3D->position.x,currentEditorObj->obj3D->position.y,currentEditorObj->obj3D->position.z);
 			modelObjs.push_back(obj);
+		}
+		else
+		{
+			DebugCube* src = currentEditorObj->col;
+			DebugCube* obj = new DebugCube(p_Device,src->position,src->rotation,src->LLFPos,src->URBPos,resources);
+			obj->SetPosRotScale(&collisionLock,src->position,src->rotation,src->scaling);
+			debugCubes.push_back(obj);
 		}
 		CreateLevelFile();
 	}
@@ -397,10 +432,15 @@ void Game::SetUpEditorMode()
 			editorObjs.at(i).obj2D->ReleaseResources();
 			delete editorObjs.at(i).obj2D;
 		}
-		else
+		else if(editorObjs.at(i).obj3D != NULL)
 		{
 			editorObjs.at(i).obj3D->ReleaseResources();
 			delete editorObjs.at(i).obj3D;
+		}
+		else
+		{
+			editorObjs.at(i).col->Release();
+			delete editorObjs.at(i).col;
 		}
 	}
 	editorObjs.clear();
@@ -415,13 +455,20 @@ void Game::SetUpEditorMode()
 	}
 	if (myfile.is_open())
 	{
+		EditorObj obj;
+		obj.col = new DebugCube(p_Device,D3DXVECTOR3(0,0,0),D3DXVECTOR3(0,0,0),D3DXVECTOR3(-1,-1,-1),D3DXVECTOR3(1,1,1),resources);
+		obj.col->scaling = D3DXVECTOR3(1,1,1);
+		obj.obj2D = NULL;
+		obj.obj3D = NULL;
+		editorObjs.push_back(obj);
 		int animatedSpriteNr = 0;
 		int staticSpriteNr = 0;
 		int modelNr = 0;
 		while ( getline (myfile,line) )
 		{
-			std::cout << "read a line" << std::endl;
-			EditorObj obj;
+			obj.col = NULL;
+			obj.obj2D = NULL;
+			obj.obj3D = NULL;
 			string name;
 			float sizeX,sizeY,xRows,yRows;
 			bool hasAnim = false;
@@ -435,7 +482,6 @@ void Game::SetUpEditorMode()
 				oss<<"Model"<<modelNr;
 				modelObj->objName = oss.str();
 				obj.obj3D = modelObj;
-				obj.obj2D = NULL;
 				editorObjs.push_back(obj);
 			}
 			else
@@ -449,7 +495,6 @@ void Game::SetUpEditorMode()
 					spriteObj->objName = oss.str();
 					spriteObj->handleWindow = handleWindow;
 					obj.obj2D = spriteObj;
-					obj.obj3D = NULL;
 					editorObjs.push_back(obj);
 
 				}
@@ -462,7 +507,6 @@ void Game::SetUpEditorMode()
 					oss<<"AnimatedSprite"<<animatedSpriteNr;
 					spriteObj->objName = oss.str();
 					obj.obj2D = spriteObj;
-					obj.obj3D = NULL;
 					editorObjs.push_back(obj);
 				}
 			}
@@ -492,6 +536,11 @@ void Game::CreateLevelFile()
 			Object2D* obj = spriteObjs.at(i);
 			level << obj->quad.textureName << "\t" << obj->objName << "\t" << obj->position.x << "\t" << obj->position.y << "\t" << obj->position.z << "\t" << obj->scaling.x << "\t" << obj->scaling.y << "\t" << obj->scaling.z << "\t" << obj->rotation.x << "\t" << obj->rotation.y << "\t" << obj->rotation.z << "\t" << obj->GetXSize() << "\t" << obj->GetYSize() << "\t" << obj->GetXRows() << "\t" << obj->GetYRows() << "\n";
 		}
+		for(unsigned int i = 0; i < debugCubes.size();i++)
+		{
+			DebugCube* obj = debugCubes.at(i);
+			level << "NULL"  << "\t" << "Collision"<< "\t" << obj->position.x << "\t" << obj->position.y << "\t" << obj->position.z << "\t" << obj->scaling.x << "\t" << obj->scaling.y << "\t" << obj->scaling.z << "\t" << obj->rotation.x << "\t" << obj->rotation.y << "\t" << obj->rotation.z << "\t" << 0 << "\t" << 0 << "\t" << 0 << "\t" << 0 << "\n";
+		}
 
 		level.close();
 	}
@@ -516,6 +565,7 @@ void Game::LoadLevel()
 		{
 			string name;
 			string check = "x";
+			string colCheck = "Collision";
 			string objName;
 			float XAnimRows;
 			float YAnimRows;
@@ -542,7 +592,7 @@ void Game::LoadLevel()
 				}
 				modelObjs.push_back(obj);
 			}
-			else
+			else if(name != colCheck)
 			{
 				if(XAnimRows == 0 && YAnimRows == 0)
 				{
@@ -569,6 +619,14 @@ void Game::LoadLevel()
 					}
 					spriteObjs.push_back(obj);
 				}
+			}
+			else
+			{
+				DebugCube* obj = new DebugCube(p_Device,D3DXVECTOR3(posx,posy,posz),D3DXVECTOR3(rotx,roty,rotz),D3DXVECTOR3(-1,-1,-1),D3DXVECTOR3(1,1,1),resources);
+				obj->objName = "Collision";
+				obj->scaling = D3DXVECTOR3(scalex,scaley,scalez);
+				obj->AddPositionAndRotation(&collisionLock,0,0,0,0,0,0);
+				debugCubes.push_back(obj);
 			}
 		}
 		fin.close();

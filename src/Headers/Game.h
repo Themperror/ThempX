@@ -1,7 +1,6 @@
 #ifndef _GAME_H_
 #define _GAME_H_
 
-
 #include <Windows.h>
 #include <windowsx.h>
 #include <conio.h>
@@ -102,6 +101,7 @@ private:
 	{
 		Object2D* obj2D;
 		Object3D* obj3D;
+		DebugCube* col;
 	};
 	std::vector<EditorObj> editorObjs;
 	EditorObj* currentEditorObj;

@@ -1,7 +1,2 @@
 name	objName	posx	posy	posz	scalex	scaley	scalez	rotx	roty	rotz	sizeX	sizeY	XAnimRows	YAnimRows
-Resources/Models/Level1.x	Car1	1	1	1	5	5	4	0	0	0	0	0	0	0
-Resources/Models/Car.x	Car2	10	7.5	30	5	5	4	0	0	0	0	0	0	0
-Resources/Models/Car.x	Car3	-20	7.5	30	5	5	4	0	0	0	0	0	0	0
-Resources/Models/Car.x	Car4	41	7.5	-31	5	5	4	0	0	0	0	0	0	0
-Resources/Models/Car.x	Car5	10	7.5	-31	5	5	4	0	0	0	0	0	0	0
-Resources/Models/Car.x	Car6	-20	7.5	-31	5	5	4	0	0	0	0	0	0	0
+Resources/Models/Level1.x	Level	0	-10	0	2	2	2	0	0	0	0	0	0	0

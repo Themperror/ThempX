@@ -12,7 +12,7 @@ CollisionGeo::CollisionGeo(D3DXVECTOR3 cubePosition,D3DXVECTOR3 cubeRotation, D3
 	currentType = OBBCube;
 	LLFPos = D3DXVECTOR3(cubePosition.x+LowerLeftFrontPos.x,cubePosition.y+LowerLeftFrontPos.y,cubePosition.z+LowerLeftFrontPos.z) ;
 	URBPos = D3DXVECTOR3(cubePosition.x+UpperRightBackPos.x,cubePosition.y+UpperRightBackPos.y,cubePosition.z+UpperRightBackPos.z) ;
-	SetAABB(cubePosition,cubeRotation);
+	SetAABB(cubePosition,cubeRotation,scaling);
 }
 CollisionGeo::CollisionGeo(D3DXVECTOR3 spherePosition, float sphereRadius)
 {

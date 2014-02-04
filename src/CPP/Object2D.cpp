@@ -162,7 +162,7 @@ void Object2D::InitVars()
 	quad.vBuffer = FillVertices();
 	quad.iBuffer = NULL;
 	quad.iBuffer = FillIndices();
-
+	collision = NULL;
 	//light = new light etc
 }
 void Object2D::Draw()
@@ -313,7 +313,7 @@ void Object2D::ReleaseResources()
 	}
 	if(collision != NULL)
 	{
-		delete collision;
+		free( collision);
 		collision = NULL;
 	}
 	for(unsigned int i = 0 ; i < animations.size();i++)
