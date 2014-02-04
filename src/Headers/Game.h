@@ -1,6 +1,9 @@
 #ifndef _GAME_H_
 #define _GAME_H_
-
+#define IFCOL if(currentEditorObj->col != NULL)
+#define IFOBJ3D if(currentEditorObj->obj3D != NULL)
+#define IFOBJ2D if(currentEditorObj->obj2D != NULL)
+#define VECTOR3ONE D3DXVECTOR3(1,1,1)
 #include <Windows.h>
 #include <windowsx.h>
 #include <conio.h>
@@ -108,6 +111,7 @@ private:
 	int currentEditorObjIndex;
 	bool EditorMode;
 	bool pressedEditorKey;
+	float scaleMultiplier;
 
 	//CollisionThread
 	void CollisionThread();

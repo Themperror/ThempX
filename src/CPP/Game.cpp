@@ -23,6 +23,7 @@ void Game::Initialize()
 	camera.lookDir.z = 0;
 	sensitivity = 50;
 	
+	scaleMultiplier = 3;
 	EditorMode = false;
 	soundHandler->LoadWaveFile("test.wav","test",11025,8,1);
 	angleX = 0;
@@ -48,19 +49,18 @@ void Game::Update(double deltaTime)
 	}
 	if(EditorMode)
 	{
-		if(currentEditorObj->obj2D != NULL)
+		IFOBJ2D
 		{
 			currentEditorObj->obj2D->position = AddVector3(&camera.lookAt,&MultiplyVector3(&camera.lookDir,15));
 		}
-		else if(currentEditorObj->obj3D != NULL)
+		else IFOBJ3D
 		{
 			currentEditorObj->obj3D->position = AddVector3(&camera.lookAt,&MultiplyVector3(&camera.lookDir,15));
 		}
-		else
+		else IFCOL
 		{
 			currentEditorObj->col->position = AddVector3(&camera.lookAt,&MultiplyVector3(&camera.lookDir,15));
-			currentEditorObj->col->scaling = D3DXVECTOR3(1,1,1);
-			currentEditorObj->col->HardUpdateCollisionGeo(&collisionLock);
+			//currentEditorObj->col->HardUpdateCollisionGeo(&collisionLock);
 		}
 	}
 }
@@ -96,19 +96,19 @@ void Game::Render()
 	}
 	if(EditorMode)
 	{
-		if(currentEditorObj->obj2D != NULL)
+		IFOBJ2D
 		{
 			p_Device->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_CLAMP);
 			p_Device->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP);
 			currentEditorObj->obj2D->Draw();
 		}
-		else if(currentEditorObj->obj3D != NULL)
+		else IFOBJ3D
 		{
 			p_Device->SetSamplerState(0,D3DSAMP_ADDRESSU,D3DTADDRESS_WRAP);
 			p_Device->SetSamplerState(0,D3DSAMP_ADDRESSV,D3DTADDRESS_WRAP);
 			currentEditorObj->obj3D->DrawModel();
 		}
-		else
+		else IFCOL
 		{
 			currentEditorObj->col->Draw();
 		}
@@ -245,6 +245,101 @@ void Game::DoInput(float dT)
 			SetUpEditorMode();
 		}
 		std::cout <<"Editor Mode has been set to: "<< EditorMode << std::endl;
+	}
+	if(KeyPressed(DIK_NUMPADPLUS) == 2)
+	{
+		scaleMultiplier = 3;
+		cout << "Scale Adding has been set to true" << endl;
+	}
+	if(KeyPressed(DIK_NUMPADMINUS) == 2)
+	{
+		scaleMultiplier = -3;
+		cout << "Scale Adding has been set to false" << endl;
+	}
+	if(KeyPressed(DIK_NUMPAD4) || KeyPressed(DIK_NUMPAD6))
+	{
+		IFCOL
+		{
+			currentEditorObj->col->scaling.x += scaleMultiplier*dT;
+		}
+		else IFOBJ3D
+		{
+			currentEditorObj->obj3D->scaling.x += scaleMultiplier*dT;
+		}
+		else IFOBJ2D
+		{
+			currentEditorObj->obj2D->scaling.x += scaleMultiplier*dT;
+		}
+	}
+	if(KeyPressed(DIK_NUMPAD2) || KeyPressed(DIK_NUMPAD8))
+	{
+		IFCOL
+		{
+			currentEditorObj->col->scaling.y += scaleMultiplier*dT;
+		}
+		else IFOBJ3D
+		{
+			currentEditorObj->obj3D->scaling.y += scaleMultiplier*dT;
+		}
+		else IFOBJ2D
+		{
+			currentEditorObj->obj2D->scaling.y += scaleMultiplier*dT;
+		}
+	}
+	if(KeyPressed(DIK_NUMPAD5) || KeyPressed(DIK_NUMPAD0))
+	{
+		IFCOL
+		{
+			currentEditorObj->col->scaling.z += scaleMultiplier*dT;
+		}
+		else IFOBJ3D
+		{
+			currentEditorObj->obj3D->scaling.z += scaleMultiplier*dT;
+		}
+	}
+	if(KeyPressed(DIK_I))
+	{
+		IFCOL
+		{
+			currentEditorObj->col->rotation.x += 5*dT*5;
+		}
+		else IFOBJ3D
+		{
+			currentEditorObj->obj3D->rotation.x += dT*5;
+		}
+	}
+	if(KeyPressed(DIK_K))
+	{
+		IFCOL
+		{
+			currentEditorObj->col->rotation.x -= 5*dT*5;
+		}
+		else IFOBJ3D
+		{
+			currentEditorObj->obj3D->rotation.x -=dT*5;
+		}
+	}
+	if(KeyPressed(DIK_J))
+	{
+		IFCOL
+		{
+			currentEditorObj->col->rotation.y += 5*dT*5;
+		}
+		else IFOBJ3D
+		{
+			currentEditorObj->obj3D->rotation.y += dT*5;
+		}
+	}
+	if(KeyPressed(DIK_L))
+	{
+		IFCOL
+		{
+			currentEditorObj->col->rotation.y -= 5*dT*5;
+		}
+		else IFOBJ3D
+		{
+			currentEditorObj->obj3D->rotation.y -= dT*5;
+		}
 	}
 	if(KeyPressed(DIK_8) == 2)
 	{

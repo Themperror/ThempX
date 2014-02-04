@@ -5,6 +5,7 @@ DebugCube::DebugCube(LPDIRECT3DDEVICE9 d3d_Device, D3DXVECTOR3 cubePosition,D3DX
 	p_Device = d3d_Device;
 	position = cubePosition;
 	rotation = cubeRotation;
+	scaling = D3DXVECTOR3(1,1,1);
 	LLFPos = D3DXVECTOR3(LLFPosition.x,LLFPosition.y,LLFPosition.z);
 	URBPos = D3DXVECTOR3(URBPosition.x,URBPosition.y,URBPosition.z);
 
