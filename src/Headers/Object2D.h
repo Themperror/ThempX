@@ -39,13 +39,13 @@ class Object2D
 {
 	
 public:	   
-	Object2D(ResourceManager* resources, LPDIRECT3DDEVICE9 d3d_Device, char* texturePath, D3DXMATRIXA16* camView);
-	Object2D(ResourceManager* resources, LPDIRECT3DDEVICE9 d3d_Device, char* texturePath, D3DXMATRIXA16* camView, D3DXVECTOR2 LLPos, D3DXVECTOR2 URPos);
-	Object2D(ResourceManager* resources,LPDIRECT3DDEVICE9 d3d_Device,char* texturePath,D3DXMATRIXA16* camViewMatrix,float tSizeX,float tSizeY,float xRowsAnim,float yRowsAnim);
+	Object2D(ResourceManager* resources, LPDIRECT3DDEVICE9 d3d_Device, char* texturePath, D3DXMATRIX* camView);
+	Object2D(ResourceManager* resources, LPDIRECT3DDEVICE9 d3d_Device, char* texturePath, D3DXMATRIX* camView, D3DXVECTOR2 LLPos, D3DXVECTOR2 URPos);
+	Object2D(ResourceManager* resources,LPDIRECT3DDEVICE9 d3d_Device,char* texturePath,D3DXMATRIX* camViewMatrix,float tSizeX,float tSizeY,float xRowsAnim,float yRowsAnim);
 	D3DXVECTOR3 rotation;
 	D3DXVECTOR3 position;
 	D3DXVECTOR3 scaling;	 
-	D3DXMATRIXA16* cameraView;
+	D3DXMATRIX* cameraView;
 
 	void Draw();
 	 
@@ -59,6 +59,7 @@ public:
 	Quad quad;
 	D3DXMATRIX worldMatrix;
 	std::string objName;
+	std::string tag;
 	bool PlayAnimation(std::string name);
 	std::string currentlyPlayingAnimation;
 	

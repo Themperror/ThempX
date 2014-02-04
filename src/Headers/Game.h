@@ -3,6 +3,7 @@
 #define IFCOL if(currentEditorObj->col != NULL)
 #define IFOBJ3D if(currentEditorObj->obj3D != NULL)
 #define IFOBJ2D if(currentEditorObj->obj2D != NULL)
+#define VECTOR3ZERO D3DXVECTOR3(0,0,0)
 #define VECTOR3ONE D3DXVECTOR3(1,1,1)
 #include <Windows.h>
 #include <windowsx.h>
@@ -21,6 +22,7 @@
 #include "SoundHandler.h"
 #include "Particle.h"
 #include "Game.h"
+#include "FirstPersonPlayer.h"
 
 #include <iostream>
 #include <stdlib.h>
@@ -35,14 +37,7 @@ using namespace std;
 class Game
 {
 public:
-	struct Camera
-	{
-		D3DXVECTOR3 position;
-		D3DXVECTOR3 lookAt;
-		D3DXMATRIXA16 m_View;
-		D3DXMATRIX m_Projection;
-		D3DXVECTOR3 lookDir;
-	};
+	
 	struct DataStruct
 	{
 		bool loop;
@@ -54,6 +49,10 @@ public:
 	void Render();
 	void Initialize();
 	void ReleaseAll();
+	inline D3DXMATRIX* GetCameraView()
+	{
+		return NULL;
+	}
 private:
 	//object holders
 	DataStruct* data;
@@ -65,12 +64,11 @@ private:
 	std::vector<D3DLIGHT9*> lights;
 	D3DLIGHT9* CreateLight(D3DXVECTOR3 position,D3DXVECTOR3 direction, D3DLIGHTTYPE lightType,D3DXCOLOR lightColor,float range,float falloff);
 
-
+	FirstPersonPlayer* player;
 
 	//core engine
 	HWND handleWindow;
 	LPDIRECT3DDEVICE9 p_Device;
-	Camera camera;
 	ResourceManager* resources;
 	InputHandler* inputHandler;
 	SoundHandler* soundHandler;
@@ -79,11 +77,7 @@ private:
 
 	//////game functions
 
-	//camera functions
-	void DoCameraStuff(float deltaTime);
-	void SetUpCamera();
-	D3DXVECTOR3 ReturnDirection(float anglesX,float anglesY);
-	void SetCameraLook(float anglesX,float anglesY);
+	
 
 
 	//input stuff
@@ -93,9 +87,6 @@ private:
 	int KeyPressed(int key);
 	bool mouseLeftJustDown;
 	bool mouseRightJustDown;
-	float sensitivity;
-	float angleX;
-	float angleY;
 
 	//editor mode
 	void CreateLevelFile();

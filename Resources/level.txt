@@ -1,2 +1,3 @@
-name	objName	posx	posy	posz	scalex	scaley	scalez	rotx	roty	rotz	sizeX	sizeY	XAnimRows	YAnimRows
-Resources/Models/Level1.x	Level	0	-10	0	2	2	2	0	0	0	0	0	0	0
+name	objName	posx	posy	posz	scalex	scaley	scalez	rotx	roty	rotz	sizeX	sizeY	XAnimRows	YAnimRows	tag
+Resources/Models/Level1.x	Level	0	-10	0	2	2	2	0	0	0	0	0	0	0 LevelModel
+Collision	Collision	0	-4.5	0	200	0.45	200	0	0	0	0	0	0	0	LevelGround

@@ -40,6 +40,7 @@ public:
 	HWND handleWindow;
 	CollisionGeo* collision;
 	std::string objName;
+	std::string tag;
 	bool didCollide;
 
 	short cubeIndices[36];

@@ -1,6 +1,6 @@
 #include "../Headers/Object2D.h"
 
-Object2D::Object2D(ResourceManager* resources,LPDIRECT3DDEVICE9 d3d_Device,char* texturePath,D3DXMATRIXA16* camViewMatrix)
+Object2D::Object2D(ResourceManager* resources,LPDIRECT3DDEVICE9 d3d_Device,char* texturePath,D3DXMATRIX* camViewMatrix)
 {
 	p_Device = d3d_Device;
 	cameraView = camViewMatrix;	 
@@ -14,7 +14,7 @@ Object2D::Object2D(ResourceManager* resources,LPDIRECT3DDEVICE9 d3d_Device,char*
 	xRows = 0;
 	InitVars();
 }
-Object2D::Object2D(ResourceManager* resources, LPDIRECT3DDEVICE9 d3d_Device, char* texturePath, D3DXMATRIXA16* camView, D3DXVECTOR2 LLPos, D3DXVECTOR2 URPos)
+Object2D::Object2D(ResourceManager* resources, LPDIRECT3DDEVICE9 d3d_Device, char* texturePath, D3DXMATRIX* camView, D3DXVECTOR2 LLPos, D3DXVECTOR2 URPos)
 {
 	p_Device = d3d_Device;
 	cameraView = camView;	 
@@ -59,7 +59,7 @@ Object2D::Object2D(ResourceManager* resources, LPDIRECT3DDEVICE9 d3d_Device, cha
 	quad.iBuffer = NULL;
 	quad.iBuffer = FillIndices();
 }
-Object2D::Object2D(ResourceManager* resources,LPDIRECT3DDEVICE9 d3d_Device,char* texturePath,D3DXMATRIXA16* camViewMatrix,float tSizeX,float tSizeY,float xRowsAnim,float yRowsAnim)
+Object2D::Object2D(ResourceManager* resources,LPDIRECT3DDEVICE9 d3d_Device,char* texturePath,D3DXMATRIX* camViewMatrix,float tSizeX,float tSizeY,float xRowsAnim,float yRowsAnim)
 {
 	p_Device = d3d_Device;
 	cameraView = camViewMatrix;	 

@@ -45,6 +45,7 @@ public:
 	Model model;
 	D3DXMATRIX worldMatrix;
 	std::string objName;
+	std::string tag;
 private:
 	void InitVars();
 	
