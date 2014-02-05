@@ -10,10 +10,8 @@ Game::Game(Game::DataStruct* b,HWND windowHandle,ResourceManager* resMan,InputHa
 	p_Device = d3dDev;
 	LoadLevel();
 	Initialize();
-	player = new FirstPersonPlayer(VECTOR3ONE,VECTOR3ZERO,p_Device,resources,inputHandler,&keys);
-
-
-
+	player = new FirstPersonPlayer(D3DXVECTOR3(0,50,0),VECTOR3ZERO,p_Device,resources,inputHandler,&keys);
+	//cout << debugCubes.at(0)->collision->GetPosition().x <<"  " <<debugCubes.at(0)->collision->GetPosition().y << "  " <<debugCubes.at(0)->collision->GetPosition().z << endl;
 	//particles.push_back(new Particle(resources,p_Device,"Resources/Particles/Lightning.png",&camera.m_View,D3DXVECTOR3(0,10,10),200,500,1,3));
 	//particles.at(0)->SetMovement(D3DXVECTOR3(0,0,0),D3DXVECTOR3(0,3,0));
 }
@@ -58,11 +56,24 @@ void Game::Update(double deltaTime)
 }
 void Game::FixedUpdate(double deltaTime)
 {
-	//cout << "array size is : "<<editorObjs.size() << endl;
 	float deltaTimeF = (float)deltaTime;
 	inputHandler->Update();
-	player->FixedUpdate(deltaTimeF);
 	DoInput(deltaTimeF);
+
+	CollisionGeo::CollisionInfo* colInfo = &debugCubes.at(0)->collision->IsInCube(&player->GetPosition());
+	colInfo->target = debugCubes.at(0)->collision;
+	debugCubes.at(0)->HardUpdateCollisionGeo();
+	if(colInfo->result == CollisionGeo::Collision)
+	{
+		player->SetGrounded(true);
+	}
+	else
+	{
+		player->SetGrounded(false);
+		cout << "No collision" << endl;
+	}
+	player->FixedUpdate(deltaTimeF);
+	player->Collision(colInfo);
 }
 void Game::Render()
 {
@@ -257,7 +268,7 @@ void Game::DoInput(float dT)
 		currentEditorObjIndex++;
 		cout << currentEditorObjIndex << endl;
 		cout << "pressed 9 " << endl;
-		if(currentEditorObjIndex >= editorObjs.size())
+		if(currentEditorObjIndex == editorObjs.size())
 		{
 			currentEditorObjIndex = 0;
 		}
@@ -275,7 +286,7 @@ void Game::DoInput(float dT)
 	}
 }
 
-//Left Mouse click function (to test things with), will be removed for engine use, as this is a gameplay feature (will be in Game.cpp)
+//Left Mouse click function (to test things with), will be removed for engine use, as this is a gameplay feature
 void Game::LeftMouseClick()
 {
 	if(EditorMode)
@@ -325,7 +336,7 @@ void Game::CollisionThread(void)
 			{
 				if(debugCubes.at(x)->HasCollision(&collisionLock) == true && debugCubes.at(y)->HasCollision(&collisionLock) == true && debugCubes.at(x) != debugCubes.at(y))
 				{
-					if(debugCubes.at(x)->collision->DidAABBCollideWithAABB(debugCubes.at(y)->collision) == CollisionGeo::Collision)
+					if(debugCubes.at(x)->collision->DidAABBCollideWithAABB(debugCubes.at(y)->collision).result == CollisionGeo::Collision)
 					{
 						if(debugCubes.at(x)->DidCollide(&collisionLock) == false)
 						{

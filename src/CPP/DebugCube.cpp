@@ -17,7 +17,7 @@ DebugCube::DebugCube(LPDIRECT3DDEVICE9 d3d_Device, D3DXVECTOR3 cubePosition,D3DX
 	resource = resources;
 	texture = resources->GetTexture("Resources/Models/CubeRed.png");
 	ZeroMemory(&meshMaterial,sizeof(meshMaterial));
-	collision = new CollisionGeo(cubePosition,cubeRotation,LLFPosition,URBPosition);
+	collision = new CollisionGeo(&cubePosition,&cubeRotation,LLFPosition,URBPosition);
 
 	meshMaterial.Diffuse.a = 255; meshMaterial.Diffuse.r = 128; meshMaterial.Diffuse.g = 128; meshMaterial.Diffuse.b = 128;
 	meshMaterial.Ambient.a = 255; meshMaterial.Ambient.r = 128; meshMaterial.Ambient.g = 128; meshMaterial.Ambient.b = 128;

@@ -8,15 +8,20 @@ struct AABB
 {
 	D3DXVECTOR3 normalAxis[3]; // Local x-, y-, and z-axes
 	D3DXVECTOR4 transformedVertexPoints[8];
-};
-
+}; 
 class CollisionGeo
 {
 public:
 	enum GeoType { OBBCube,AABBCube,StaticCube, Sphere , Capsule, Cylinder };
 	enum CollisionResult { NoCollision, Collision, NotASphere, NotAOBBCube,NotAAABBCube,NotAStaticCube,NotAStaticOrOBBCube, NotACapsule, NotACylinder,Arg1NotCylinder,Arg1NotStaticCube,Arg1NotOBBCube,Arg1NotAABBCube,Arg1NotStaticOrOBBCube,Arg1NotSphere,Arg1NotCapsule,Arg2NotCylinder,Arg2NotOBBCube,Arg2NotAABBCube,Arg2NotStaticOrOBBCube,Arg2NotStaticCube,Arg2NotSphere,Arg2NotCapsule};
 	
-	CollisionGeo(D3DXVECTOR3 cubePosition, D3DXVECTOR3 LowerLeftFrontPos,D3DXVECTOR3 UpperRightBackPos); // Cube
+	struct CollisionInfo
+	{
+		D3DXVECTOR3* hitPos;
+		CollisionGeo* target;
+		CollisionResult result;
+	};
+	CollisionGeo(D3DXVECTOR3* cubePosition, D3DXVECTOR3 LowerLeftFrontPos,D3DXVECTOR3 UpperRightBackPos); // Cube
 
 //		   ________________	  URB
 //	      /|			  /|
@@ -30,9 +35,9 @@ public:
 //		| / 		    | /
 //	LLF	|/______________|/
 
-	 CollisionGeo(D3DXVECTOR3 cubePosition,D3DXVECTOR3 cubeRotation, D3DXVECTOR3 LowerLeftFrontPos,D3DXVECTOR3 UpperRightBackPos);
-	 CollisionGeo(D3DXVECTOR3 spherePosition,	float radius); //Sphere;
-	 CollisionGeo(D3DXVECTOR3 lowPosition, float height, float radius, bool isCapsule);	//Cylinder of Capsule
+	 CollisionGeo(D3DXVECTOR3* cubePosition,D3DXVECTOR3* cubeRotation, D3DXVECTOR3 LowerLeftFrontPos,D3DXVECTOR3 UpperRightBackPos);
+	 CollisionGeo(D3DXVECTOR3* spherePosition,	float radius); //Sphere;
+	 CollisionGeo(D3DXVECTOR3* lowPosition, float height, float radius, bool isCapsule);	//Cylinder of Capsule
 	 //CollisionGeo(D3DXVECTOR3 lowPosition, float height, float radius, float capheight); //capheight moet een halve sphere zijn, dus dit is dezelfde functie als de capsule, moet kijken hoe ik daar onderscheid in maak;
 
 	inline float GetHeight() //Capsule / Cylinder
@@ -51,7 +56,7 @@ public:
 	{
 		return URBPos;
 	}
-	inline D3DXVECTOR3 GetPosition()
+	inline D3DXVECTOR3* GetPosition()
 	{
 		return position;
 	}
@@ -63,29 +68,29 @@ public:
 	{
 		return &thisAABB;
 	}
-	inline void SetAABB(D3DXVECTOR3 newValuePos,D3DXVECTOR3 newValueRot,D3DXVECTOR3 newValueScale)
+	inline void SetAABB(D3DXVECTOR3* newValuePos,D3DXVECTOR3* newValueRot,D3DXVECTOR3* newValueScale)
 	{
 		position = newValuePos;
 		rotation = newValueRot;
 		scaling = newValueScale;
 
-		D3DXVECTOR3 radianRot = rotation;
+		D3DXVECTOR3* radianRot = rotation;
 
-		radianRot.x *=ToRadian;
-		radianRot.y *=ToRadian;
-		radianRot.z *=ToRadian;
+		radianRot->x *=ToRadian;
+		radianRot->y *=ToRadian;
+		radianRot->z *=ToRadian;
 
-		D3DXVec3Normalize(&thisAABB.normalAxis[0],&D3DXVECTOR3(rotation.x+90,rotation.y,rotation.y));
-		D3DXVec3Normalize(&thisAABB.normalAxis[1],&D3DXVECTOR3(rotation.x,rotation.y+90,rotation.y));
-		D3DXVec3Normalize(&thisAABB.normalAxis[2],&D3DXVECTOR3(rotation.x,rotation.y,rotation.y+90));
+		D3DXVec3Normalize(&thisAABB.normalAxis[0],&D3DXVECTOR3(rotation->x+90,rotation->y,rotation->y));
+		D3DXVec3Normalize(&thisAABB.normalAxis[1],&D3DXVECTOR3(rotation->x,rotation->y+90,rotation->y));
+		D3DXVec3Normalize(&thisAABB.normalAxis[2],&D3DXVECTOR3(rotation->x,rotation->y,rotation->y+90));
 
 		D3DXMATRIX worldMatrix;
 		D3DXMATRIX m_Translation;
 		D3DXMATRIX m_Rotation;
 		D3DXMATRIX m_Scaling;
 		D3DXMATRIX m_RotScale;
-		D3DXMatrixRotationYawPitchRoll(&m_Rotation,radianRot.x,radianRot.y,radianRot.z);
-		D3DXMatrixTranslation(&m_Translation,position.x,position.y,position.z);
+		D3DXMatrixRotationYawPitchRoll(&m_Rotation,radianRot->x,radianRot->y,radianRot->z);
+		D3DXMatrixTranslation(&m_Translation,position->x,position->y,position->z);
 		D3DXMatrixMultiply(&m_RotScale,&m_Rotation,&m_Scaling); //scaling added, MIGHT fuck up collisions, havent tested it yet
 		D3DXMatrixMultiply(&worldMatrix,&m_RotScale,&m_Translation);
 
@@ -101,18 +106,18 @@ public:
 			  
 
 	}
-	inline void ChangeCubeMetrics(D3DXVECTOR3 cubePosition,D3DXVECTOR3 LowerLeftFrontPos, D3DXVECTOR3 UpperRightBackPos)
+	inline void ChangeCubeMetrics(D3DXVECTOR3* cubePosition,D3DXVECTOR3 LowerLeftFrontPos, D3DXVECTOR3 UpperRightBackPos)
 	{
 		position = cubePosition;
 		LLFPos = LowerLeftFrontPos;
 		URBPos = UpperRightBackPos;
 	}
-	inline void ChangeSphereMetrics(D3DXVECTOR3 spherePosition, float rad)
+	inline void ChangeSphereMetrics(D3DXVECTOR3* spherePosition, float rad)
 	{
 		position = spherePosition;
 		radius = rad;
 	}
-	inline void ChangeCapsuleMetrics(D3DXVECTOR3 capsulePosition, float capsuleHeight, float capsuleRadius)
+	inline void ChangeCapsuleMetrics(D3DXVECTOR3* capsulePosition, float capsuleHeight, float capsuleRadius)
 	{
 		position = capsulePosition;
 		height = capsuleHeight;
@@ -122,20 +127,20 @@ public:
 	{
 		return currentType;
 	}
-	CollisionResult IsInCube(D3DXVECTOR3 pos);
-	CollisionResult IsInSphere(D3DXVECTOR3 pos);
-	CollisionResult IsInCylinder(D3DXVECTOR3 pos);
-	CollisionResult DidCubeCollideWith(CollisionGeo* other);
-	CollisionResult DidSphereCollideWith(CollisionGeo* other);
-	CollisionResult DidAABBCollideWithAABB(CollisionGeo* other);
+	CollisionInfo IsInCube(D3DXVECTOR3* pos);
+	CollisionInfo IsInSphere(D3DXVECTOR3* pos);
+	CollisionInfo IsInCylinder(D3DXVECTOR3* pos);
+	CollisionInfo DidCubeCollideWith(CollisionGeo* other);
+	CollisionInfo DidSphereCollideWith(CollisionGeo* other);
+	CollisionInfo DidAABBCollideWithAABB(CollisionGeo* other);
 
 private:
 	GeoType currentType;
 
 	//general data
-	D3DXVECTOR3 position;
-	D3DXVECTOR3 scaling;
-	D3DXVECTOR3 rotation;
+	D3DXVECTOR3* position;
+	D3DXVECTOR3* scaling;
+	D3DXVECTOR3* rotation;
 	//cube data
 	D3DXVECTOR3 LLFPos;
 	D3DXVECTOR3 URBPos;

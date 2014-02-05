@@ -12,6 +12,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Headers\CollisionGeo.h" />
+    <ClInclude Include="src\Headers\CollisionManager.h" />
     <ClInclude Include="src\Headers\DebugCube.h" />
     <ClInclude Include="src\Headers\FirstPersonPlayer.h" />
     <ClInclude Include="src\Headers\Game.h" />
@@ -27,6 +28,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\CPP\CollisionGeo.cpp" />
+    <ClCompile Include="src\CPP\CollisionManager.cpp" />
     <ClCompile Include="src\CPP\DebugCube.cpp" />
     <ClCompile Include="src\CPP\FirstPersonPlayer.cpp" />
     <ClCompile Include="src\CPP\Game.cpp" />

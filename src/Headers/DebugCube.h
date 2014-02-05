@@ -80,7 +80,7 @@ public:
 		current->lock();
 		if(collision != NULL)
 		{
-			collision->SetAABB(position,rotation,scaling);
+			collision->SetAABB(&position,&rotation,&scaling);
 			current->unlock();
 			return true;
 		}
@@ -91,7 +91,7 @@ public:
 	{
 		if(collision != NULL)
 		{
-			collision->SetAABB(position,rotation,scaling);
+			collision->SetAABB(&position,&rotation,&scaling);
 			return true;
 		}
 		return false;
@@ -103,7 +103,7 @@ public:
 		scaling = scale;
 		if(collision != NULL)
 		{
-			collision->SetAABB(pos,rot,scale);
+			collision->SetAABB(&pos,&rot,&scale);
 			return true;
 		}
 		return false;
@@ -143,7 +143,7 @@ public:
 		}
 		if(collision != NULL)
 		{
-			collision->SetAABB(position,rotation,scaling);
+			collision->SetAABB(&position,&rotation,&scaling);
 			current->unlock();
 			return true;
 		}

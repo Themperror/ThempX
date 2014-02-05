@@ -7,6 +7,7 @@ FirstPersonPlayer::FirstPersonPlayer(D3DXVECTOR3 pos, D3DXVECTOR3 rot,LPDIRECT3D
 	inputHandler = NULL;
 	keys = NULL;
 
+	moveDir= D3DXVECTOR3(0,0,0);
 	cam.lookDir.x = 0;
 	cam.lookDir.y = 1;
 	cam.lookDir.z = 0;
@@ -20,12 +21,17 @@ FirstPersonPlayer::FirstPersonPlayer(D3DXVECTOR3 pos, D3DXVECTOR3 rot,LPDIRECT3D
 
 	angleX = 0;
 	angleY = 0;
-	sensitivity = 50;
+	sensitivity = 40;
 
 	keys = keyArray;
 	p_Device = d3dDev;
 	resources = res;
 	inputHandler = input;
+	collision = new CollisionGeo(&position,3,1.5f,true);
+	
+
+	isGrounded = false;
+	gravity = 9.8f;
 	if(p_Device == NULL || resources == NULL || inputHandler == NULL)
 	{
 		std::cout << "Player class not created correctly, Game will probably crash" << std::endl;
@@ -33,59 +39,82 @@ FirstPersonPlayer::FirstPersonPlayer(D3DXVECTOR3 pos, D3DXVECTOR3 rot,LPDIRECT3D
 }
 void FirstPersonPlayer::Update(float deltaTime)
 {
-
+	normalDeltaTime = deltaTime;
+	collision->SetAABB(&position,&D3DXVECTOR3(0,0,0),&D3DXVECTOR3(1,1,1));
+}
+void FirstPersonPlayer::Collision(CollisionGeo::CollisionInfo* info)
+{
+	if(!isGrounded)
+	{
+		moveDir.y -= gravity*fixedDeltaTime; //create collisionmanager, one that holds every collisionable object and write various functions to test em with each other, so we have a nice accessable library of objects accessable from anywhere
+		//std::cout << "falling" << std::endl;
+	}
+	else if(isGrounded)
+	{
+		position.y = info->target->GetPosition()->y + info->target->GetHeight()/2 + 1; // 20 must be target.position + target.hit.height/2+EPSILON;
+		std::cout << "snapped on ground" << std::endl;
+	}
+	position += moveDir;
+	collision->SetAABB(&position,&D3DXVECTOR3(0,0,0),&D3DXVECTOR3(1,1,1));
+	moveDir = D3DXVECTOR3(0,0,0);
+	
+	
+	//if moveDir + position == collision (go through every collider)
+	//std::cout << "position: " << position.x << "  " << position.y << "  " << position.z << std::endl;
 }
 void FirstPersonPlayer::FixedUpdate(float deltaTime)
 {
-	Input(deltaTime);
-	
-	DoCameraStuff(deltaTime);
+	fixedDeltaTime = deltaTime;
+	moveDir += Input(deltaTime);
 }
 void FirstPersonPlayer::Render()
 {
+	DoCameraStuff(normalDeltaTime);
 	SetUpCamera();
 }
-void FirstPersonPlayer::Input(float deltaTime)
+D3DXVECTOR3 FirstPersonPlayer::Input(float deltaTime)
 {
-	int speed = 60;
+	D3DXVECTOR3 moveDir = D3DXVECTOR3(0,0,0);
+	int speed = 20;
 	if(KeyPressed(DIK_LSHIFT))
-	{
-		speed = 70;
-	}
-	else
 	{
 		speed = 40;
 	}
+	else
+	{
+		speed = 20;
+	}
 	if(KeyPressed(DIK_Q))
 	{
-		position.y += deltaTime*speed;
+		moveDir.y += deltaTime*speed;
 	}
 	if(KeyPressed(DIK_E))
 	{
-		position.y -= deltaTime*speed;
+		moveDir.y -= deltaTime*speed;
 	}
 	if(KeyPressed(DIK_W))
 	{
-		position.x += cam.lookDir.x *deltaTime*speed;
-		position.z += cam.lookDir.z *deltaTime*speed;
+		moveDir.x += cam.lookDir.x *deltaTime*speed;
+		moveDir.z += cam.lookDir.z *deltaTime*speed;
 	}
 	if(KeyPressed(DIK_S))
 	{
-		position.x -= cam.lookDir.x *deltaTime*speed;
-		position.z -= cam.lookDir.z *deltaTime*speed;
+		moveDir.x -= cam.lookDir.x *deltaTime*speed;
+		moveDir.z -= cam.lookDir.z *deltaTime*speed;
 	}
 	if(KeyPressed(DIK_D))
 	{
 		D3DXVECTOR3 temp = ReturnDirection(angleX-90,angleY);
-		position.x += temp.x *deltaTime*speed;
-		position.z += temp.z *deltaTime*speed;
+		moveDir.x += temp.x *deltaTime*speed;
+		moveDir.z += temp.z *deltaTime*speed;
 	}
 	if(KeyPressed(DIK_A))
 	{
 		D3DXVECTOR3 temp = ReturnDirection(angleX+90,angleY);
-		position.x += temp.x *deltaTime*speed;
-		position.z += temp.z *deltaTime*speed;
+		moveDir.x += temp.x *deltaTime*speed;
+		moveDir.z += temp.z *deltaTime*speed;
 	}
+	return moveDir;
 }
 
 //used in DoCameraStuff
