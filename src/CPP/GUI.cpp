@@ -36,7 +36,8 @@ void GUI::LoadGUI()
 	{
 		std::string str;
 		std::string path;
-		float posX,posY,sizeX,sizeY,xRows,yRows;
+		float posX,posY,sizeX,sizeY;
+		int xRows,yRows;
 		xRows = 0;
 		yRows = 0;
 		bool hasAnimation;
@@ -142,6 +143,7 @@ void GUI::Animate(GUITexture* obj , float dTime ,float animSpeed)
 	obj->timeSinceChange += dTime;
 	if(obj->timeSinceChange > animSpeed)
 	{
+		Animation* currentAnim = &obj->animations.at(obj->currentAnim);
 		obj->timeSinceChange = 0;
 		HRESULT result;
 		BYTE* ptr;
@@ -161,23 +163,21 @@ void GUI::Animate(GUITexture* obj , float dTime ,float animSpeed)
 		stepSizeX = (1.0f / obj->xRows);
 		stepSizeY = (1.0f / obj->yRows);
 
-		std::cout << obj->currentAnim->EndPosition.x << "   " << obj->currentAnim->StartPosition.x << std::endl;
-		for (DWORD i=0;i<4;i++) // hardcoded 4 omdat 4 vertices
+		for (DWORD i=0;i<4;i++) // hardcoded 4 because 4 vertices
 		{
 			// get pointer to location
-			Vertex2D *vPtr=(Vertex2D*) ptr;
+			Vertex2D* vPtr=(Vertex2D*) ptr;
 			switch(i)
 			{
 			case 0:
 				vPtr->texC.x = stepSizeX * obj->currentXAnimValue;
-
 				vPtr->texC.y = stepSizeY * obj->currentYAnimValue;
- 
-				if(vPtr->texC.x	> 1 - stepSizeX*(obj->xRows-(obj->currentAnim->EndPosition.x-obj->currentAnim->StartPosition.x)))
+				std::cout << currentAnim->EndPosition.x << "  " << currentAnim->StartPosition.x << std::endl;
+				if(vPtr->texC.x	> 1 - stepSizeX*(obj->xRows-(currentAnim->EndPosition.x-currentAnim->StartPosition.x)))
 				{
 					vPtr->texC.x = 0;
 				}
-				if(vPtr->texC.y	> 1 - stepSizeY*(obj->yRows-(obj->currentAnim->EndPosition.y-obj->currentAnim->StartPosition.y)))
+				if(vPtr->texC.y	> 1 - stepSizeY*(obj->yRows-(currentAnim->EndPosition.y-currentAnim->StartPosition.y)))
 				{
 					vPtr->texC.y = 0;
 				}
@@ -209,12 +209,12 @@ void GUI::Animate(GUITexture* obj , float dTime ,float animSpeed)
 			ptr+=sizeof(Vertex2D);
 		}
 		obj->currentXAnimValue++;
-		if(obj->currentXAnimValue > obj->endXAnimValue)
+		if(obj->currentXAnimValue > currentAnim->EndPosition.x)
 		{
 			obj->currentYAnimValue++;
 			obj->currentXAnimValue = 0;
 		}
-		if(obj->currentYAnimValue > obj->endYAnimValue)
+		if(obj->currentYAnimValue > currentAnim->EndPosition.y)
 		{
 			obj->currentYAnimValue = 0;
 		}
@@ -244,16 +244,19 @@ void GUI::LoadAnimation(GUITexture* obj)
 	{
 		obj->hasAnimation = true;
 		std::string str;
+		float startPosX = 0,startPosY = 0,endPosX = 0,endPosY = 0;
 		while(getline(fin, str))
 		{
 			Animation anim;
+			anim.Nullify();
 			std::string name;
 
-			float startPosX = 0,startPosY = 0,endPosX = 0,endPosY = 0;
 
-			fin >> startPosX >> endPosX >> startPosY >> endPosY >> name;
-			 //FUCKING BUG
+			fin >> name >> startPosX >> endPosX >> startPosY >> endPosY;
+			std::cout << endPosX << " 1 "<< endPosY << std::endl;
 			anim.AnimationName = name;
+			anim.StartPosition = D3DXVECTOR2(0,0);
+			anim.EndPosition = D3DXVECTOR2(0,0);
 			anim.StartPosition.x = startPosX;
 			anim.StartPosition.y = startPosY;
 			anim.EndPosition.x = endPosX;
@@ -265,7 +268,7 @@ void GUI::LoadAnimation(GUITexture* obj)
 	fin.close();
 	if(obj->hasAnimation)
 	{
-		PlayAnimation(obj,"Idle");
+		PlayAnimation(obj,"Walk");
 	}
 }
 bool GUI::PlayAnimation(GUITexture* obj,std::string name)
@@ -274,19 +277,13 @@ bool GUI::PlayAnimation(GUITexture* obj,std::string name)
 	{
 		if(obj->animations.at(i).AnimationName == name)
 		{
-			obj->currentXAnimValue = obj->animations.at(i).StartPosition.x;
-			obj->currentYAnimValue = obj->animations.at(i).StartPosition.y;
-			obj->endXAnimValue = obj->animations.at(i).EndPosition.x;
-			obj->endYAnimValue = obj->animations.at(i).EndPosition.y;
 			obj->currentlyPlayingAnimation = name;
-			obj->currentAnim = &obj->animations.at(i);
+			obj->currentAnim = i;
 			return true;			   
 		}
 	}
-	obj->currentXAnimValue =	0;
-	obj->currentYAnimValue =	0;
-	obj->endXAnimValue = 0;
-	obj->endYAnimValue = 0;
+	obj->currentXAnimValue = 0;
+	obj->currentYAnimValue = 0;
 	obj->currentlyPlayingAnimation = "None";
 	obj->currentAnim = NULL;
 	std::cout << "No animation found with that name: " << name << std::endl;

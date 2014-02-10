@@ -19,6 +19,12 @@ public:
 		D3DXVECTOR2 StartPosition;
 		D3DXVECTOR2 EndPosition;
 		std::string AnimationName;
+		void Nullify()
+		{
+			StartPosition = D3DXVECTOR2(0,0);
+			EndPosition = D3DXVECTOR2(0,0);
+			AnimationName = "";
+		}
 	};
 	struct GUITexture
 	{
@@ -30,9 +36,10 @@ public:
 		LPDIRECT3DINDEXBUFFER9 iBuffer;
 		float timeSinceChange;
 		std::vector<Animation> animations; 
-		float xRows, yRows, currentXAnimValue,currentYAnimValue,sizeX,sizeY,endXAnimValue,endYAnimValue, animationSpeed;
+		float currentXAnimValue,currentYAnimValue,sizeX,sizeY, animationSpeed;
+		int xRows, yRows;
 		std::string currentlyPlayingAnimation;
-		Animation* currentAnim;
+		int currentAnim;
 		
 		void Nullify()
 		{
@@ -43,7 +50,8 @@ public:
 			vBuffer = NULL;
 			iBuffer = NULL;
 			timeSinceChange = 0;
-			xRows=0;yRows=0;currentXAnimValue=0;currentYAnimValue=0;sizeX=0;sizeY=0;endXAnimValue=0;endYAnimValue=0;animationSpeed=0;
+			currentlyPlayingAnimation = "";
+			xRows=0;yRows=0;currentXAnimValue=0;currentYAnimValue=0;sizeX=0;sizeY=0;animationSpeed=0;currentAnim = 0;
 		}
 	};
 
