@@ -37,6 +37,10 @@ public:
 	{
 		return collision;
 	}
+	inline bool CheckingCollisions()
+	{
+		return checkCollision;
+	}
 	void Collision(CollisionGeo::CollisionInfo* info);
 	void Update(float deltaTime);
 	void FixedUpdate(float deltaTime);
@@ -67,6 +71,7 @@ private:
 	int KeyPressed(int key);
 	CollisionGeo* collision;
 	bool isGrounded;
+	bool checkCollision;
 	float gravity;
 	float fixedDeltaTime;
 	float normalDeltaTime;

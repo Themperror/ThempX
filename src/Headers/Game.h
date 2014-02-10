@@ -23,6 +23,7 @@
 #include "Particle.h"
 #include "Game.h"
 #include "FirstPersonPlayer.h"
+#include "GUI.h"
 
 #include <iostream>
 #include <stdlib.h>
@@ -60,8 +61,8 @@ private:
 	std::vector<Object2D*> spriteObjs;
 	std::vector<DebugCube*> debugCubes;
 	std::vector<Particle*> particles;
-
 	std::vector<D3DLIGHT9*> lights;
+
 	D3DLIGHT9* CreateLight(D3DXVECTOR3 position,D3DXVECTOR3 direction, D3DLIGHTTYPE lightType,D3DXCOLOR lightColor,float range,float falloff);
 
 	FirstPersonPlayer* player;
@@ -72,6 +73,7 @@ private:
 	ResourceManager* resources;
 	InputHandler* inputHandler;
 	SoundHandler* soundHandler;
+	GUI* gui;
 	void LoadLevel();
 	void DestroyLevel();
 

@@ -35,6 +35,7 @@ void SoundHandler::Shutdown()
 		for(unsigned int j=0;j<sounds.at(i).extraSounds.size();j++)
 		{
 			sounds.at(i).extraSounds.at(j)->Release();
+			delete sounds.at(i).extraSounds.at(i);
 		}
 		sounds.at(i).soundBuffer->Release();
 	}

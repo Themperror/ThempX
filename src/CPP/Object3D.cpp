@@ -136,7 +136,7 @@ void Object3D::ReleaseResources()
 	}
 	if(collision != NULL)
 	{
-		free( collision);
+		delete collision;
 		collision = NULL;
 	}
 	for(unsigned int x=0; x < model.numMaterials;x++)

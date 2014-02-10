@@ -4,6 +4,7 @@ Game::Game(Game::DataStruct* b,HWND windowHandle,ResourceManager* resMan,InputHa
 {
 	data = b;
 	handleWindow = windowHandle;
+	gui = new GUI(d3dDev,resMan);
 	resources = resMan;
 	inputHandler = inputHand;
 	soundHandler = soundHand;
@@ -14,6 +15,7 @@ Game::Game(Game::DataStruct* b,HWND windowHandle,ResourceManager* resMan,InputHa
 	//cout << debugCubes.at(0)->collision->GetPosition().x <<"  " <<debugCubes.at(0)->collision->GetPosition().y << "  " <<debugCubes.at(0)->collision->GetPosition().z << endl;
 	//particles.push_back(new Particle(resources,p_Device,"Resources/Particles/Lightning.png",&camera.m_View,D3DXVECTOR3(0,10,10),200,500,1,3));
 	//particles.at(0)->SetMovement(D3DXVECTOR3(0,0,0),D3DXVECTOR3(0,3,0));
+	//particles.at(0)->Release();
 }
 void Game::Initialize()
 {
@@ -53,6 +55,7 @@ void Game::Update(double deltaTime)
 		}
 	}
 	player->Update(deltaTimeF);
+	gui->Update(deltaTimeF);
 }
 void Game::FixedUpdate(double deltaTime)
 {
@@ -60,17 +63,15 @@ void Game::FixedUpdate(double deltaTime)
 	inputHandler->Update();
 	DoInput(deltaTimeF);
 
-	CollisionGeo::CollisionInfo* colInfo = &debugCubes.at(0)->collision->IsInCube(&player->GetPosition());
+	CollisionGeo::CollisionInfo* colInfo = &debugCubes.at(0)->collision->IsInCube(&(player->GetPosition()-D3DXVECTOR3(0,1.5f,0)));
 	colInfo->target = debugCubes.at(0)->collision;
-	debugCubes.at(0)->HardUpdateCollisionGeo();
-	if(colInfo->result == CollisionGeo::Collision)
+	if(colInfo->result == CollisionGeo::Collision && player->CheckingCollisions())
 	{
 		player->SetGrounded(true);
 	}
 	else
 	{
 		player->SetGrounded(false);
-		cout << "No collision" << endl;
 	}
 	player->FixedUpdate(deltaTimeF);
 	player->Collision(colInfo);
@@ -116,6 +117,7 @@ void Game::Render()
 			currentEditorObj->col->Draw();
 		}
 	}
+	gui->Render();
 	//Make sure this is last, as setting this before any renders/changes it will make the scene behind 1 frame;
 	player->Render();
 }
@@ -388,6 +390,9 @@ void Game::ReleaseAll()
 		debugCubes.at(i)->Release(); 
 		delete debugCubes.at(i);
 	}
+	gui->Release();
+	delete player;
+	delete gui;
 }
 //easy-for-use function for testing keys to be pressed
 int Game::KeyPressed(int key)
@@ -588,7 +593,7 @@ void Game::LoadLevel()
 			float sizeX;
 			float sizeY;
 			float posx,posy,posz,scalex,scaley,scalez,rotx,roty,rotz;
-
+			
 			fin >> name >> objName >>posx >> posy >> posz >> scalex >> scaley >> scalez >> rotx >> roty >> rotz >> sizeX >> sizeY >> XAnimRows >> YAnimRows >> tag;
 
 			if(name.at(name.size()-1) == check[0])

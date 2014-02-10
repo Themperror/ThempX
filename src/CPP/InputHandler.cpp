@@ -4,7 +4,7 @@ InputHandler::InputHandler(HWND handleWindow)
 {
 	handle = handleWindow;
 	m_pDIObject = NULL;
-	m_pDIKeyboardDevice = NULL;        //pointer to NULL (NEW)
+	m_pDIKeyboardDevice = NULL;       
 
 	InitDirectInput();
 	InitKeyboard();

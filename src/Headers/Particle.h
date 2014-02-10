@@ -11,6 +11,7 @@ public:
 	
 	void Update(float deltaTime);
 	void Draw();
+	void Release();
 
 	inline void SetEllipsoid(D3DXVECTOR3 ellipse)
 	{

@@ -21,6 +21,7 @@
 #include "SoundHandler.h"
 #include "Particle.h"
 #include "Game.h"
+#include "SPEEngine.h"
 
 #include <iostream>
 #include <stdlib.h>
@@ -35,7 +36,10 @@ using namespace std;
 class ThempX
 {
 public:
-
+	//SPE testing
+	LPSPEWORLD         pWorld; // interface of physics world 
+	LPSPERIGIDBODY     pBody; // interface of a rigidbody 
+	LPD3DXMESH     pBoxMesh;
 
 	LPDIRECT3DDEVICE9 p_Device;
 	bool isDone;

@@ -313,7 +313,7 @@ void Object2D::ReleaseResources()
 	}
 	if(collision != NULL)
 	{
-		free( collision);
+		delete collision;
 		collision = NULL;
 	}
 	for(unsigned int i = 0 ; i < animations.size();i++)

@@ -16,6 +16,7 @@
     <ClInclude Include="src\Headers\DebugCube.h" />
     <ClInclude Include="src\Headers\FirstPersonPlayer.h" />
     <ClInclude Include="src\Headers\Game.h" />
+    <ClInclude Include="src\Headers\GUI.h" />
     <ClInclude Include="src\Headers\InputHandler.h" />
     <ClInclude Include="src\Headers\Main.h" />
     <ClInclude Include="src\Headers\Object2D.h" />
@@ -24,6 +25,7 @@
     <ClInclude Include="src\Headers\Particle2D.h" />
     <ClInclude Include="src\Headers\ResourceManager.h" />
     <ClInclude Include="src\Headers\SoundHandler.h" />
+    <ClInclude Include="src\Headers\SPEEngine.h" />
     <ClInclude Include="src\Headers\ThempX.h" />
   </ItemGroup>
   <ItemGroup>
@@ -32,6 +34,7 @@
     <ClCompile Include="src\CPP\DebugCube.cpp" />
     <ClCompile Include="src\CPP\FirstPersonPlayer.cpp" />
     <ClCompile Include="src\CPP\Game.cpp" />
+    <ClCompile Include="src\CPP\GUI.cpp" />
     <ClCompile Include="src\CPP\InputHandler.cpp" />
     <ClCompile Include="src\CPP\Main.cpp" />
     <ClCompile Include="src\CPP\Object2D.cpp" />
@@ -40,6 +43,7 @@
     <ClCompile Include="src\CPP\Particle2D.cpp" />
     <ClCompile Include="src\CPP\ResourceManager.cpp" />
     <ClCompile Include="src\CPP\SoundHandler.cpp" />
+    <ClCompile Include="src\CPP\SPEEngine.cpp" />
     <ClCompile Include="src\CPP\ThempX.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -69,8 +73,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>C:\Program Files %28x86%29\boost\boost_1_55_0;C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Program Files %28x86%29\boost\boost_1_55_0\bin.v2\libs;C:\Program Files %28x86%29\boost\boost_1_55_0\stage\lib;C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Program Files %28x86%29\boost\boost_1_55_0;C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Include;C:\Windows\system\SPE\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Program Files %28x86%29\boost\boost_1_55_0\bin.v2\libs;C:\Program Files %28x86%29\boost\boost_1_55_0\stage\lib;C:\Windows\system\SPE\lib;C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IncludePath>C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Include;$(IncludePath)</IncludePath>
@@ -83,8 +87,8 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Program Files %28x86%29\boost\boost_1_55_0\stage\lib;C:\Program Files %28x86%29\boost\boost_1_55_0\libs;C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>dinput8.lib;dsound.lib;dxguid.lib;winmm.lib;libboost_thread-vc100-mt-gd-1_55.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Program Files %28x86%29\boost\boost_1_55_0\stage\lib;C:\Program Files %28x86%29\boost\boost_1_55_0\libs;C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x86;C:\Windows\system\SPE\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>dinput8.lib;dsound.lib;dxguid.lib;winmm.lib;libboost_thread-vc100-mt-gd-1_55.lib;SPE.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

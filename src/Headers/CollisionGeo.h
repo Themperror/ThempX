@@ -3,7 +3,6 @@
 
 #include "ResourceManager.h"
 
-
 struct AABB 
 {
 	D3DXVECTOR3 normalAxis[3]; // Local x-, y-, and z-axes
@@ -103,8 +102,6 @@ public:
 		D3DXVec3Transform(&thisAABB.transformedVertexPoints[5],&D3DXVECTOR3(URBPos.x ,URBPos.y, URBPos.z),&worldMatrix);
 		D3DXVec3Transform(&thisAABB.transformedVertexPoints[6],&D3DXVECTOR3(LLFPos.x, LLFPos.y, URBPos.z),&worldMatrix);
 		D3DXVec3Transform(&thisAABB.transformedVertexPoints[7],&D3DXVECTOR3(URBPos.x, LLFPos.y, URBPos.z),&worldMatrix); 
-			  
-
 	}
 	inline void ChangeCubeMetrics(D3DXVECTOR3* cubePosition,D3DXVECTOR3 LowerLeftFrontPos, D3DXVECTOR3 UpperRightBackPos)
 	{

@@ -43,7 +43,7 @@ void DebugCube::Release()
 	}
 	if(collision != NULL)
 	{
-		free( collision);
+		delete collision;
 		collision = NULL;
 	}
 }

@@ -3,6 +3,18 @@
 //Entry point of the engine (This class is created in main.cpp where the program entrypoint is).
 ThempX::ThempX(HWND handle,HINSTANCE hInstance)
 {
+	/*
+	std::string henk = "test.txt";
+	string str;
+	ifstream fin(henk);
+	while(getline(fin,str))
+	{
+		int x,y,z;
+		fin >> x >> y >> z;
+		cout << x << "   " << y << "  " << z << endl;
+	}*/
+
+
 	oldTicks = GetTickCount();
 	handleWindow = handle;
 	isDone = false;
@@ -11,6 +23,7 @@ ThempX::ThempX(HWND handle,HINSTANCE hInstance)
 	
 	//instantiate all necessities
 	resources = new ResourceManager(p_Device,handle);
+	resources->SetScreenResolution(SCREEN_WIDTH,SCREEN_HEIGHT);
 	inputHandler = new InputHandler(handleWindow);
 	soundHandler = new SoundHandler(handle,44100,16,2);
 
@@ -63,7 +76,12 @@ ThempX::ThempX(HWND handle,HINSTANCE hInstance)
 	//release everything
 	PostQuitMessage(0);
 	resources->ReleaseResources();
+	soundHandler->Shutdown();
 	g->ReleaseAll();
+	delete inputHandler;
+	delete resources;
+	delete g;
+	delete soundHandler;
 	p_Device->Release();
 }
 
@@ -209,6 +227,7 @@ LPDIRECT3DDEVICE9 ThempX::InitializeDevice(HWND han_WindowToBindTo)
     p_dx_Device->SetRenderState(D3DRS_LIGHTING,false);
 	p_dx_Device->SetRenderState(D3DRS_ZENABLE, true);
 	p_dx_Device->SetRenderState(D3DRS_FILLMODE,D3DFILL_SOLID);
+	//p_dx_Device->SetRenderState(D3DRS_FILLMODE,D3DFILL_WIREFRAME);
 	
 	p_dx_Device->SetRenderState(D3DRS_ALPHAREF, (DWORD)0x0000008f);
 	p_dx_Device->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE); 

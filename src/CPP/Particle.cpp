@@ -22,6 +22,17 @@ Particle::Particle(ResourceManager* res,LPDIRECT3DDEVICE9 device,char* textureP,
 	iBuffer = FillIndices();
 
 }
+void Particle::Release()
+{
+	for(unsigned int i = 0; i < particles.size();i++)
+	{
+		delete particles.at(i);
+	}
+	particles.clear();
+
+	(vBuffer!= NULL ? vBuffer->Release() : NULL);
+	(iBuffer != NULL ? iBuffer->Release() : NULL);
+}
 LPDIRECT3DVERTEXBUFFER9 Particle::FillCustomVertices(D3DXVECTOR2 LLPos,D3DXVECTOR2 URPos)
 {
 	VertexPosNorTex triangleVerts[] = 

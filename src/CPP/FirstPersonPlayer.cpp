@@ -7,6 +7,7 @@ FirstPersonPlayer::FirstPersonPlayer(D3DXVECTOR3 pos, D3DXVECTOR3 rot,LPDIRECT3D
 	inputHandler = NULL;
 	keys = NULL;
 
+	checkCollision = true;
 	moveDir= D3DXVECTOR3(0,0,0);
 	cam.lookDir.x = 0;
 	cam.lookDir.y = 1;
@@ -21,7 +22,7 @@ FirstPersonPlayer::FirstPersonPlayer(D3DXVECTOR3 pos, D3DXVECTOR3 rot,LPDIRECT3D
 
 	angleX = 0;
 	angleY = 0;
-	sensitivity = 40;
+	sensitivity = 20;
 
 	keys = keyArray;
 	p_Device = d3dDev;
@@ -44,18 +45,11 @@ void FirstPersonPlayer::Update(float deltaTime)
 }
 void FirstPersonPlayer::Collision(CollisionGeo::CollisionInfo* info)
 {
-	if(!isGrounded)
-	{
-		moveDir.y -= gravity*fixedDeltaTime; //create collisionmanager, one that holds every collisionable object and write various functions to test em with each other, so we have a nice accessable library of objects accessable from anywhere
-		//std::cout << "falling" << std::endl;
-	}
-	else if(isGrounded)
-	{
-		position.y = info->target->GetPosition()->y + info->target->GetHeight()/2 + 1; // 20 must be target.position + target.hit.height/2+EPSILON;
-		std::cout << "snapped on ground" << std::endl;
-	}
+	moveDir.y -= gravity*fixedDeltaTime;
+	position.y = info->target->GetPosition()->y + info->target->GetHeight()/2 + 1; // 20 must be target.position + target.hit.height/2+EPSILON;
+		
 	position += moveDir;
-	collision->SetAABB(&position,&D3DXVECTOR3(0,0,0),&D3DXVECTOR3(1,1,1));
+	//collision->SetAABB(&position,&D3DXVECTOR3(0,0,0),&D3DXVECTOR3(1,1,1));
 	moveDir = D3DXVECTOR3(0,0,0);
 	
 	
@@ -66,11 +60,15 @@ void FirstPersonPlayer::FixedUpdate(float deltaTime)
 {
 	fixedDeltaTime = deltaTime;
 	moveDir += Input(deltaTime);
+
+
+	
+	DoCameraStuff(normalDeltaTime);
+	SetUpCamera();
 }
 void FirstPersonPlayer::Render()
 {
-	DoCameraStuff(normalDeltaTime);
-	SetUpCamera();
+
 }
 D3DXVECTOR3 FirstPersonPlayer::Input(float deltaTime)
 {
@@ -113,6 +111,11 @@ D3DXVECTOR3 FirstPersonPlayer::Input(float deltaTime)
 		D3DXVECTOR3 temp = ReturnDirection(angleX+90,angleY);
 		moveDir.x += temp.x *deltaTime*speed;
 		moveDir.z += temp.z *deltaTime*speed;
+	}
+	if(KeyPressed(DIK_R) == 2)
+	{
+		checkCollision = true;
+		isGrounded= false;
 	}
 	return moveDir;
 }

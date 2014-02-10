@@ -1,0 +1,2 @@
+texturepath posX posY sizeX sizeY xRowsTotal yRowsTotal hasAnimation 
+Resources/GUI/GUITEST.png 0 0 128 128 8 8 true 
