@@ -4,6 +4,12 @@ ResourceManager::ResourceManager(LPDIRECT3DDEVICE9 d3d_Device, HWND handle)
 {
 	p_Device = d3d_Device;
 	wHandle = handle;
+
+	//gui = NULL;
+	//game = NULL;
+	//engine = NULL;
+	//soundHandler = NULL;
+	//inputHandler = NULL;
 }
 void ResourceManager::ReleaseResources()	//main data release
 {
@@ -11,17 +17,14 @@ void ResourceManager::ReleaseResources()	//main data release
 	{
 		models.at(i).materialBuffer->Release();
 		models.at(i).mesh->Release();
-		for(unsigned int x=0; x < models.at(i).numMaterials;x++)
-		{
-			if(models.at(i).meshTextures != NULL)
-			{
-				models.at(i).meshTextures[x]->Release();
-			}
-		}
 	}
 	for(unsigned int i=0;i<quads.size();i++)
 	{
-		quads.at(i).texture->Release();
+		if(quads.at(i).texture != NULL)
+		{
+			quads.at(i).texture->Release();
+			quads.at(i).texture = NULL;
+		}
 	}
 }
 bool ResourceManager::CheckAvailableTexture(char* name)
@@ -64,7 +67,7 @@ LPDIRECT3DTEXTURE9 ResourceManager::GetTexture(char* name)
 		}
 		if(quad.texture != NULL)
 		{
-			std::cout << "texture NOT found and was created" << std::endl; 
+			//std::cout << "texture NOT found and was created" << std::endl; 
 			quads.push_back(quad);
 			return quad.texture;
 		}
@@ -87,7 +90,7 @@ int ResourceManager::GetMeshData(char* name)
 		{
 			if(strcmp(models.at(i).meshName ,name) == 0)
 			{
-				std::cout << "model found and reused  "<<std::endl;
+				//std::cout << "model found and reused  "<<std::endl;
 				return i;
 			}
 		}
@@ -114,16 +117,20 @@ int ResourceManager::GetMeshData(char* name)
 			model.meshMaterials[i].Ambient = model.meshMaterials[i].Diffuse;
 
 			// Create the texture if it exists - it may not
-			model.meshTextures[i] = NULL;
-			if (model.d3dxMaterials[i].pTextureFilename)
+			if(model.d3dxMaterials[i].pTextureFilename != NULL)
 			{
-				D3DXCreateTextureFromFile(p_Device, model.d3dxMaterials[i].pTextureFilename, &model.meshTextures[i]);
+				std::string texturePath = model.d3dxMaterials[i].pTextureFilename; 
+
+				std::cout << model.d3dxMaterials[i].pTextureFilename << std::endl;
+				texturePath = "Resources/Models/"+texturePath;
+
+				model.meshTextures[i] =  GetTexture(_strdup(texturePath.c_str()));;
+				
 			}
 		}
 		model.meshName = name;
 		models.push_back(model);
 
-		std::cout << "pre-created model is NOT found and is created" << std::endl;
 		return models.size()-1;
 	}
 	MessageBox(wHandle,"No mesh returned, the program will probably crash now.","GetMesh()",MB_OK);

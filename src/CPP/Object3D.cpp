@@ -146,6 +146,7 @@ void Object3D::ReleaseResources()
 			if(model.meshTextures[x] != NULL)
 			{
 				model.meshTextures[x]->Release(); 
+				delete model.meshTextures[x];
 			}
 		}
 	}

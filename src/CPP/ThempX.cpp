@@ -124,7 +124,7 @@ void ThempX::DrawScene()
 {
 	////////////////////////
 	// Clear the scene and Z buffer
-    p_Device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(0,0,0), 1.0f, 0);
+    p_Device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(255,0,255), 1.0f, 0);
 	p_Device->Clear(0, NULL, D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(0, 0, 0), 1.0f, 0);
 
     p_Device->BeginScene();

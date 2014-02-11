@@ -32,6 +32,7 @@ public:
 	LPDIRECT3DTEXTURE9 texture;
 	ResourceManager* resource;
 	LPDIRECT3DDEVICE9 p_Device;
+	bool doRender;
 	void Release();
 	void Draw();
 	void ChangeTexture(char* path,boost::mutex* current);

@@ -8,7 +8,7 @@ DebugCube::DebugCube(LPDIRECT3DDEVICE9 d3d_Device, D3DXVECTOR3 cubePosition,D3DX
 	scaling = D3DXVECTOR3(1,1,1);
 	LLFPos = D3DXVECTOR3(LLFPosition.x,LLFPosition.y,LLFPosition.z);
 	URBPos = D3DXVECTOR3(URBPosition.x,URBPosition.y,URBPosition.z);
-
+	doRender = false;
 	didCollide = false;
 	collision = NULL;
 	vBuffer = NULL;
@@ -49,47 +49,50 @@ void DebugCube::Release()
 }
 void DebugCube::Draw()
 {
-	HRESULT result;
-	D3DXMATRIX worldMatrix;
-	D3DXMATRIX scalingMatrix;
-	D3DXMATRIX rotationMatrix;
-	D3DXMATRIX translationMatrix;
-	D3DXMATRIX RotScaleMatrix;
-
-	D3DXMatrixTranslation(&translationMatrix,position.x,position.y,position.z);
-	D3DXMatrixRotationYawPitchRoll(&rotationMatrix,rotation.x*ToRadian,rotation.y*ToRadian,rotation.z*ToRadian);
-	D3DXMatrixScaling(&scalingMatrix,scaling.x,scaling.y,scaling.z);
-
-	D3DXMatrixMultiply(&RotScaleMatrix,&scalingMatrix,&rotationMatrix);
-	D3DXMatrixMultiply(&worldMatrix,&RotScaleMatrix,&translationMatrix);
-
-	p_Device->SetFVF(D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_TEX1);
-
-	result = p_Device->SetIndices(iBuffer);
-	result = p_Device->SetStreamSource(0, vBuffer, 0, sizeof(VertexPNT));
-	result = p_Device->SetTransform(D3DTS_WORLD, &worldMatrix);
-	if(texture != NULL)
+	if(doRender)
 	{
-		result = p_Device->SetTexture(0,texture);
-	}
-	result = p_Device->SetMaterial(&meshMaterial);
+		HRESULT result;
+		D3DXMATRIX worldMatrix;
+		D3DXMATRIX scalingMatrix;
+		D3DXMATRIX rotationMatrix;
+		D3DXMATRIX translationMatrix;
+		D3DXMATRIX RotScaleMatrix;
+
+		D3DXMatrixTranslation(&translationMatrix,position.x,position.y,position.z);
+		D3DXMatrixRotationYawPitchRoll(&rotationMatrix,rotation.x*ToRadian,rotation.y*ToRadian,rotation.z*ToRadian);
+		D3DXMatrixScaling(&scalingMatrix,scaling.x,scaling.y,scaling.z);
+
+		D3DXMatrixMultiply(&RotScaleMatrix,&scalingMatrix,&rotationMatrix);
+		D3DXMatrixMultiply(&worldMatrix,&RotScaleMatrix,&translationMatrix);
+
+		p_Device->SetFVF(D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_TEX1);
+
+		result = p_Device->SetIndices(iBuffer);
+		result = p_Device->SetStreamSource(0, vBuffer, 0, sizeof(VertexPNT));
+		result = p_Device->SetTransform(D3DTS_WORLD, &worldMatrix);
+		if(texture != NULL)
+		{
+			result = p_Device->SetTexture(0,texture);
+		}
+		result = p_Device->SetMaterial(&meshMaterial);
 
 	
 
-	// draw the cube
-	result = p_Device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 24, 0, 12);
-	switch(result)
-	{	
-		//case D3D_OK:std::cout << "D3D OK" << std::endl;
-			//break;
-		case D3DERR_INVALIDCALL: std::cout << "Invalid Call" << std::endl;
-			break;
-		case D3DERR_CONFLICTINGRENDERSTATE: std::cout << "Conflicting Renderstate" << std::endl;
-			break ;
-		case D3DERR_DRIVERINVALIDCALL: std::cout <<"Driver invalid call"<< std::endl;
-			break;
-		case D3DERR_TOOMANYOPERATIONS : std::cout << "too many operations" << std::endl; 
-			break;
+		// draw the cube
+		result = p_Device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 24, 0, 12);
+		switch(result)
+		{	
+			//case D3D_OK:std::cout << "D3D OK" << std::endl;
+				//break;
+			case D3DERR_INVALIDCALL: std::cout << "Invalid Call" << std::endl;
+				break;
+			case D3DERR_CONFLICTINGRENDERSTATE: std::cout << "Conflicting Renderstate" << std::endl;
+				break ;
+			case D3DERR_DRIVERINVALIDCALL: std::cout <<"Driver invalid call"<< std::endl;
+				break;
+			case D3DERR_TOOMANYOPERATIONS : std::cout << "too many operations" << std::endl; 
+				break;
+		}
 	}
 }
 

@@ -11,7 +11,28 @@ Game::Game(Game::DataStruct* b,HWND windowHandle,ResourceManager* resMan,InputHa
 	p_Device = d3dDev;
 	LoadLevel();
 	Initialize();
-	player = new FirstPersonPlayer(D3DXVECTOR3(0,50,0),VECTOR3ZERO,p_Device,resources,inputHandler,&keys);
+	physics = new SPEEngine(resources);
+
+	SPEEngine::RigidData physicsData;
+	physicsData.Nullify();
+	physicsData.doRender = false;
+	physicsData.isStatic = true;
+	physicsData.scaleModel = SPEVector(2,2,2);
+	physicsData.position = SPEVector(0,-10,0);
+	physics->CreatePhysicsObject("Resources/Models/Level1.x",&physicsData);
+
+	for(unsigned int i = 0; i < 50; i++)
+	{
+		SPEEngine::RigidData physicsData;
+		physicsData.Nullify();
+		physicsData.doRender = true;
+		physicsData.isStatic = false;
+		physicsData.scaleModel = SPEVector(1,1,1);
+		physicsData.position = SPEVector(0,i*2,i*0.6f);
+		physics->CreatePhysicsObject("Resources/Models/CUBE.x",&physicsData);
+	}
+
+	player = new FirstPersonPlayer(D3DXVECTOR3(0,0,0),VECTOR3ZERO,p_Device,resources,inputHandler,&keys);
 	//cout << debugCubes.at(0)->collision->GetPosition().x <<"  " <<debugCubes.at(0)->collision->GetPosition().y << "  " <<debugCubes.at(0)->collision->GetPosition().z << endl;
 	//particles.push_back(new Particle(resources,p_Device,"Resources/Particles/Lightning.png",&camera.m_View,D3DXVECTOR3(0,10,10),200,500,1,3));
 	//particles.at(0)->SetMovement(D3DXVECTOR3(0,0,0),D3DXVECTOR3(0,3,0));
@@ -60,6 +81,7 @@ void Game::Update(double deltaTime)
 void Game::FixedUpdate(double deltaTime)
 {
 	float deltaTimeF = (float)deltaTime;
+	physics->OnFrameMove(deltaTimeF);
 	inputHandler->Update();
 	DoInput(deltaTimeF);
 
@@ -88,6 +110,8 @@ void Game::Render()
 	{
 		debugCubes.at(i)->Draw();
 	}
+	physics->OnFrameRender(resources->GetDevice());
+
 	p_Device->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_CLAMP);
 	p_Device->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP);
 	for(unsigned int i = 0; i < spriteObjs.size();i++)

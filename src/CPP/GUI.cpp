@@ -11,11 +11,9 @@ GUI::GUI( LPDIRECT3DDEVICE9 d3dDev, ResourceManager* res)
 	r.w = 128;
 	r.h = 128;
 
-
 	LoadGUI();
 
 	D3DXMatrixOrthoLH(&matProj,resources->GetScreenWidth(),resources->GetScreenHeight(),0,1);
-	
 }
 void GUI::Release()
 {
@@ -172,7 +170,6 @@ void GUI::Animate(GUITexture* obj , float dTime ,float animSpeed)
 			case 0:
 				vPtr->texC.x = stepSizeX * obj->currentXAnimValue;
 				vPtr->texC.y = stepSizeY * obj->currentYAnimValue;
-				std::cout << currentAnim->EndPosition.x << "  " << currentAnim->StartPosition.x << std::endl;
 				if(vPtr->texC.x	> 1 - stepSizeX*(obj->xRows-(currentAnim->EndPosition.x-currentAnim->StartPosition.x)))
 				{
 					vPtr->texC.x = 0;
@@ -253,7 +250,7 @@ void GUI::LoadAnimation(GUITexture* obj)
 
 
 			fin >> name >> startPosX >> endPosX >> startPosY >> endPosY;
-			std::cout << endPosX << " 1 "<< endPosY << std::endl;
+			//std::cout << endPosX << " 1 "<< endPosY << std::endl;
 			anim.AnimationName = name;
 			anim.StartPosition = D3DXVECTOR2(0,0);
 			anim.EndPosition = D3DXVECTOR2(0,0);

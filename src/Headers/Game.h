@@ -13,18 +13,19 @@
 #include <d3d9.h>
 #include <D3DCommon.h>
 
-#include "ResourceManager.h"
-#include "Object3D.h"
-#include "Object2D.h"
-#include "DebugCube.h"
-#include "CollisionGeo.h"
-#include "InputHandler.h"
-#include "SoundHandler.h"
-#include "Particle.h"
-#include "Game.h"
-#include "FirstPersonPlayer.h"
-#include "GUI.h"
+#include "../Headers/ResourceManager.h"
+#include "../Headers/Object3D.h"
+#include "../Headers/Object2D.h"
+#include "../Headers/DebugCube.h"
+#include "../Headers/CollisionGeo.h"
+#include "../Headers/InputHandler.h"
+#include "../Headers/SoundHandler.h"
+#include "../Headers/Particle.h"
+#include "../Headers/FirstPersonPlayer.h"
+#include "../Headers/GUI.h"
+#include "../Headers/SPEEngine.h"
 
+#include <SPE.h>
 #include <iostream>
 #include <stdlib.h>
 #include <string>
@@ -73,6 +74,7 @@ private:
 	ResourceManager* resources;
 	InputHandler* inputHandler;
 	SoundHandler* soundHandler;
+	SPEEngine* physics;
 	GUI* gui;
 	void LoadLevel();
 	void DestroyLevel();
