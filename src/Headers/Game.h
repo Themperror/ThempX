@@ -17,7 +17,6 @@
 #include "../Headers/Object3D.h"
 #include "../Headers/Object2D.h"
 #include "../Headers/DebugCube.h"
-#include "../Headers/CollisionGeo.h"
 #include "../Headers/InputHandler.h"
 #include "../Headers/SoundHandler.h"
 #include "../Headers/Particle.h"
@@ -45,15 +44,63 @@ public:
 		bool loop;
 		bool lockCursor;
 	};
+	struct Object3DData
+	{
+		char* filePath;
+		D3DXVECTOR3 position;
+		D3DXVECTOR3 rotation;
+		D3DXVECTOR3 scale;
+		void Nullify()
+		{
+			filePath = "";
+			position = VECTOR3ZERO;
+			rotation = VECTOR3ZERO;
+			scale = VECTOR3ONE;
+		}
+	};
+	struct Object2DData
+	{
+		char* filePath;
+		bool hasAnimation;
+		D3DXVECTOR2 URVertexPos;
+		D3DXVECTOR2 LLVertexPos;
+		D3DXVECTOR3 position;
+		D3DXVECTOR3 rotation;
+		D3DXVECTOR3 scale;
+		float textureSizeX, textureSizeY, xRowsAnim,yRowsAnim;
+		void Nullify()
+		{
+			textureSizeX=0;textureSizeY =0;xRowsAnim=0;yRowsAnim = 0;
+			filePath = "";
+			hasAnimation = false;
+			URVertexPos = D3DXVECTOR2(0,0);
+			LLVertexPos = D3DXVECTOR2(0,0);
+			position = VECTOR3ZERO;
+			rotation = VECTOR3ZERO;
+			scale = VECTOR3ONE;
+		}
+	};
 	Game(DataStruct* b,HWND windowHandle,ResourceManager* resMan,InputHandler* inputHand,SoundHandler* soundHand, LPDIRECT3DDEVICE9 d3dDev);
 	void Update(double deltaTime);
 	void FixedUpdate(double deltaTime);
 	void Render();
 	void Initialize();
 	void ReleaseAll();
+	
+	void Create3DObject(bool hasPhysics,Object3DData* data,SPEEngine::RigidData* pData);
+	void CreateAnimated2DObject(bool hasPhysics, Object2DData* data, SPEEngine::RigidData* pData);
+	void CreateStatic2DObject(bool hasPhysics, Object2DData* data, SPEEngine::RigidData* pData);
+
 	inline D3DXMATRIX* GetCameraView()
 	{
-		return NULL;
+		if(player != NULL)
+		{
+			return player->GetCameraView();
+		}
+		else
+		{
+			return NULL;
+		}
 	}
 private:
 	//object holders

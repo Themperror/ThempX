@@ -13,26 +13,28 @@ Game::Game(Game::DataStruct* b,HWND windowHandle,ResourceManager* resMan,InputHa
 	Initialize();
 	physics = new SPEEngine(resources);
 
-	SPEEngine::RigidData physicsData;
-	physicsData.Nullify();
-	physicsData.doRender = false;
-	physicsData.isStatic = true;
-	physicsData.scaleModel = SPEVector(2,2,2);
-	physicsData.position = SPEVector(0,-10,0);
-	physics->CreatePhysicsObject("Resources/Models/Level1.x",&physicsData);
+	SPEEngine::RigidData physicsData2;
+	physicsData2.Nullify();
+	physicsData2.doRender = false;
+	physicsData2.isStatic = true;
+	physicsData2.scaleModel = SPEVector(2,2,2);
+	physicsData2.position = SPEVector(0,-10,0);
+	physics->Create3DPhysicsObject("resources/models/level1.x",&physicsData2);
 
-	for(unsigned int i = 0; i < 50; i++)
+	for(unsigned int i = 0; i < 100; i++)
 	{
 		SPEEngine::RigidData physicsData;
 		physicsData.Nullify();
 		physicsData.doRender = true;
+		physicsData.density = 1;
+		physicsData.mass = 10;
 		physicsData.isStatic = false;
 		physicsData.scaleModel = SPEVector(1,1,1);
-		physicsData.position = SPEVector(0,i*2,i*0.6f);
-		physics->CreatePhysicsObject("Resources/Models/CUBE.x",&physicsData);
+		physicsData.position = SPEVector(0,i*1.1f,3*sin(i*0.5f));
+		physics->Create3DPhysicsObject("resources/models/cube.x",&physicsData);
 	}
 
-	player = new FirstPersonPlayer(D3DXVECTOR3(0,0,0),VECTOR3ZERO,p_Device,resources,inputHandler,&keys);
+	player = new FirstPersonPlayer(D3DXVECTOR3(0,0,0),VECTOR3ZERO,resources,inputHandler,&keys);
 	//cout << debugCubes.at(0)->collision->GetPosition().x <<"  " <<debugCubes.at(0)->collision->GetPosition().y << "  " <<debugCubes.at(0)->collision->GetPosition().z << endl;
 	//particles.push_back(new Particle(resources,p_Device,"Resources/Particles/Lightning.png",&camera.m_View,D3DXVECTOR3(0,10,10),200,500,1,3));
 	//particles.at(0)->SetMovement(D3DXVECTOR3(0,0,0),D3DXVECTOR3(0,3,0));
@@ -85,18 +87,7 @@ void Game::FixedUpdate(double deltaTime)
 	inputHandler->Update();
 	DoInput(deltaTimeF);
 
-	CollisionGeo::CollisionInfo* colInfo = &debugCubes.at(0)->collision->IsInCube(&(player->GetPosition()-D3DXVECTOR3(0,1.5f,0)));
-	colInfo->target = debugCubes.at(0)->collision;
-	if(colInfo->result == CollisionGeo::Collision && player->CheckingCollisions())
-	{
-		player->SetGrounded(true);
-	}
-	else
-	{
-		player->SetGrounded(false);
-	}
 	player->FixedUpdate(deltaTimeF);
-	player->Collision(colInfo);
 }
 void Game::Render()
 {
@@ -311,7 +302,51 @@ void Game::DoInput(float dT)
 		data->loop = false;
 	}
 }
+void Game::Create3DObject(bool hasPhysics, Object3DData* data, SPEEngine::RigidData* pData)
+{
+	if(hasPhysics)
+	{
 
+	}
+	else
+	{
+		Object3D* obj = new Object3D(resources,data->filePath);
+		obj->position = data->position;
+		obj->scaling = data->scale;
+		obj->rotation = data->rotation;
+		modelObjs.push_back(obj);
+	}
+}
+void Game::CreateAnimated2DObject(bool hasPhysics, Object2DData* data, SPEEngine::RigidData* pData)
+{
+	if(hasPhysics)
+	{
+
+	}
+	else
+	{
+		Object2D* obj = new Object2D(resources,data->filePath,player->GetCameraView(),data->textureSizeX,data->textureSizeY,data->xRowsAnim,data->yRowsAnim);
+		obj->position = data->position;
+		obj->scaling = data->scale;
+		obj->rotation = data->rotation;
+		spriteObjs.push_back(obj);
+	}
+}
+void Game::CreateStatic2DObject(bool hasPhysics, Object2DData* data, SPEEngine::RigidData* pData)
+{
+	if(hasPhysics)
+	{
+
+	}
+	else
+	{
+		Object2D* obj = new Object2D(resources,data->filePath,player->GetCameraView());
+		obj->position = data->position;
+		obj->scaling = data->scale;
+		obj->rotation = data->rotation;
+		spriteObjs.push_back(obj);
+	}
+}
 //Left Mouse click function (to test things with), will be removed for engine use, as this is a gameplay feature
 void Game::LeftMouseClick()
 {
@@ -321,14 +356,14 @@ void Game::LeftMouseClick()
 		{
 			if(!currentEditorObj->obj2D->hasAnimation)
 			{
-				Object2D* obj = new Object2D(resources,p_Device,currentEditorObj->obj2D->quad.textureName,player->GetCameraView());
+				Object2D* obj = new Object2D(resources,currentEditorObj->obj2D->quad.textureName,player->GetCameraView());
 				obj->SetPosition(currentEditorObj->obj2D->position.x,currentEditorObj->obj2D->position.y,currentEditorObj->obj2D->position.z);
 				obj->objName = currentEditorObj->obj2D->objName;
 				spriteObjs.push_back(obj);
 			}
 			else
 			{
-				Object2D* obj = new Object2D(resources,p_Device,currentEditorObj->obj2D->quad.textureName,player->GetCameraView(),currentEditorObj->obj2D->GetXSize(),currentEditorObj->obj2D->GetYSize(),currentEditorObj->obj2D->GetXRows(),currentEditorObj->obj2D->GetYRows());
+				Object2D* obj = new Object2D(resources,currentEditorObj->obj2D->quad.textureName,player->GetCameraView(),currentEditorObj->obj2D->GetXSize(),currentEditorObj->obj2D->GetYSize(),currentEditorObj->obj2D->GetXRows(),currentEditorObj->obj2D->GetYRows());
 				obj->SetPosition(currentEditorObj->obj2D->position.x,currentEditorObj->obj2D->position.y,currentEditorObj->obj2D->position.z);
 				obj->objName = currentEditorObj->obj2D->objName;
 				spriteObjs.push_back(obj);
@@ -336,7 +371,7 @@ void Game::LeftMouseClick()
 		}
 		else if(currentEditorObj->obj3D != NULL)
 		{
-			Object3D* obj = new Object3D(resources,currentEditorObj->obj3D->model.meshPath,p_Device);
+			Object3D* obj = new Object3D(resources,currentEditorObj->obj3D->model.meshPath);
 			obj->objName = currentEditorObj->obj3D->objName;
 			obj->SetPosition(currentEditorObj->obj3D->position.x,currentEditorObj->obj3D->position.y,currentEditorObj->obj3D->position.z);
 			modelObjs.push_back(obj);
@@ -344,57 +379,11 @@ void Game::LeftMouseClick()
 		else
 		{
 			DebugCube* src = currentEditorObj->col;
-			DebugCube* obj = new DebugCube(p_Device,src->position,src->rotation,src->LLFPos,src->URBPos,resources);
+			DebugCube* obj = new DebugCube(src->position,src->rotation,src->LLFPos,src->URBPos,resources);
 			obj->SetPosRotScale(&collisionLock,src->position,src->rotation,src->scaling);
 			debugCubes.push_back(obj);
 		}
 		CreateLevelFile();
-	}
-}
-//This function is for the extra thread that is (going) to handle all collisions. 
-void Game::CollisionThread(void)
-{
-	while(data->loop)
-	{
-		for(unsigned int x = 0; x < debugCubes.size(); x++)
-		{
-			for(unsigned int y = 0 ;y < debugCubes.size();y++)
-			{
-				if(debugCubes.at(x)->HasCollision(&collisionLock) == true && debugCubes.at(y)->HasCollision(&collisionLock) == true && debugCubes.at(x) != debugCubes.at(y))
-				{
-					if(debugCubes.at(x)->collision->DidAABBCollideWithAABB(debugCubes.at(y)->collision).result == CollisionGeo::Collision)
-					{
-						if(debugCubes.at(x)->DidCollide(&collisionLock) == false)
-						{
-							debugCubes.at(x)->ChangeTexture("Resources/Models/CubeRed.png",&collisionLock);
-						} 
-						if(debugCubes.at(y)->DidCollide(&collisionLock) == false)
-						{
-							debugCubes.at(y)->ChangeTexture("Resources/Models/CubeRed.png",&collisionLock);
-						}
-						debugCubes.at(x)->SetCollide(true,&collisionLock);
-						debugCubes.at(y)->SetCollide(true,&collisionLock);
-
-					}
-					else
-					{
-						if(debugCubes.at(x)->DidCollide(&collisionLock) == false)
-						{
-							debugCubes.at(x)->ChangeTexture("Resources/Models/CubeGreen.png",&collisionLock);
-						} 
-						if(debugCubes.at(y)->DidCollide(&collisionLock) == false)
-						{
-							debugCubes.at(y)->ChangeTexture("Resources/Models/CubeGreen.png",&collisionLock);
-						}
-					}
-				}
-			}
-		}
-		for(unsigned int i = 0; i < debugCubes.size();i++)
-		{
-			debugCubes.at(i)->SetCollide(false,&collisionLock);
-		}
-		Sleep(0);
 	}
 }
 void Game::ReleaseAll()
@@ -498,7 +487,7 @@ void Game::SetUpEditorMode()
 	if (myfile.is_open())
 	{
 		EditorObj obj;
-		obj.col = new DebugCube(p_Device,D3DXVECTOR3(0,0,0),D3DXVECTOR3(0,0,0),D3DXVECTOR3(-1,-1,-1),D3DXVECTOR3(1,1,1),resources);
+		obj.col = new DebugCube(D3DXVECTOR3(0,0,0),D3DXVECTOR3(0,0,0),D3DXVECTOR3(-1,-1,-1),D3DXVECTOR3(1,1,1),resources);
 		obj.col->scaling = D3DXVECTOR3(1,1,1);
 		obj.obj2D = NULL;
 		obj.obj3D = NULL;
@@ -519,7 +508,7 @@ void Game::SetUpEditorMode()
 			if(name[name.size()-1] == check[0])
 			{
 				modelNr++;
-				Object3D* modelObj = new Object3D(resources,_strdup(name.c_str()),p_Device);
+				Object3D* modelObj = new Object3D(resources,_strdup(name.c_str()));
 				std::ostringstream oss;
 				oss<<"Model"<<modelNr;
 				modelObj->objName = oss.str();
@@ -532,7 +521,7 @@ void Game::SetUpEditorMode()
 				if(hasAnim == false)
 				{
 					staticSpriteNr++;
-					Object2D* spriteObj = new Object2D(resources,p_Device,_strdup(name.c_str()),player->GetCameraView());
+					Object2D* spriteObj = new Object2D(resources,_strdup(name.c_str()),player->GetCameraView());
 					std::ostringstream oss;
 					oss<<"StaticSprite"<<staticSpriteNr;
 					spriteObj->objName = oss.str();
@@ -545,7 +534,7 @@ void Game::SetUpEditorMode()
 				else
 				{
 					animatedSpriteNr++;
-					Object2D* spriteObj = new Object2D(resources,p_Device,_strdup(name.c_str()),player->GetCameraView(),sizeX,sizeY,xRows,yRows);
+					Object2D* spriteObj = new Object2D(resources,_strdup(name.c_str()),player->GetCameraView(),sizeX,sizeY,xRows,yRows);
 					spriteObj->handleWindow = handleWindow;
 					std::ostringstream oss;
 					oss<<"AnimatedSprite"<<animatedSpriteNr;
@@ -623,7 +612,7 @@ void Game::LoadLevel()
 			if(name.at(name.size()-1) == check[0])
 			{
 				char* mName = _strdup(name.c_str());
-				Object3D* obj = new Object3D(resources,mName,p_Device);
+				Object3D* obj = new Object3D(resources,mName);
 
 				obj->objName = objName;
 				obj->tag = tag;
@@ -642,7 +631,7 @@ void Game::LoadLevel()
 			{
 				if(XAnimRows == 0 && YAnimRows == 0)
 				{
-					Object2D* obj = new Object2D(resources,p_Device,_strdup(name.c_str()),player->GetCameraView());
+					Object2D* obj = new Object2D(resources,_strdup(name.c_str()),player->GetCameraView());
 					obj->handleWindow = handleWindow;
 					obj->objName = objName;
 					obj->tag = tag;
@@ -656,7 +645,7 @@ void Game::LoadLevel()
 				}
 				else
 				{
-					Object2D* obj = new Object2D(resources,p_Device,_strdup(name.c_str()),player->GetCameraView(),sizeX,sizeY,XAnimRows,YAnimRows);
+					Object2D* obj = new Object2D(resources,_strdup(name.c_str()),player->GetCameraView(),sizeX,sizeY,XAnimRows,YAnimRows);
 					obj->handleWindow = handleWindow;
 					obj->objName = objName;
 					obj->tag = tag;	
@@ -670,7 +659,7 @@ void Game::LoadLevel()
 			}
 			else
 			{
-				DebugCube* obj = new DebugCube(p_Device,D3DXVECTOR3(posx,posy,posz),D3DXVECTOR3(rotx,roty,rotz),D3DXVECTOR3(-1,-1,-1),D3DXVECTOR3(1,1,1),resources);
+				DebugCube* obj = new DebugCube(D3DXVECTOR3(posx,posy,posz),D3DXVECTOR3(rotx,roty,rotz),D3DXVECTOR3(-1,-1,-1),D3DXVECTOR3(1,1,1),resources);
 				obj->objName = "Collision";
 				obj->tag = tag;
 				obj->scaling = D3DXVECTOR3(scalex,scaley,scalez);

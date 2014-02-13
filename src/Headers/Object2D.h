@@ -39,9 +39,9 @@ class Object2D
 {
 	
 public:	   
-	Object2D(ResourceManager* resources, LPDIRECT3DDEVICE9 d3d_Device, char* texturePath, D3DXMATRIX* camView);
-	Object2D(ResourceManager* resources, LPDIRECT3DDEVICE9 d3d_Device, char* texturePath, D3DXMATRIX* camView, D3DXVECTOR2 LLPos, D3DXVECTOR2 URPos);
-	Object2D(ResourceManager* resources,LPDIRECT3DDEVICE9 d3d_Device,char* texturePath,D3DXMATRIX* camViewMatrix,float tSizeX,float tSizeY,float xRowsAnim,float yRowsAnim);
+	Object2D(ResourceManager* res, char* texturePath, D3DXMATRIX* camView);
+	Object2D(ResourceManager* res, char* texturePath, D3DXMATRIX* camView, D3DXVECTOR2 LLPos, D3DXVECTOR2 URPos);
+	Object2D(ResourceManager* res, char* texturePath,D3DXMATRIX* camViewMatrix,float tSizeX,float tSizeY,float xRowsAnim,float yRowsAnim);
 	D3DXVECTOR3 rotation;
 	D3DXVECTOR3 position;
 	D3DXVECTOR3 scaling;	 
@@ -79,14 +79,6 @@ public:
 	{
 		return sizeY;
 	}
-	inline CollisionGeo* GetCollision()
-	{
-		return collision;
-	}
-	inline void SetCollision(void* col)
-	{
-		collision = collision;
-	}
 private:
 	void InitVars(); 
 	void LoadAnimation();
@@ -98,8 +90,8 @@ private:
 	LPDIRECT3DINDEXBUFFER9 FillIndices();
 
 	LPDIRECT3DDEVICE9 p_Device;
+	ResourceManager* resources;
 
 	HRESULT result;
-	CollisionGeo* collision;
 };
 #endif

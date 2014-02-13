@@ -36,7 +36,12 @@ ThempX::ThempX(HWND handle,HINSTANCE hInstance)
 	g = new Game(&data,handleWindow,resources,inputHandler,soundHandler,p_Device);
 
 	MSG msg;
-    while(data.loop)
+
+	unsigned int frames = 0;
+	int realframes = 0;
+    DWORD cTicks = 0;
+	DWORD oTicks = 0;
+	while(data.loop)
     {
 		if(data.lockCursor)
 		{
@@ -57,18 +62,24 @@ ThempX::ThempX(HWND handle,HINSTANCE hInstance)
 			data.loop = false;
 			DestroyWindow(handleWindow);
 		}		
-
+		frames++;
 		FixedUpdate();
 
 		currentTicks = timeGetTime();
+		cTicks = currentTicks;
+		if(cTicks-oTicks > 1000)
+		{
+			realframes = frames*(cTicks-oTicks)/(cTicks-oTicks);
+			std::cout << realframes << std::endl;
+			frames = 0;
+			oTicks = cTicks;
+		}
 		if(currentTicks > oldTicks+16)
 		{
-			//cout << "update normal, ticks:  "<<currentTicks << endl;
 			Update();
 			DrawScene();
 			oldTicks = currentTicks;
 		}
-		//Sleep(0);
     }
 
 

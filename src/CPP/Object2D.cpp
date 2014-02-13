@@ -1,8 +1,9 @@
 #include "../Headers/Object2D.h"
 
-Object2D::Object2D(ResourceManager* resources,LPDIRECT3DDEVICE9 d3d_Device,char* texturePath,D3DXMATRIX* camViewMatrix)
+Object2D::Object2D(ResourceManager* res,char* texturePath,D3DXMATRIX* camViewMatrix)
 {
-	p_Device = d3d_Device;
+	resources = res;
+	p_Device = resources->GetDevice();
 	cameraView = camViewMatrix;	 
 	quad.texture = NULL;
 	quad.textureName = texturePath;
@@ -14,9 +15,10 @@ Object2D::Object2D(ResourceManager* resources,LPDIRECT3DDEVICE9 d3d_Device,char*
 	xRows = 0;
 	InitVars();
 }
-Object2D::Object2D(ResourceManager* resources, LPDIRECT3DDEVICE9 d3d_Device, char* texturePath, D3DXMATRIX* camView, D3DXVECTOR2 LLPos, D3DXVECTOR2 URPos)
+Object2D::Object2D(ResourceManager* res, char* texturePath, D3DXMATRIX* camView, D3DXVECTOR2 LLPos, D3DXVECTOR2 URPos)
 {
-	p_Device = d3d_Device;
+	resources = res;
+	p_Device = res->GetDevice();
 	cameraView = camView;	 
 	quad.texture = NULL;
 	quad.textureName = texturePath;
@@ -59,9 +61,10 @@ Object2D::Object2D(ResourceManager* resources, LPDIRECT3DDEVICE9 d3d_Device, cha
 	quad.iBuffer = NULL;
 	quad.iBuffer = FillIndices();
 }
-Object2D::Object2D(ResourceManager* resources,LPDIRECT3DDEVICE9 d3d_Device,char* texturePath,D3DXMATRIX* camViewMatrix,float tSizeX,float tSizeY,float xRowsAnim,float yRowsAnim)
+Object2D::Object2D(ResourceManager* res,char* texturePath,D3DXMATRIX* camViewMatrix,float tSizeX,float tSizeY,float xRowsAnim,float yRowsAnim)
 {
-	p_Device = d3d_Device;
+	resources = res;
+	p_Device = res->GetDevice();
 	cameraView = camViewMatrix;	 
 	quad.texture = NULL;
 	quad.textureName = texturePath;
@@ -162,7 +165,6 @@ void Object2D::InitVars()
 	quad.vBuffer = FillVertices();
 	quad.iBuffer = NULL;
 	quad.iBuffer = FillIndices();
-	collision = NULL;
 	//light = new light etc
 }
 void Object2D::Draw()
@@ -310,11 +312,6 @@ void Object2D::ReleaseResources()
 	if(quad.iBuffer != NULL)
 	{
 		quad.iBuffer->Release();
-	}
-	if(collision != NULL)
-	{
-		delete collision;
-		collision = NULL;
 	}
 	for(unsigned int i = 0 ; i < animations.size();i++)
 	{

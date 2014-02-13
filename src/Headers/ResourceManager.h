@@ -10,7 +10,6 @@
 #include <stdlib.h>
 #include <D3DX9Mesh.h>
 #include <string>
-#include "CollisionGeo.h"
 //#include "GUI.h"
 //#include "ThempX.h"
 //#include "SoundHandler.h"
@@ -77,8 +76,6 @@ public:
 
 private:
 
-	
-	
 	struct Quad
 	{
 		LPDIRECT3DTEXTURE9 texture;

@@ -16,7 +16,6 @@
 #include "Object3D.h"
 #include "Object2D.h"
 #include "DebugCube.h"
-#include "CollisionGeo.h"
 #include "InputHandler.h"
 #include "SoundHandler.h"
 #include "Particle.h"

@@ -1,23 +1,22 @@
 #include "..\Headers\DebugCube.h"
 
-DebugCube::DebugCube(LPDIRECT3DDEVICE9 d3d_Device, D3DXVECTOR3 cubePosition,D3DXVECTOR3 cubeRotation, D3DXVECTOR3 LLFPosition, D3DXVECTOR3 URBPosition, ResourceManager* resources)
+DebugCube::DebugCube(D3DXVECTOR3 cubePosition,D3DXVECTOR3 cubeRotation, D3DXVECTOR3 LLFPosition, D3DXVECTOR3 URBPosition, ResourceManager* resources)
 {
-	p_Device = d3d_Device;
+	doRender = false;
+	didCollide = false;
+	vBuffer = NULL;
+	iBuffer = NULL;
+	resource = NULL;
+
+	p_Device = resources->GetDevice();
 	position = cubePosition;
 	rotation = cubeRotation;
 	scaling = D3DXVECTOR3(1,1,1);
 	LLFPos = D3DXVECTOR3(LLFPosition.x,LLFPosition.y,LLFPosition.z);
 	URBPos = D3DXVECTOR3(URBPosition.x,URBPosition.y,URBPosition.z);
-	doRender = false;
-	didCollide = false;
-	collision = NULL;
-	vBuffer = NULL;
-	iBuffer = NULL;
-	resource = NULL;
 	resource = resources;
 	texture = resources->GetTexture("Resources/Models/CubeRed.png");
 	ZeroMemory(&meshMaterial,sizeof(meshMaterial));
-	collision = new CollisionGeo(&cubePosition,&cubeRotation,LLFPosition,URBPosition);
 
 	meshMaterial.Diffuse.a = 255; meshMaterial.Diffuse.r = 128; meshMaterial.Diffuse.g = 128; meshMaterial.Diffuse.b = 128;
 	meshMaterial.Ambient.a = 255; meshMaterial.Ambient.r = 128; meshMaterial.Ambient.g = 128; meshMaterial.Ambient.b = 128;
@@ -40,11 +39,6 @@ void DebugCube::Release()
 	if(vBuffer != NULL)
 	{
 		vBuffer->Release();
-	}
-	if(collision != NULL)
-	{
-		delete collision;
-		collision = NULL;
 	}
 }
 void DebugCube::Draw()

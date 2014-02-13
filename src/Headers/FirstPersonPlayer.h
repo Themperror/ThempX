@@ -3,12 +3,11 @@
 
 #include "ResourceManager.h"
 #include "InputHandler.h"
-#include "CollisionGeo.h"
 
 class FirstPersonPlayer
 {
 public:
-	FirstPersonPlayer(D3DXVECTOR3 pos, D3DXVECTOR3 rot,LPDIRECT3DDEVICE9 d3dDev,ResourceManager* res,InputHandler* input,std::vector<unsigned int>* keyArray);
+	FirstPersonPlayer(D3DXVECTOR3 pos, D3DXVECTOR3 rot,ResourceManager* res,InputHandler* input,std::vector<unsigned int>* keyArray);
 	inline D3DXMATRIX* GetCameraView()
 	{
 		return &cam.m_View;
@@ -29,19 +28,7 @@ public:
 	{
 		isGrounded = true;
 	}
-	inline CollisionGeo::CollisionInfo DoesCollideWith(CollisionGeo* other)
-	{
-		return collision->DidAABBCollideWithAABB(other);
-	}
-	inline CollisionGeo* GetCollision()
-	{
-		return collision;
-	}
-	inline bool CheckingCollisions()
-	{
-		return checkCollision;
-	}
-	void Collision(CollisionGeo::CollisionInfo* info);
+	
 	void Update(float deltaTime);
 	void FixedUpdate(float deltaTime);
 	void Render();
@@ -69,7 +56,6 @@ private:
 	//player related
 	D3DXVECTOR3 Input(float deltaTime);
 	int KeyPressed(int key);
-	CollisionGeo* collision;
 	bool isGrounded;
 	bool checkCollision;
 	float gravity;

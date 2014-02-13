@@ -37,7 +37,8 @@ public:
 	};
 	SPEEngine(ResourceManager* res);
 
-	void CreatePhysicsObject(char* pathToMesh, SPEEngine::RigidData* data);
+	void Create3DPhysicsObject(char* pathToMesh, SPEEngine::RigidData* data);
+	void Create2DPhysicsObject(SPEEngine::RigidData* data);
 
 	void Release();
 

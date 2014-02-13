@@ -1,6 +1,6 @@
 #include "../Headers/FirstPersonPlayer.h"
 
-FirstPersonPlayer::FirstPersonPlayer(D3DXVECTOR3 pos, D3DXVECTOR3 rot,LPDIRECT3DDEVICE9 d3dDev,ResourceManager* res,InputHandler* input,std::vector<unsigned int>* keyArray)
+FirstPersonPlayer::FirstPersonPlayer(D3DXVECTOR3 pos, D3DXVECTOR3 rot,ResourceManager* res,InputHandler* input,std::vector<unsigned int>* keyArray)
 {
 	p_Device = NULL;
 	resources = NULL;
@@ -25,14 +25,12 @@ FirstPersonPlayer::FirstPersonPlayer(D3DXVECTOR3 pos, D3DXVECTOR3 rot,LPDIRECT3D
 	sensitivity = 20;
 
 	keys = keyArray;
-	p_Device = d3dDev;
+	p_Device = res->GetDevice();
 	resources = res;
 	inputHandler = input;
-	collision = new CollisionGeo(&position,3,1.5f,true);
-	
 
 	isGrounded = false;
-	gravity = 9.8f;
+	gravity = 0;
 	if(p_Device == NULL || resources == NULL || inputHandler == NULL)
 	{
 		std::cout << "Player class not created correctly, Game will probably crash" << std::endl;
@@ -41,28 +39,16 @@ FirstPersonPlayer::FirstPersonPlayer(D3DXVECTOR3 pos, D3DXVECTOR3 rot,LPDIRECT3D
 void FirstPersonPlayer::Update(float deltaTime)
 {
 	normalDeltaTime = deltaTime;
-	collision->SetAABB(&position,&D3DXVECTOR3(0,0,0),&D3DXVECTOR3(1,1,1));
-}
-void FirstPersonPlayer::Collision(CollisionGeo::CollisionInfo* info)
-{
-	moveDir.y -= gravity*fixedDeltaTime;
-	position.y = info->target->GetPosition()->y + info->target->GetHeight()/2 + 1; // 20 must be target.position + target.hit.height/2+EPSILON;
-		
-	position += moveDir;
-	//collision->SetAABB(&position,&D3DXVECTOR3(0,0,0),&D3DXVECTOR3(1,1,1));
-	moveDir = D3DXVECTOR3(0,0,0);
-	
-	
-	//if moveDir + position == collision (go through every collider)
-	//std::cout << "position: " << position.x << "  " << position.y << "  " << position.z << std::endl;
 }
 void FirstPersonPlayer::FixedUpdate(float deltaTime)
 {
 	fixedDeltaTime = deltaTime;
+
 	moveDir += Input(deltaTime);
+	moveDir.y -= gravity*fixedDeltaTime;
 
-
-	
+	position += moveDir;
+	moveDir = D3DXVECTOR3(0,0,0);
 	DoCameraStuff(normalDeltaTime);
 	SetUpCamera();
 }

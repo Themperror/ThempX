@@ -18,7 +18,7 @@ class Object3D
 {
 	
 public:
-	Object3D(ResourceManager* resources, char* path, LPDIRECT3DDEVICE9 d3d_Device);
+	Object3D(ResourceManager* resources, char* path);
 	D3DXVECTOR3 rotation;
 	D3DXVECTOR3 position;
 	D3DXVECTOR3 scaling;
@@ -33,14 +33,7 @@ public:
 	void SetPosition(float x,float y,float z);
 	void SetScale(float x,float y,float z);
 	void SetRotation(float x,float y,float z);
-	inline CollisionGeo* GetCollision()
-	{
-		return collision;
-	}
-	inline void SetCollision(void* col)
-	{
-		collision = collision;
-	}
+
 	bool LoadModel(LPSTR pathName);
 	Model model;
 	D3DXMATRIX worldMatrix;
@@ -49,7 +42,6 @@ public:
 private:
 	void InitVars();
 	
-	CollisionGeo* collision;
 	HRESULT CalcBounds(ID3DXMesh* mesh, D3DXVECTOR3* vCenter, float* radius);
 	HRESULT Object3D::CalcBoundingBox(ID3DXMesh *pMesh,D3DXVECTOR3* inner,D3DXVECTOR3 *outer);
 	HRESULT ScaleMesh(ID3DXMesh *pMesh, float scaleX,float scaleY,float scaleZ, D3DXVECTOR3* offset);
