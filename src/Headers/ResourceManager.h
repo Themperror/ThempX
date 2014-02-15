@@ -31,6 +31,9 @@ public:
 		DWORD numMaterials;
 		char* meshName;
 	};
+
+	LPD3DXFONT gameFont; //This should be private but as it's a pointer it's hard to make it un-editable when using get/set
+
 	ResourceManager(LPDIRECT3DDEVICE9 d3d_Device, HWND handle);
 	void ReleaseResources();
 	int GetMeshData(char* name);
@@ -56,6 +59,18 @@ public:
 	inline float GetScreenWidth()
 	{
 		return screenWidth;
+	}
+	inline float GetWindowHeight()
+	{
+		WINDOWINFO info;
+		GetWindowInfo(wHandle,&info);
+		return info.rcWindow.bottom - info.rcWindow.top;
+	}
+	inline float GetWindowWidth()
+	{
+		WINDOWINFO info;
+		GetWindowInfo(wHandle,&info);
+		return info.rcWindow.right - info.rcWindow.left;
 	}
 	inline LPD3DXMESH GetMeshFromVector(int i)
 	{

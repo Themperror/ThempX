@@ -26,7 +26,7 @@ public:
 	}
 	inline void SetGrounded(bool val)
 	{
-		isGrounded = true;
+		isGrounded = val;
 	}
 	
 	void Update(float deltaTime);
@@ -37,7 +37,7 @@ private:
 	struct Camera
 	{
 		D3DXVECTOR3 lookAt;
-		D3DXMATRIXA16 m_View;
+		D3DXMATRIX m_View;
 		D3DXMATRIX m_Projection;
 		D3DXVECTOR3 lookDir;
 	};

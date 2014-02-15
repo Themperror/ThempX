@@ -6,6 +6,14 @@
 class GUI
 {
 public:
+	struct Vertex2D
+	{
+		float x;
+		float y;
+		float z;
+		float rhw;
+		D3DXVECTOR2 texC;
+	};
 	struct Rectangle
 	{
 		float x,y,w,h;
@@ -65,14 +73,7 @@ public:
 	bool PlayAnimation(GUITexture* obj,std::string name);
 	void LoadAnimation(GUITexture* obj);
 private:
-	struct Vertex2D
-	{
-		float x;
-		float y;
-		float z;
-		float rhw;
-		D3DXVECTOR2 texC;
-	};
+	
 	void LoadGUI();
 	void Animate(GUITexture* obj , float dTime,float animSpeed);
 	D3DXMATRIX matProj;

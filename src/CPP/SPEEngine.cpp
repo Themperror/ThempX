@@ -30,8 +30,8 @@ void SPEEngine::Create3DPhysicsObject(char* pathToMesh, SPEEngine::RigidData* da
 	r.doRender = data->doRender;
 	LPSPERIGIDBODY pBody;
 	LPSPESHAPE pShape = pWorld->CreateShape();
-
-	r.model = resources->GetModelStructFromVector(resources->GetMeshData(pathToMesh));
+	r.modelNr = resources->GetMeshData(pathToMesh);
+	r.model = resources->GetModelStructFromVector(r.modelNr);
 	ScaleMesh(r.model->mesh,data->scaleModel.x,data->scaleModel.y,data->scaleModel.z,NULL);
 
 	//D3DXLoadMeshFromX (pathToMesh,NULL,resources->GetDevice(),NULL,NULL,NULL,NULL, &mesh);
@@ -59,17 +59,17 @@ void SPEEngine::Create2DPhysicsObject(SPEEngine::RigidData* data)
 	r.doRender = data->doRender;
 	LPSPERIGIDBODY pBody;
 	LPSPESHAPE pShape = pWorld->CreateShape();
-
-	r.model = resources->GetModelStructFromVector(resources->GetMeshData("resources/models/2dcube.x"));
+	r.modelNr = resources->GetMeshData("resources/models/cube2d.x");
+	r.model = resources->GetModelStructFromVector(r.modelNr);
 	ScaleMesh(r.model->mesh,data->scaleModel.x,data->scaleModel.y,data->scaleModel.z,NULL);
 
-	//D3DXLoadMeshFromX (pathToMesh,NULL,resources->GetDevice(),NULL,NULL,NULL,NULL, &mesh);
 	InitShape(pShape, r.model->mesh);  // initialize the shape
+
 	pBody = pWorld->AddRigidBody(pShape); // add a rigid body to SPEWorld with this shape
 	pBody->SetPosition(data->position); // set position of rigid body
 	pBody->SetVelocity(data->velocity); // set velocity
 	pBody->SetAngularVelocity(data->angularVelocity);
-
+	
 	pBody->SetBeStatic(data->isStatic);
 	r.rigidbody = pBody;
 	if(data->isStatic)
@@ -163,11 +163,11 @@ void SPEEngine::InitApp()
 	pWorld->SetMaxStepPerUpdate(3);
 	pWorld->SetSolverCacheFactor(0.5f);
 } 
-void CALLBACK SPEEngine::OnFrameMove(float fElapsedTime )
+void SPEEngine::OnFrameMove(float fElapsedTime )
 {
     pWorld->Update(fElapsedTime);
 } 
-void CALLBACK SPEEngine::OnFrameRender( IDirect3DDevice9* m_pd3dDevice )
+void SPEEngine::OnFrameRender( IDirect3DDevice9* m_pd3dDevice )
 {
     D3DXMATRIX matWorld;
 	for(unsigned int i = 0; i < rigidbodies.size(); i++)
@@ -177,7 +177,7 @@ void CALLBACK SPEEngine::OnFrameRender( IDirect3DDevice9* m_pd3dDevice )
 			rigidbodies.at(i).rigidbody->GetTransformMesh (&matWorld); // get the world matrix of a rigid body
 			m_pd3dDevice->SetTransform (D3DTS_WORLD, &matWorld);
 
-			ResourceManager::Model* m = rigidbodies.at(i).model;
+			ResourceManager::Model* m = resources->GetModelStructFromVector(rigidbodies.at(i).modelNr);
 			if(m->mesh != NULL)
 			{
 				HRESULT result;
@@ -205,7 +205,7 @@ void CALLBACK SPEEngine::OnFrameRender( IDirect3DDevice9* m_pd3dDevice )
 			staticbodies.at(i).rigidbody->GetTransformMesh (&matWorld); // get the world matrix of a rigid body
 			m_pd3dDevice->SetTransform (D3DTS_WORLD, &matWorld);
 
-			ResourceManager::Model* m = staticbodies.at(i).model;
+			ResourceManager::Model* m = resources->GetModelStructFromVector(staticbodies.at(i).modelNr);
 			if(m->mesh != NULL)
 			{
 				HRESULT result;

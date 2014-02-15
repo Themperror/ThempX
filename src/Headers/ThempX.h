@@ -1,9 +1,6 @@
 #ifndef _THEMPX_H_
 #define _THEMPX_H_
 
-#define SCREEN_WIDTH 800
-#define SCREEN_HEIGHT 600
-
 #include <Windows.h>
 #include <windowsx.h>
 #include <conio.h>
@@ -35,36 +32,28 @@ using namespace std;
 class ThempX
 {
 public:
-	//SPE testing
-	LPSPEWORLD         pWorld; // interface of physics world 
-	LPSPERIGIDBODY     pBody; // interface of a rigidbody 
-	LPD3DXMESH     pBoxMesh;
-
 	LPDIRECT3DDEVICE9 p_Device;
-	bool isDone;
+	Game::DataStruct data;
 	MSG input;
 	HWND handleWindow;
-	ThempX(HWND handle,HINSTANCE hInstance);
-
+	ThempX(HINSTANCE hInstance,LPSTR lpCmdLine);
+	int wSizeX,wSizeY,oldWSizeX,oldWSizeY;
 	ResourceManager* resources;
 	void SetIsDone(void);
 private:
 	//DirectX Init
+	void CreateLoadingScreen();
+	void SetDisplayMode(bool isWindowed,int sizeX, int sizeY);
 	LPDIRECT3DDEVICE9 InitializeDevice(HWND han_WindowToBindTo);
 	InputHandler* inputHandler;
 	SoundHandler* soundHandler;
-
-	int windowSizeX;
-	int windowSizeY;
-	int windowPosX;
-	int windowPosY;
 
 	void DrawScene();
 
 	void Initialize();
 	void Update(); // runs every frame (61fps max)
 	void FixedUpdate(); //runs every iterations of the main loop
-
+	void CheckDevice(int isLost);
 	Game* g;
 
 
@@ -77,6 +66,8 @@ private:
 	LARGE_INTEGER frequency;
 	LARGE_INTEGER oldDelta,newDelta;
 
-
+	HWND NewWindow(LPCTSTR windowName,int posX,int posY, int sizeX,int sizeY,bool isWindowed);
+	void PreCreateWindow();
+	void GetDesktopResolution(int& horizontal, int& vertical);
 };
 #endif

@@ -25,6 +25,7 @@ Object2D::Object2D(ResourceManager* res, char* texturePath, D3DXMATRIX* camView,
 	quad.texture = resources->GetTexture(texturePath);
 	hasAnimation = false;
 	
+	linkedPhysicsObj = NULL;
 	if(quad.texture != NULL)
 	{
 		D3DMATERIAL9 mat;
@@ -149,6 +150,7 @@ void Object2D::InitVars()
 		mat.Diffuse.b = 128;
 		quad.meshMaterial = mat;
 	}
+	linkedPhysicsObj = NULL;
 	scaling.x = 1;
 	scaling.y = 1;
 	scaling.z = 1;
@@ -180,8 +182,19 @@ void Object2D::Draw()
 	D3DXMatrixScaling(&m_Scale,scaling.x,scaling.y,scaling.z); //scaling
 
 	D3DXMATRIX m_Translation;
-	D3DXMatrixTranslation(&m_Translation,position.x,position.y,position.z); //posittioning
-
+	if(linkedPhysicsObj != NULL)
+	{
+		SPEVector pos = linkedPhysicsObj->GetPosition();
+		//std::cout << "Got 2d location" << std::endl;
+		D3DXMatrixTranslation(&m_Translation,pos.x,pos.y,pos.z);
+		position.x = pos.x;
+		position.y = pos.y;
+		position.z = pos.z;
+	}
+	else
+	{
+		D3DXMatrixTranslation(&m_Translation,position.x,position.y,position.z); //positioning
+	}
 
 	D3DXMatrixMultiply(&m_ViewScale, &m_ViewWorld, &m_Scale);
 
@@ -190,6 +203,9 @@ void Object2D::Draw()
 	worldMatrix._41 = position.x;
 	worldMatrix._42 = position.y;
 	worldMatrix._43 = position.z;
+	worldMatrix._21 = 0;
+	worldMatrix._23 = 0;
+
 	HRESULT result;
 
 	result = p_Device->SetFVF( D3DFVF_XYZ |D3DFVF_NORMAL | D3DFVF_TEX1);

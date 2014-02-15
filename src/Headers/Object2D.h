@@ -9,15 +9,11 @@
 #include <D3DX9Mesh.h>
 #include <string>
 #include "ResourceManager.h"
+#include <SPE.h>
 #include <fstream>
 #include <stdio.h>
 
-struct VertexPosNorTex
-{
-	D3DXVECTOR3 pos;
-	D3DXVECTOR3 normal;
-	D3DXVECTOR2 texC;
-};
+
 struct Animation
 {
 	D3DXVECTOR2 StartPosition;
@@ -38,7 +34,14 @@ struct Quad
 class Object2D
 {
 	
-public:	   
+public:	 
+	struct VertexPosNorTex
+	{
+		D3DXVECTOR3 pos;
+		D3DXVECTOR3 normal;
+		D3DXVECTOR2 texC;
+	};
+  
 	Object2D(ResourceManager* res, char* texturePath, D3DXMATRIX* camView);
 	Object2D(ResourceManager* res, char* texturePath, D3DXMATRIX* camView, D3DXVECTOR2 LLPos, D3DXVECTOR2 URPos);
 	Object2D(ResourceManager* res, char* texturePath,D3DXMATRIX* camViewMatrix,float tSizeX,float tSizeY,float xRowsAnim,float yRowsAnim);
@@ -60,6 +63,7 @@ public:
 	D3DXMATRIX worldMatrix;
 	std::string objName;
 	std::string tag;
+	LPSPERIGIDBODY linkedPhysicsObj;
 	bool PlayAnimation(std::string name);
 	std::string currentlyPlayingAnimation;
 	

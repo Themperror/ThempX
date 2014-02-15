@@ -1,3 +1,2 @@
 name	objName	posx	posy	posz	scalex	scaley	scalez	rotx	roty	rotz	sizeX	sizeY	XAnimRows	YAnimRowsTag
-Resources/Models/Level1.x	Level	0	-10	0	2	2	2	0	0	0	0	0	0	0LevelModel
-Collision	Collision	0	-4.5	0	200	0.45	200	0	0	0	0	0	0	0LevelGround
+resources/sprites/enemy.png	Enemy	0	0	0	1	1	1	0	0	0	0	0	0	0Enemy

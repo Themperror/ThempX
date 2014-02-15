@@ -33,6 +33,7 @@ public:
 	{
 		bool doRender;
 		ResourceManager::Model* model;
+		int modelNr;
 		LPSPERIGIDBODY rigidbody;
 	};
 	SPEEngine(ResourceManager* res);
@@ -41,12 +42,22 @@ public:
 	void Create2DPhysicsObject(SPEEngine::RigidData* data);
 
 	void Release();
-
 	void InitShape(ISPEShape* pShape, ID3DXMesh* pMesh);
 
 	void InitApp();
-	void CALLBACK OnFrameMove(float fElapsedTime);
-	void CALLBACK OnFrameRender( IDirect3DDevice9* m_pd3dDevice );
+	void OnFrameMove(float fElapsedTime);
+	void OnFrameRender( IDirect3DDevice9* m_pd3dDevice );
+
+
+	inline LPSPERIGIDBODY GetLastRigidBody()
+	{
+		return rigidbodies.at(rigidbodies.size()-1).rigidbody;
+	}
+	inline LPSPERIGIDBODY GetLastStaticBody()
+	{
+		return staticbodies.at(staticbodies.size()-1).rigidbody;
+	}
+
 private:
 	HRESULT ScaleMesh(ID3DXMesh *pMesh, float scaleX,float scaleY,float scaleZ, D3DXVECTOR3* offset);
 	ResourceManager* resources;

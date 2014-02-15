@@ -16,7 +16,9 @@ void ResourceManager::ReleaseResources()	//main data release
 	for(unsigned int i=0;i<models.size();i++)
 	{
 		models.at(i).materialBuffer->Release();
+		models.at(i).materialBuffer = NULL;
 		models.at(i).mesh->Release();
+		models.at(i).mesh = NULL;
 	}
 	for(unsigned int i=0;i<quads.size();i++)
 	{
@@ -94,10 +96,12 @@ int ResourceManager::GetMeshData(char* name)
 				return i;
 			}
 		}
+		return  -1;
 	}
 	else
 	{
 		Model model;
+		model.mesh = NULL;
 		HRESULT result = D3DXLoadMeshFromX(name, D3DXMESH_SYSTEMMEM,p_Device, NULL, &model.materialBuffer,NULL, &model.numMaterials,  &model.mesh );
 		switch(result)
 		{
@@ -130,7 +134,7 @@ int ResourceManager::GetMeshData(char* name)
 		}
 		model.meshName = name;
 		models.push_back(model);
-
+		std::cout << "Created new model, returned value" << std::endl;
 		return models.size()-1;
 	}
 	MessageBox(wHandle,"No mesh returned, the program will probably crash now.","GetMesh()",MB_OK);

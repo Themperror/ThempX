@@ -35,7 +35,7 @@ void Particle::Release()
 }
 LPDIRECT3DVERTEXBUFFER9 Particle::FillCustomVertices(D3DXVECTOR2 LLPos,D3DXVECTOR2 URPos)
 {
-	VertexPosNorTex triangleVerts[] = 
+	Object2D::VertexPosNorTex triangleVerts[] = 
 	{
 		{D3DXVECTOR3(LLPos.x,URPos.y,0),D3DXVECTOR3(1,0,0),D3DXVECTOR2(0,0)},
 		{D3DXVECTOR3(URPos.x,URPos.y,0),D3DXVECTOR3(1,0,0),D3DXVECTOR2(1,0)},
@@ -44,7 +44,7 @@ LPDIRECT3DVERTEXBUFFER9 Particle::FillCustomVertices(D3DXVECTOR2 LLPos,D3DXVECTO
 	};
 	LPDIRECT3DVERTEXBUFFER9 p_dx_VertexBuffer = NULL;
 
-	HRESULT result = p_Device->CreateVertexBuffer(4*sizeof(VertexPosNorTex), 0, D3DFVF_XYZ |D3DFVF_NORMAL | D3DFVF_TEX1, D3DPOOL_MANAGED, &p_dx_VertexBuffer, NULL);
+	HRESULT result = p_Device->CreateVertexBuffer(4*sizeof(Object2D::VertexPosNorTex), 0, D3DFVF_XYZ |D3DFVF_NORMAL | D3DFVF_TEX1, D3DPOOL_MANAGED, &p_dx_VertexBuffer, NULL);
 	switch(result) 
 	{
 	case D3DERR_INVALIDCALL: 
@@ -61,7 +61,7 @@ LPDIRECT3DVERTEXBUFFER9 Particle::FillCustomVertices(D3DXVECTOR2 LLPos,D3DXVECTO
 		break;
 	}
 	void* p_Vertices;
-	result = p_dx_VertexBuffer->Lock(0, 4*sizeof(VertexPosNorTex), (void**)&p_Vertices, 0);
+	result = p_dx_VertexBuffer->Lock(0, 4*sizeof(Object2D::VertexPosNorTex), (void**)&p_Vertices, 0);
 	switch(result)
 	{
 	case D3DERR_INVALIDCALL: 
@@ -69,7 +69,7 @@ LPDIRECT3DVERTEXBUFFER9 Particle::FillCustomVertices(D3DXVECTOR2 LLPos,D3DXVECTO
 		return NULL;
 		break;
 	}
-	memcpy(p_Vertices, triangleVerts, 4*sizeof(VertexPosNorTex));
+	memcpy(p_Vertices, triangleVerts, 4*sizeof(Object2D::VertexPosNorTex));
 	p_dx_VertexBuffer->Unlock();
 
 	return p_dx_VertexBuffer;

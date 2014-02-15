@@ -28,13 +28,12 @@ public:
 		return centerPos;
 	}
 	void DrawModel();
-	void ReleaseResources();
 	HWND handleWindow;
 	void SetPosition(float x,float y,float z);
 	void SetScale(float x,float y,float z);
 	void SetRotation(float x,float y,float z);
 
-	bool LoadModel(LPSTR pathName);
+	bool LoadModel(LPSTR pathName, ResourceManager* res);
 	Model model;
 	D3DXMATRIX worldMatrix;
 	std::string objName;

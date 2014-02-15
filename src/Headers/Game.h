@@ -30,6 +30,7 @@
 #include <string>
 #include <fstream>
 #include <stdio.h>
+#include <Windows.h>
 #include <boost/thread.hpp>
 
 #pragma comment(lib, "d3dx9.lib")
@@ -38,11 +39,21 @@ using namespace std;
 class Game
 {
 public:
-	
 	struct DataStruct
 	{
 		bool loop;
 		bool lockCursor;
+		bool changeDisplay;
+		bool windowed;
+		int windowSizeX;
+		int windowSizeY;
+		bool applicationActive;
+	};
+	struct TextData
+	{
+		char* text;
+		RECT textRect;
+		D3DXCOLOR color;
 	};
 	struct Object3DData
 	{
@@ -65,7 +76,6 @@ public:
 		D3DXVECTOR2 URVertexPos;
 		D3DXVECTOR2 LLVertexPos;
 		D3DXVECTOR3 position;
-		D3DXVECTOR3 rotation;
 		D3DXVECTOR3 scale;
 		float textureSizeX, textureSizeY, xRowsAnim,yRowsAnim;
 		void Nullify()
@@ -76,7 +86,6 @@ public:
 			URVertexPos = D3DXVECTOR2(0,0);
 			LLVertexPos = D3DXVECTOR2(0,0);
 			position = VECTOR3ZERO;
-			rotation = VECTOR3ZERO;
 			scale = VECTOR3ONE;
 		}
 	};
@@ -86,11 +95,15 @@ public:
 	void Render();
 	void Initialize();
 	void ReleaseAll();
-	
-	void Create3DObject(bool hasPhysics,Object3DData* data,SPEEngine::RigidData* pData);
-	void CreateAnimated2DObject(bool hasPhysics, Object2DData* data, SPEEngine::RigidData* pData);
-	void CreateStatic2DObject(bool hasPhysics, Object2DData* data, SPEEngine::RigidData* pData);
 
+	int CreateTextObject(char* text, int posX, int posY, int width, int height, D3DXCOLOR color);
+
+	bool Create3DObject(bool hasPhysics,Object3DData* data,SPEEngine::RigidData* pData);
+	bool CreateAnimated2DObject(bool hasPhysics, Object2DData* data, SPEEngine::RigidData* pData);
+	bool CreateStatic2DObject(bool hasPhysics, Object2DData* data, SPEEngine::RigidData* pData);
+	SPEEngine::RigidData CreatePhysicsData(bool draw,bool isStatic, float mass, float density, SPEVector pos,SPEVector scale, SPEVector vel, SPEVector aVel);
+	Object2DData CreateObject2DData(char* filePath,bool hasAnim, D3DXVECTOR3 pos,D3DXVECTOR3 scale,D3DXVECTOR2 tSize, D3DXVECTOR2 rows);
+	Object3DData CreateObject3DData(char* filePath,D3DXVECTOR3 pos,D3DXVECTOR3 scale,D3DXVECTOR3 rot);
 	inline D3DXMATRIX* GetCameraView()
 	{
 		if(player != NULL)
@@ -105,6 +118,7 @@ public:
 private:
 	//object holders
 	DataStruct* data;
+	std::vector<TextData> textObjs;
 	std::vector<Object3D*> modelObjs;
 	std::vector<Object2D*> spriteObjs;
 	std::vector<DebugCube*> debugCubes;
@@ -125,7 +139,7 @@ private:
 	GUI* gui;
 	void LoadLevel();
 	void DestroyLevel();
-
+	bool wireframe;
 	//////game functions
 
 	
@@ -150,7 +164,7 @@ private:
 	};
 	std::vector<EditorObj> editorObjs;
 	EditorObj* currentEditorObj;
-	int currentEditorObjIndex;
+	unsigned int currentEditorObjIndex;
 	bool EditorMode;
 	bool pressedEditorKey;
 	float scaleMultiplier;

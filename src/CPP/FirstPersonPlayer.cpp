@@ -20,8 +20,8 @@ FirstPersonPlayer::FirstPersonPlayer(D3DXVECTOR3 pos, D3DXVECTOR3 rot,ResourceMa
 	position.y = pos.y;
 	position.z = 0;
 
-	angleX = 0;
-	angleY = 0;
+	angleX = rot.x;
+	angleY = rot.y;
 	sensitivity = 20;
 
 	keys = keyArray;
@@ -45,7 +45,7 @@ void FirstPersonPlayer::FixedUpdate(float deltaTime)
 	fixedDeltaTime = deltaTime;
 
 	moveDir += Input(deltaTime);
-	moveDir.y -= gravity*fixedDeltaTime;
+	moveDir.y -= gravity*deltaTime;
 
 	position += moveDir;
 	moveDir = D3DXVECTOR3(0,0,0);
@@ -175,5 +175,4 @@ int FirstPersonPlayer::KeyPressed(int key)
 		keys->at(key) = 0;
 		return 0;
 	}
-	return 0;
 }

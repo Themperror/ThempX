@@ -1,38 +1,170 @@
 #include "../Headers/ThempX.h"
 
-//Entry point of the engine (This class is created in main.cpp where the program entrypoint is).
-ThempX::ThempX(HWND handle,HINSTANCE hInstance)
+LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	/*
-	std::string henk = "test.txt";
-	string str;
-	ifstream fin(henk);
-	while(getline(fin,str))
+	if(message == WM_DESTROY)
 	{
-		int x,y,z;
-		fin >> x >> y >> z;
-		cout << x << "   " << y << "  " << z << endl;
-	}*/
+		PostQuitMessage(0);
+	}
+	return DefWindowProc(hWnd, message, wParam, lParam);
+}
+void ThempX::SetDisplayMode(bool isWindowed,int sizeX, int sizeY)
+{
+	D3DPRESENT_PARAMETERS dx_PresParams;
+	data.windowed = isWindowed;
+	oldWSizeX = wSizeX;
+	oldWSizeY = wSizeY;
+	wSizeX = sizeX;
+	wSizeY = sizeY;
+	ZeroMemory( &dx_PresParams, sizeof(dx_PresParams)); 
+	
+	int dHorizontal = 0;
+	int dVertical = 0;
+	GetDesktopResolution(dHorizontal, dVertical);
+
+	if(isWindowed)
+	{
+		SetWindowPos(handleWindow,HWND_TOPMOST,dHorizontal/2-(sizeX/2),dVertical/2-(sizeY/2),sizeX,sizeY, NULL);
+
+		dx_PresParams.Windowed = TRUE;
+		dx_PresParams.BackBufferFormat = D3DFMT_A8R8G8B8;
+		dx_PresParams.BackBufferHeight = sizeX;
+		dx_PresParams.BackBufferWidth = sizeY;
+	}
+	else
+	{
+		//WS_EX_TOPMOST | WS_POPUPGetDesktopResolution(dHorizontal, dVertical);
+
+		SetWindowPos(handleWindow,HWND_TOPMOST,0,0,sizeX,sizeY, NULL);
+		
+		dx_PresParams.BackBufferHeight = sizeY;
+		dx_PresParams.BackBufferWidth = sizeX;
+		dx_PresParams.Windowed = FALSE;
+		dx_PresParams.FullScreen_RefreshRateInHz = 60;
+		dx_PresParams.BackBufferFormat = D3DFMT_A8R8G8B8;
+	}
+	dx_PresParams.hDeviceWindow = handleWindow;
+	dx_PresParams.SwapEffect = D3DSWAPEFFECT_DISCARD;
+	dx_PresParams.BackBufferCount = 1;
+	dx_PresParams.MultiSampleQuality = 0;
+	dx_PresParams.MultiSampleType = D3DMULTISAMPLE_NONE;
+	dx_PresParams.EnableAutoDepthStencil = TRUE;
+	dx_PresParams.AutoDepthStencilFormat = D3DFMT_D16;
+
+	p_Device->Reset(&dx_PresParams);
+
+	p_Device->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE); //double sided plane
+	//p_Device->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW); //single sided plane
+    p_Device->SetRenderState(D3DRS_LIGHTING,false);
+	p_Device->SetRenderState(D3DRS_ZENABLE, true);
+	p_Device->SetRenderState(D3DRS_FILLMODE,D3DFILL_SOLID);
+	//p_Device->SetRenderState(D3DRS_FILLMODE,D3DFILL_WIREFRAME);
+	p_Device->SetSamplerState(0,D3DSAMP_MAXANISOTROPY,1);
+	p_Device->SetSamplerState(0,D3DSAMP_MAGFILTER,D3DTEXF_POINT);
+	p_Device->SetSamplerState(0,D3DSAMP_MINFILTER,D3DTEXF_POINT);
+	p_Device->SetSamplerState(0,D3DSAMP_MIPFILTER,D3DTEXF_POINT);
+	p_Device->SetRenderState(D3DRS_ALPHAREF, (DWORD)0x0000008f);
+	p_Device->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE); 
+	p_Device->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL);
+	p_Device->SetRenderState(D3DRS_SRCBLEND,D3DBLEND_ONE);
+	p_Device->SetRenderState(D3DRS_DESTBLEND,D3DBLEND_ZERO);
+
+	Sleep(100);
+	
+}
+HWND ThempX::NewWindow(LPCTSTR windowName,int posX,int posY, int sizeX,int sizeY,bool isWindowed)
+{
+	WNDCLASSEX wc;
+
+	wc.cbSize = sizeof(WNDCLASSEX);
+	wc.style = CS_HREDRAW | CS_VREDRAW;
+	wc.lpfnWndProc = WindowProc;
+	wc.cbClsExtra = 0;
+	wc.cbWndExtra = 0;
+	wc.hInstance = GetModuleHandle(NULL);
+	wc.hIcon = NULL;
+	wc.hCursor = NULL;
+	wc.hbrBackground = GetSysColorBrush(COLOR_BTNFACE);
+	wc.lpszClassName = "ThempX";
+	wc.lpszMenuName = NULL;
+	wc.hIconSm = LoadIcon(NULL,IDI_APPLICATION);
+		
+	RegisterClassEx(&wc);
+	
+	if(isWindowed)
+	{
+		return CreateWindowEx(WS_EX_CONTROLPARENT, "ThempX", windowName, WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_VISIBLE, posX, posY, sizeX, sizeY, NULL, NULL, GetModuleHandle(NULL), NULL);
+	}
+	else
+	{
+		return CreateWindowEx(WS_EX_CONTROLPARENT, "ThempX", windowName, WS_EX_TOPMOST | WS_POPUP, 0, 0, sizeX, sizeY, NULL, NULL,GetModuleHandle(NULL), NULL);
+	}
+}
+
+void ThempX::GetDesktopResolution(int& horizontal, int& vertical)
+{
+   RECT desktop;
+   // Get a handle to the desktop window
+   const HWND hDesktop = GetDesktopWindow();
+   // Get the size of screen to the variable desktop
+   GetWindowRect(hDesktop, &desktop);
+   // The top left corner will have coordinates (0,0)
+   // and the bottom right corner will have coordinates
+   // (horizontal, vertical)
+   horizontal = desktop.right;
+   vertical = desktop.bottom;
+}
 
 
+void ThempX::PreCreateWindow()
+{
+	data.windowed = true;
+	int dHorizontal = 0;
+	int dVertical = 0;
+	
+	GetDesktopResolution(dHorizontal, dVertical);
+	
+	wSizeX = 800;
+	wSizeY = 600;
+
+	handleWindow = NewWindow("ThempX Engine",dHorizontal/2-(wSizeX/2),dVertical/2-(wSizeY/2),wSizeX,wSizeY,true);
+
+
+	AllocConsole();
+	freopen("CONOUT$", "w", stdout);
+
+}
+
+//Entry point of the engine (This class is created in main.cpp where the program entrypoint is).
+ThempX::ThempX(HINSTANCE hInstance,LPSTR lpCmdLine)
+{
+	PreCreateWindow();
 	oldTicks = GetTickCount();
-	handleWindow = handle;
-	isDone = false;
-	//claim graphics device
 	p_Device = InitializeDevice(handleWindow);
 	
+	//Render loading screen
+	CreateLoadingScreen();
+	
+	//SetDisplayMode(false,800,600);
+
 	//instantiate all necessities
-	resources = new ResourceManager(p_Device,handle);
-	resources->SetScreenResolution(SCREEN_WIDTH,SCREEN_HEIGHT);
+	resources = new ResourceManager(p_Device,handleWindow);
+	resources->SetScreenResolution((float)wSizeX,(float)wSizeY);
 	inputHandler = new InputHandler(handleWindow);
-	soundHandler = new SoundHandler(handle,44100,16,2);
+	soundHandler = new SoundHandler(handleWindow,44100,16,2);
 
 	WINDOWINFO winInfo;
-	Game::DataStruct data;
 	ZeroMemory(&data,sizeof(data));
 	data.lockCursor = true;
 	data.loop = true;
+	data.applicationActive = true;
+	data.changeDisplay = false;
+	data.windowed = (p_Device->PresentParameters.Windowed == 0 ? true : false);
+	data.windowSizeX = wSizeX;
+	data.windowSizeY = wSizeY;
 	// Game loop starts here after everything is initialized
+
 	g = new Game(&data,handleWindow,resources,inputHandler,soundHandler,p_Device);
 
 	MSG msg;
@@ -43,49 +175,79 @@ ThempX::ThempX(HWND handle,HINSTANCE hInstance)
 	DWORD oTicks = 0;
 	while(data.loop)
     {
-		if(data.lockCursor)
-		{
-			GetWindowInfo(handle,&winInfo);
-			windowSizeX = winInfo.rcWindow.right-winInfo.rcWindow.left;
-			windowSizeY = winInfo.rcWindow.bottom-winInfo.rcWindow.top;
-			windowPosX = winInfo.rcWindow.left;
-			windowPosY = winInfo.rcWindow.top;
-			SetCursorPos(windowPosX+(windowSizeX/2),windowPosY+(windowSizeY/2));
-		}
 		while(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
         {
             TranslateMessage(&msg);
-            DispatchMessage(&msg);		
+            DispatchMessage(&msg);	
+			if(msg.message == WM_QUIT)
+			{
+				data.loop = false;
+				DestroyWindow(handleWindow);
+			}
+			if(msg.message == WM_ACTIVATEAPP)
+			{
+				int dHorizontal = 0;
+				int dVertical = 0;
+				GetDesktopResolution(dHorizontal, dVertical);
+				SetCursorPos(dHorizontal/2,dVertical/2);
+				if(msg.wParam == TRUE)
+				{
+					//application being brought back from alt-tabbed state (window with lost focus)
+					cout << "window restored" << endl;
+					data.applicationActive = true;
+					CheckDevice(1);
+				}
+			}	
         }
-		if(msg.message == WM_QUIT)
+		if(p_Device->TestCooperativeLevel() != D3D_OK)
 		{
-			data.loop = false;
-			DestroyWindow(handleWindow);
-		}		
-		frames++;
-		FixedUpdate();
-
-		currentTicks = timeGetTime();
-		cTicks = currentTicks;
-		if(cTicks-oTicks > 1000)
-		{
-			realframes = frames*(cTicks-oTicks)/(cTicks-oTicks);
-			std::cout << realframes << std::endl;
-			frames = 0;
-			oTicks = cTicks;
+			data.applicationActive = false;
 		}
-		if(currentTicks > oldTicks+16)
+		if(data.applicationActive)
 		{
-			Update();
-			DrawScene();
-			oldTicks = currentTicks;
+			if(data.changeDisplay)
+			{
+				data.changeDisplay = false;
+				SetDisplayMode(data.windowed,data.windowSizeX,data.windowSizeY);
+				//CheckDevice(1);
+			}
+			if(data.lockCursor)
+			{
+				GetWindowInfo(handleWindow,&winInfo);
+				int windowSizeX = winInfo.rcWindow.right-winInfo.rcWindow.left;
+				int windowSizeY = winInfo.rcWindow.bottom-winInfo.rcWindow.top;
+				int windowPosX = winInfo.rcWindow.left;
+				int windowPosY = winInfo.rcWindow.top;
+				SetCursorPos(windowPosX+(windowSizeX/2),windowPosY+(windowSizeY/2));
+			}
+		
+			FixedUpdate();
+
+			currentTicks = timeGetTime();
+			cTicks = currentTicks;
+			if(cTicks-oTicks > 1000 + ((cTicks-oTicks) % 1000))
+			{
+				realframes = frames*(cTicks-oTicks)/(cTicks-oTicks);
+				std::cout << realframes << std::endl;
+				frames = 0;
+				oTicks = cTicks;
+			}
+			if(currentTicks > oldTicks+16)
+			{
+				frames++;
+				Update();
+				DrawScene();
+				oldTicks = currentTicks;
+			}
+		}
+		else
+		{
+			Sleep(50);
 		}
     }
 
-
-	//t->join();
+	//t.join();
 	//release everything
-	PostQuitMessage(0);
 	resources->ReleaseResources();
 	soundHandler->Shutdown();
 	g->ReleaseAll();
@@ -93,9 +255,56 @@ ThempX::ThempX(HWND handle,HINSTANCE hInstance)
 	delete resources;
 	delete g;
 	delete soundHandler;
+	
+	//Sleep(2000);
 	p_Device->Release();
-}
+	PostQuitMessage(0);
 
+	DestroyWindow(handleWindow);
+}
+void ThempX::CheckDevice(int isLost)
+{
+	HRESULT result = p_Device->TestCooperativeLevel();
+	Sleep(50);
+
+
+	if(result == D3DERR_DEVICELOST)
+	{
+		data.lockCursor = false;
+		SetDisplayMode(data.windowed,wSizeX,wSizeY);
+		result = p_Device->TestCooperativeLevel();
+		if(result == D3DERR_DEVICELOST)
+			CheckDevice(0);
+		if(result == D3DERR_DEVICENOTRESET)
+			CheckDevice(0);
+		if(result == D3DERR_DRIVERINTERNALERROR)
+		{
+			data.applicationActive = false;
+			data.loop = false;
+			return;
+		}
+	}
+	if(result == D3DERR_DEVICENOTRESET)
+	{
+		SetDisplayMode(data.windowed,wSizeX,wSizeY);
+		CheckDevice(0);
+	}
+	if(result == D3DERR_DRIVERINTERNALERROR)
+	{
+		data.applicationActive = false;
+		data.loop = false;
+		return;
+	}
+	WINDOWINFO winInfo;
+	GetWindowInfo(handleWindow,&winInfo);
+	int windowSizeX = winInfo.rcWindow.right-winInfo.rcWindow.left;
+	int windowSizeY = winInfo.rcWindow.bottom-winInfo.rcWindow.top;
+	int windowPosX = winInfo.rcWindow.left;
+	int windowPosY = winInfo.rcWindow.top;
+	SetCursorPos(windowPosX+(windowSizeX/2),windowPosY+(windowSizeY/2));
+	data.applicationActive = true;
+	data.loop = true;
+}
 //Update, this will run every frame (61 fps max)
 void ThempX::Update()
 {
@@ -105,7 +314,7 @@ void ThempX::Update()
 	newDelta.QuadPart = newDelta.QuadPart*10000 / frequency.QuadPart;
 
 	double delta;
-	delta = oldDelta.QuadPart - newDelta.QuadPart;
+	delta = (double)(oldDelta.QuadPart - newDelta.QuadPart);
 	delta = abs(delta/10000);
 	//cout << delta << ".\n";
 	g->Update(delta);
@@ -118,7 +327,7 @@ void ThempX::FixedUpdate()
 	QueryPerformanceCounter(&newFixedDelta);
 	newFixedDelta.QuadPart = newFixedDelta.QuadPart*10000 / fixedFrequency.QuadPart;
 	double fixedDelta;
-	fixedDelta = oldFixedDelta.QuadPart - newFixedDelta.QuadPart ;
+	fixedDelta = (double)(oldFixedDelta.QuadPart - newFixedDelta.QuadPart) ;
 	fixedDelta = abs(fixedDelta/10000);
 	//cout << fixedDelta << " ms.\n";
 	g->FixedUpdate(fixedDelta);
@@ -135,7 +344,7 @@ void ThempX::DrawScene()
 {
 	////////////////////////
 	// Clear the scene and Z buffer
-    p_Device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(255,0,255), 1.0f, 0);
+    p_Device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(0,0,0), 1.0f, 0);
 	p_Device->Clear(0, NULL, D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(0, 0, 0), 1.0f, 0);
 
     p_Device->BeginScene();
@@ -161,7 +370,7 @@ LPDIRECT3DDEVICE9 ThempX::InitializeDevice(HWND han_WindowToBindTo)
 	if (p_dx_Object == NULL)
 	{
 		MessageBox(han_WindowToBindTo,"DirectX Runtime library not installed!","InitializeDevice()",MB_OK);
-		isDone = true; 
+		data.loop = false;
 		return 0;
 	}
 	//////////////////////////////////////////
@@ -171,10 +380,24 @@ LPDIRECT3DDEVICE9 ThempX::InitializeDevice(HWND han_WindowToBindTo)
 	D3DPRESENT_PARAMETERS dx_PresParams;
  
 	ZeroMemory( &dx_PresParams, sizeof(dx_PresParams)); 
-	dx_PresParams.Windowed = TRUE;
+	if(data.windowed)
+	{
+		dx_PresParams.Windowed = TRUE;
+		dx_PresParams.BackBufferFormat = D3DFMT_UNKNOWN;
+	}
+	else
+	{
+		dx_PresParams.Windowed = FALSE;
+		dx_PresParams.FullScreen_RefreshRateInHz = 60;
+		dx_PresParams.BackBufferFormat = D3DFMT_A8R8G8B8;
+	}
+	dx_PresParams.BackBufferHeight = wSizeY;
+	dx_PresParams.BackBufferWidth = wSizeX;
+	dx_PresParams.hDeviceWindow = handleWindow;
 	dx_PresParams.SwapEffect = D3DSWAPEFFECT_DISCARD;
-	dx_PresParams.BackBufferFormat = D3DFMT_UNKNOWN;
 	dx_PresParams.BackBufferCount = 1;
+	dx_PresParams.MultiSampleQuality = 0;
+	dx_PresParams.MultiSampleType = D3DMULTISAMPLE_NONE;
 	dx_PresParams.EnableAutoDepthStencil = TRUE;
 	dx_PresParams.AutoDepthStencilFormat = D3DFMT_D16;
 
@@ -185,7 +408,7 @@ LPDIRECT3DDEVICE9 ThempX::InitializeDevice(HWND han_WindowToBindTo)
 	HRESULT result;
 	LPDIRECT3DDEVICE9 p_dx_Device = NULL;
 
-	result = p_dx_Object->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, han_WindowToBindTo, D3DCREATE_HARDWARE_VERTEXPROCESSING, &dx_PresParams, &p_dx_Device);
+	result = p_dx_Object->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, handleWindow, D3DCREATE_HARDWARE_VERTEXPROCESSING, &dx_PresParams, &p_dx_Device);
 	switch(result)
 	{
 	case D3DERR_DEVICELOST: 
@@ -203,7 +426,7 @@ LPDIRECT3DDEVICE9 ThempX::InitializeDevice(HWND han_WindowToBindTo)
 	}
 	if(p_dx_Device == NULL) // Device claiming didn't work, let's try in software mode
 	{
-		result = p_dx_Object->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_REF, han_WindowToBindTo, D3DCREATE_SOFTWARE_VERTEXPROCESSING, &dx_PresParams, &p_dx_Device);
+		result = p_dx_Object->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_REF, handleWindow, D3DCREATE_SOFTWARE_VERTEXPROCESSING, &dx_PresParams, &p_dx_Device);
 		switch(result) //if theres any error, exit the program as we couldn't claim a graphics device
 		{
 		case D3D_OK: 
@@ -211,22 +434,22 @@ LPDIRECT3DDEVICE9 ThempX::InitializeDevice(HWND han_WindowToBindTo)
 			break;
 		case D3DERR_DEVICELOST: 
 			MessageBox(han_WindowToBindTo,"Error: Device Lost (Software Mode), Quitting engine","InitializeDevice()",MB_OK);
-			isDone = true;
+			data.loop = false;
 			return 0;
 			break;
 		case D3DERR_INVALIDCALL:
 			MessageBox(han_WindowToBindTo,"Error: Invalid Call (Software Mode), Quitting engine","InitializeDevice()",MB_OK);
-			isDone = true;
+			data.loop = false;
 			return 0;
 			break; 
 		case D3DERR_NOTAVAILABLE:
 			MessageBox(han_WindowToBindTo,"Error: No Device Available (Software Mode), Quitting engine","InitializeDevice()",MB_OK);
-			isDone = true;
+			data.loop = false;
 			return 0;
 			break;  
 		case D3DERR_OUTOFVIDEOMEMORY: 
 			MessageBox(han_WindowToBindTo,"Error: Out of Video Memory (Software Mode), Quitting engine","InitializeDevice()",MB_OK);
-			isDone = true;
+			data.loop = false;
 			return 0;
 			break;
 		}
@@ -239,7 +462,10 @@ LPDIRECT3DDEVICE9 ThempX::InitializeDevice(HWND han_WindowToBindTo)
 	p_dx_Device->SetRenderState(D3DRS_ZENABLE, true);
 	p_dx_Device->SetRenderState(D3DRS_FILLMODE,D3DFILL_SOLID);
 	//p_dx_Device->SetRenderState(D3DRS_FILLMODE,D3DFILL_WIREFRAME);
-	
+	p_dx_Device->SetSamplerState(0,D3DSAMP_MAXANISOTROPY,1);
+	p_dx_Device->SetSamplerState(0,D3DSAMP_MAGFILTER,D3DTEXF_POINT);
+	p_dx_Device->SetSamplerState(0,D3DSAMP_MINFILTER,D3DTEXF_POINT);
+	p_dx_Device->SetSamplerState(0,D3DSAMP_MIPFILTER,D3DTEXF_POINT);
 	p_dx_Device->SetRenderState(D3DRS_ALPHAREF, (DWORD)0x0000008f);
 	p_dx_Device->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE); 
 	p_dx_Device->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL);
@@ -254,56 +480,7 @@ LPDIRECT3DDEVICE9 ThempX::InitializeDevice(HWND han_WindowToBindTo)
 
 
 
-/*  //raycasting for cubes and sprites
-for(unsigned int i = 0; i < debugCubes.size();i++)
-{
-DebugCube* obj = debugCubes.at(i);
-
-if(obj->collision != NULL && Vector3Distance(&obj->position,&camera.position) < 100)
-{	
-if(obj->collision->GetType() == CollisionGeo::OBBCube || obj->collision->GetType() == CollisionGeo::StaticCube)
-{
-D3DXVECTOR3 LLFPos = AddVector3(&obj->collision->GetLowerLeftFrontPos(),&obj->position);
-D3DXVECTOR3 URBPos = AddVector3(&obj->collision->GetUpperRightBackPos(),&obj->position);
-
-std::vector<D3DXVECTOR3> vertices;
-
-vertices.push_back(D3DXVECTOR3(LLFPos.x, LLFPos.y, URBPos.z));
-vertices.push_back(D3DXVECTOR3(URBPos.x, LLFPos.y, URBPos.z));
-vertices.push_back(D3DXVECTOR3(LLFPos.x, URBPos.y, URBPos.z));
-vertices.push_back(D3DXVECTOR3(URBPos.x, URBPos.y, URBPos.z));
-vertices.push_back(D3DXVECTOR3(LLFPos.x, LLFPos.y, LLFPos.z));
-vertices.push_back(D3DXVECTOR3(LLFPos.x, URBPos.y, LLFPos.z));
-vertices.push_back(D3DXVECTOR3(URBPos.x, LLFPos.y, LLFPos.z));
-vertices.push_back(D3DXVECTOR3(URBPos.x, URBPos.y, LLFPos.z));
-vertices.push_back(D3DXVECTOR3(LLFPos.x, URBPos.y, LLFPos.z));
-vertices.push_back(D3DXVECTOR3(LLFPos.x, URBPos.y, URBPos.z));
-vertices.push_back(D3DXVECTOR3(URBPos.x, URBPos.y, LLFPos.z));
-vertices.push_back(D3DXVECTOR3(URBPos.x, URBPos.y, URBPos.z));
-vertices.push_back(D3DXVECTOR3(LLFPos.x, LLFPos.y, LLFPos.z));
-vertices.push_back(D3DXVECTOR3(URBPos.x, LLFPos.y, LLFPos.z));
-vertices.push_back(D3DXVECTOR3(LLFPos.x, LLFPos.y, URBPos.z));
-vertices.push_back(D3DXVECTOR3(URBPos.x, LLFPos.y, URBPos.z));
-vertices.push_back(D3DXVECTOR3(URBPos.x, LLFPos.y, LLFPos.z));
-vertices.push_back(D3DXVECTOR3(URBPos.x, URBPos.y, LLFPos.z));
-vertices.push_back(D3DXVECTOR3(URBPos.x, LLFPos.y, URBPos.z));
-vertices.push_back(D3DXVECTOR3(URBPos.x, URBPos.y, URBPos.z));
-vertices.push_back(D3DXVECTOR3(LLFPos.x, LLFPos.y, LLFPos.z));
-vertices.push_back(D3DXVECTOR3(LLFPos.x, LLFPos.y, URBPos.z));
-vertices.push_back(D3DXVECTOR3(LLFPos.x, URBPos.y, LLFPos.z));
-vertices.push_back(D3DXVECTOR3(LLFPos.x, URBPos.y, URBPos.z));
-
-float distToHit = 0;
-for(unsigned int x=0;x < 36; x+=3)
-{
-if(D3DXIntersectTri(&vertices[obj->cubeIndices[x]],&vertices[obj->cubeIndices[x+1]],&vertices[obj->cubeIndices[x+2]],&camera.position,&camera.lookDir,NULL,NULL,&distToHit)) 
-{
-cout << "hit target debugcube, NR: "<<i << "  at distance: " << distToHit << endl;
-}
-}
-} 
-}
-}
+/* 
 for(unsigned int i = 0; i < spriteObjs.size();i++)
 {
 if(Vector3Distance(&spriteObjs.at(i)->position,&camera.position) < 150)
@@ -329,3 +506,104 @@ cout << "hit target: "<<spriteObjs.at(i)->objName << "  at distance: " << distTo
 }
 
 */
+void ThempX::CreateLoadingScreen()
+{
+
+	GUI::Vertex2D triangleVerts[] = 
+	{
+		{0,0,0,1,D3DXVECTOR2(0,0)},
+		{(float)wSizeX,0,0,1,D3DXVECTOR2(1,0)},
+		{0,(float)wSizeY,0,1,D3DXVECTOR2(0,1)},
+		{(float)wSizeX,(float)wSizeY,0,1,D3DXVECTOR2(1,1)},
+	};
+	LPDIRECT3DVERTEXBUFFER9 p_dx_VertexBuffer = NULL; //altijd nieuwe variables op NULL zetten (0x000000) zodat we kunnen zien dat het een nullpointer reference is als we een error krijgen, anders krijgt ie random memory space en kunnen we niet checken op NULL
+
+	HRESULT result = p_Device->CreateVertexBuffer(4*sizeof(GUI::Vertex2D), 0, D3DFVF_XYZRHW | D3DFVF_TEX1, D3DPOOL_MANAGED, &p_dx_VertexBuffer, NULL);
+	switch(result) //error checking of het gelukt is, zo niet, sluit af, want anders krijgen we dalijk andere soorten errors die niet opgevangen worden. (Access violation of nullpointer references vanwegen random pointers)
+	{
+	case D3DERR_INVALIDCALL: 
+		MessageBox(resources->GetWindowHandle(),"Invalid Call while creating VertexBuffer","FillVertices()",MB_OK);
+		break;
+	case D3DERR_OUTOFVIDEOMEMORY:
+		MessageBox(resources->GetWindowHandle(),"Out of Video Memory while creating VertexBuffer","FillVertices()",MB_OK);
+		break;
+	case E_OUTOFMEMORY:
+		MessageBox(resources->GetWindowHandle(),"Out of Memory while creating VertexBuffer","FillVertices()",MB_OK);
+		break;
+	}
+	void* p_Vertices;
+	result = p_dx_VertexBuffer->Lock(0, 4*sizeof(GUI::Vertex2D), (void**)&p_Vertices, 0);
+	switch(result)
+	{
+	case D3DERR_INVALIDCALL: 
+		MessageBox(resources->GetWindowHandle(),"Error trying to lock","FillVertices()",MB_OK);
+		break;
+	}//we konden de vertexbuffer locken dus ga door
+	memcpy(p_Vertices, triangleVerts, 4*sizeof(GUI::Vertex2D));
+	p_dx_VertexBuffer->Unlock();
+
+	 short s_Indices[4];
+    s_Indices[0]=0;
+    s_Indices[1]=1;
+    s_Indices[2]=2;
+	s_Indices[3]=3;
+
+
+	LPDIRECT3DINDEXBUFFER9 p_dx_IndexBuffer = NULL;
+	result = p_Device->CreateIndexBuffer(4*sizeof(short), D3DUSAGE_WRITEONLY,D3DFMT_INDEX16,D3DPOOL_MANAGED,&p_dx_IndexBuffer,NULL);
+	switch(result)
+	{
+	case D3DERR_INVALIDCALL: 
+		MessageBox(resources->GetWindowHandle(),"Invalid Call while creating IndexBuffer","FillIndices()",MB_OK);
+		break;
+	case D3DERR_OUTOFVIDEOMEMORY:
+		MessageBox(resources->GetWindowHandle(),"Out of Video Memory while creating IndexBuffer","FillIndices()",MB_OK);
+		break;
+	case E_OUTOFMEMORY:
+		MessageBox(resources->GetWindowHandle(),"Out of Memory while creating IndexBuffer","FillIndices()",MB_OK);
+		break;
+	}
+
+	void* p_Indices;
+	result = p_dx_IndexBuffer->Lock(0, 4*sizeof(short), (void**)&p_Indices, 0);
+	 
+	switch(result)
+	{
+	case D3DERR_INVALIDCALL: 
+		MessageBox(resources->GetWindowHandle(),"Error trying to lock","FillIndices()",MB_OK);
+		break;
+	}
+	memcpy(p_Indices, s_Indices, 4*sizeof(short));
+	p_dx_IndexBuffer->Unlock();
+
+	LPDIRECT3DTEXTURE9 texture;
+	D3DXCreateTextureFromFile(p_Device,"resources/sprites/loading.jpg",&texture);
+
+	D3DXMATRIX world;
+		
+	D3DXMatrixTranslation(&world,0,0,0);
+		
+	p_Device->BeginScene();
+
+    p_Device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(0,0,0), 1.0f, 0);
+	p_Device->Clear(0, NULL, D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(0, 0, 0), 1.0f, 0);
+
+	result = p_Device->SetFVF( D3DFVF_XYZRHW | D3DFVF_TEX1);
+	result = p_Device->SetStreamSource(0, p_dx_VertexBuffer, 0, sizeof(GUI::Vertex2D));
+	result = p_Device->SetIndices(p_dx_IndexBuffer);
+	
+	D3DXMATRIX projection;
+	D3DXMatrixOrthoLH(&projection,(float)wSizeX,(float)wSizeY,0,1);
+	p_Device->SetTransform(D3DTS_PROJECTION, &projection);
+
+	result = p_Device->SetTexture(0,texture);
+	result = p_Device->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP,0,0,4,0,2);
+
+	p_Device->EndScene();
+    p_Device->Present(NULL, NULL, NULL, NULL);
+
+	texture->Release();
+	p_dx_VertexBuffer->Release();
+	p_dx_IndexBuffer->Release();
+	return;
+}

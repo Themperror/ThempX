@@ -9,19 +9,13 @@ Game::Game(Game::DataStruct* b,HWND windowHandle,ResourceManager* resMan,InputHa
 	inputHandler = inputHand;
 	soundHandler = soundHand;
 	p_Device = d3dDev;
+	physics = new SPEEngine(resources);
+	
+	player = new FirstPersonPlayer(D3DXVECTOR3(0,0,0),VECTOR3ZERO,resources,inputHandler,&keys);
 	LoadLevel();
 	Initialize();
-	physics = new SPEEngine(resources);
 
-	SPEEngine::RigidData physicsData2;
-	physicsData2.Nullify();
-	physicsData2.doRender = false;
-	physicsData2.isStatic = true;
-	physicsData2.scaleModel = SPEVector(2,2,2);
-	physicsData2.position = SPEVector(0,-10,0);
-	physics->Create3DPhysicsObject("resources/models/level1.x",&physicsData2);
-
-	for(unsigned int i = 0; i < 100; i++)
+	/*for(unsigned int i = 0; i < 100; i++)
 	{
 		SPEEngine::RigidData physicsData;
 		physicsData.Nullify();
@@ -32,23 +26,62 @@ Game::Game(Game::DataStruct* b,HWND windowHandle,ResourceManager* resMan,InputHa
 		physicsData.scaleModel = SPEVector(1,1,1);
 		physicsData.position = SPEVector(0,i*1.1f,3*sin(i*0.5f));
 		physics->Create3DPhysicsObject("resources/models/cube.x",&physicsData);
-	}
-
-	player = new FirstPersonPlayer(D3DXVECTOR3(0,0,0),VECTOR3ZERO,resources,inputHandler,&keys);
+	}*/
+	//CreateStatic2DObject(true,&CreateObject2DData("Resources/Sprites/enemy.png",false,VECTOR3ZERO,VECTOR3ONE,D3DXVECTOR2(0,0),D3DXVECTOR2(0,0)),&pData);
 	//cout << debugCubes.at(0)->collision->GetPosition().x <<"  " <<debugCubes.at(0)->collision->GetPosition().y << "  " <<debugCubes.at(0)->collision->GetPosition().z << endl;
 	//particles.push_back(new Particle(resources,p_Device,"Resources/Particles/Lightning.png",&camera.m_View,D3DXVECTOR3(0,10,10),200,500,1,3));
 	//particles.at(0)->SetMovement(D3DXVECTOR3(0,0,0),D3DXVECTOR3(0,3,0));
 	//particles.at(0)->Release();
 }
+SPEEngine::RigidData Game::CreatePhysicsData(bool draw,bool isStatic, float mass, float density, SPEVector pos,SPEVector scale, SPEVector vel, SPEVector aVel)
+{
+	SPEEngine::RigidData p;
+	p.Nullify();
+	p.doRender = draw;
+	p.isStatic = isStatic;
+	p.scaleModel = scale;
+	p.position = pos;
+	p.density = density;
+	p.mass = mass;
+	p.velocity = vel;
+	p.angularVelocity = aVel;
+	return p;
+}
+Game::Object2DData Game::CreateObject2DData(char* filePath,bool hasAnim, D3DXVECTOR3 pos,D3DXVECTOR3 scale,D3DXVECTOR2 tSize, D3DXVECTOR2 rows)
+{
+	Game::Object2DData d;
+	d.Nullify();
+	d.filePath = filePath;
+	d.hasAnimation = hasAnim;
+	d.position = pos;
+	d.scale = scale;
+	d.textureSizeX = tSize.x;
+	d.textureSizeY = tSize.y;
+	d.xRowsAnim = rows.x;
+	d.yRowsAnim = rows.y;
+	return d;
+}
+Game::Object3DData Game::CreateObject3DData(char* filePath,D3DXVECTOR3 pos,D3DXVECTOR3 scale,D3DXVECTOR3 rot)
+{
+	Game::Object3DData d;
+	d.Nullify();
+	d.filePath = filePath;
+	d.position = pos;
+	d.scale = scale;
+	d.rotation = rot;
+	return d;
+}
 void Game::Initialize()
 {
 	currentEditorObjIndex = 0;
-	
+	D3DXCreateFont(p_Device,24, 0,400,0, false, DEFAULT_CHARSET, OUT_TT_PRECIS,CLIP_DEFAULT_PRECIS,DEFAULT_PITCH,"Arial",&resources->gameFont);
+	wireframe = false;
 	scaleMultiplier = 3;
 	EditorMode = false;
 	soundHandler->LoadWaveFile("test.wav","test",11025,8,1);
 	
 	keys.resize(256,0);
+	CreateTextObject("\n    Health: 100 \n\n    Armor: 100", 0, 600-128, data->windowSizeX, data->windowSizeY, 0xFFFF0000);
 }
 void Game::Update(double deltaTime)
 {
@@ -133,10 +166,25 @@ void Game::Render()
 		}
 	}
 	gui->Render();
+	for(unsigned int i = 0; i < textObjs.size(); i++)
+	{
+		resources->gameFont->DrawTextA(NULL,textObjs.at(i).text,-1,&textObjs.at(i).textRect,DT_LEFT,textObjs.at(i).color);
+	}
 	//Make sure this is last, as setting this before any renders/changes it will make the scene behind 1 frame;
 	player->Render();
 }
-
+int Game::CreateTextObject(char* text, int posX, int posY, int width, int height, D3DXCOLOR color)
+{
+	TextData obj;
+	obj.textRect.left = posX;
+	obj.textRect.top = posY;
+	obj.textRect.right = posX+width;
+	obj.textRect.bottom = posY+height;
+	obj.color = color;
+	obj.text = text;
+	textObjs.push_back(obj);
+	return textObjs.size()-1;
+}
 //Input Handling (for testing, this needs to be in game.cpp when a game is created)
 void Game::DoInput(float dT)
 {
@@ -164,7 +212,16 @@ void Game::DoInput(float dT)
 	{
 		mouseRightJustDown = false;
 	}
-
+	if(KeyPressed(DIK_COMMA) == 2)
+	{
+		data->changeDisplay = true;
+		data->windowed = !data->windowed;
+		if(data->windowed)
+		{
+			data->windowSizeX = 800;
+			data->windowSizeY = 600;
+		}
+	}
 	if(KeyPressed(DIK_0) == 2)
 	{
 		EditorMode = !EditorMode;
@@ -179,6 +236,18 @@ void Game::DoInput(float dT)
 	{
 		scaleMultiplier = 3;
 		cout << "Scale Adding has been set to true" << endl;
+	}
+	if(KeyPressed(DIK_PERIOD) == 2)
+	{
+		wireframe = !wireframe;
+		if(wireframe)
+		{
+			p_Device->SetRenderState(D3DRS_FILLMODE,D3DFILL_WIREFRAME);
+		}
+		else
+		{
+			p_Device->SetRenderState(D3DRS_FILLMODE,D3DFILL_SOLID);
+		}
 	}
 	if(KeyPressed(DIK_NUMPADMINUS) == 2)
 	{
@@ -302,50 +371,114 @@ void Game::DoInput(float dT)
 		data->loop = false;
 	}
 }
-void Game::Create3DObject(bool hasPhysics, Object3DData* data, SPEEngine::RigidData* pData)
+bool Game::Create3DObject(bool hasPhysics, Object3DData* data, SPEEngine::RigidData* pData)
 {
-	if(hasPhysics)
+	if(data != NULL)
 	{
-
+		if(hasPhysics && pData != NULL)
+		{
+			pData->scaleModel = SPEVector(data->scale.x,data->scale.y,data->scale.z);
+			std::cout << pData->doRender << "<- do render" << endl;
+			physics->Create3DPhysicsObject(data->filePath,pData);
+		}
+		else
+		{
+			Object3D* obj = new Object3D(resources,data->filePath);
+			obj->position = data->position;
+			obj->scaling = data->scale;
+			obj->rotation = data->rotation;
+			modelObjs.push_back(obj);
+		}
+		return true;
 	}
-	else
-	{
-		Object3D* obj = new Object3D(resources,data->filePath);
-		obj->position = data->position;
-		obj->scaling = data->scale;
-		obj->rotation = data->rotation;
-		modelObjs.push_back(obj);
-	}
+	return false;
 }
-void Game::CreateAnimated2DObject(bool hasPhysics, Object2DData* data, SPEEngine::RigidData* pData)
+bool Game::CreateAnimated2DObject(bool hasPhysics, Object2DData* data, SPEEngine::RigidData* pData)
 {
-	if(hasPhysics)
+	Object2D* obj;
+	if(hasPhysics && pData != NULL)
 	{
-
+		if(data->hasAnimation)
+		{
+			obj = new Object2D(resources,data->filePath,player->GetCameraView(),data->textureSizeX,data->textureSizeY,data->xRowsAnim,data->yRowsAnim);
+			obj->position = data->position;
+			obj->scaling = data->scale;
+			physics->Create2DPhysicsObject(pData);
+			if(pData->isStatic != false)
+			{
+				obj->linkedPhysicsObj = physics->GetLastStaticBody();
+			}
+			else
+			{
+				obj->linkedPhysicsObj = physics->GetLastRigidBody();
+			}
+		}
+		else
+		{
+			return false;
+		}
 	}
 	else
 	{
-		Object2D* obj = new Object2D(resources,data->filePath,player->GetCameraView(),data->textureSizeX,data->textureSizeY,data->xRowsAnim,data->yRowsAnim);
-		obj->position = data->position;
-		obj->scaling = data->scale;
-		obj->rotation = data->rotation;
-		spriteObjs.push_back(obj);
+		if(data != NULL)
+		{
+			obj = new Object2D(resources,data->filePath,player->GetCameraView(),data->textureSizeX,data->textureSizeY,data->xRowsAnim,data->yRowsAnim);
+			obj->position = data->position;
+			obj->scaling = data->scale;
+			if(pData->isStatic != false)
+			{
+				obj->linkedPhysicsObj = physics->GetLastStaticBody();
+			}
+			else
+			{
+				obj->linkedPhysicsObj = physics->GetLastRigidBody();
+			}
+		}
+		else
+		{
+			return false;
+		}
 	}
+	spriteObjs.push_back(obj);
+	return true;
 }
-void Game::CreateStatic2DObject(bool hasPhysics, Object2DData* data, SPEEngine::RigidData* pData)
+bool Game::CreateStatic2DObject(bool hasPhysics, Object2DData* data, SPEEngine::RigidData* pData)
 {
-	if(hasPhysics)
+	if(data != NULL)
 	{
-
-	}
-	else
-	{
-		Object2D* obj = new Object2D(resources,data->filePath,player->GetCameraView());
-		obj->position = data->position;
-		obj->scaling = data->scale;
-		obj->rotation = data->rotation;
+		Object2D* obj;
+		if(hasPhysics)
+		{
+			obj = new Object2D(resources,data->filePath,player->GetCameraView());
+			obj->position = data->position;
+			obj->scaling = data->scale;
+			physics->Create2DPhysicsObject(pData);
+			if(pData->isStatic != false)
+			{
+				obj->linkedPhysicsObj = physics->GetLastStaticBody();
+			}
+			else
+			{
+				obj->linkedPhysicsObj = physics->GetLastRigidBody();
+			}
+		}
+		else
+		{
+			obj = new Object2D(resources,data->filePath,player->GetCameraView());
+			obj->position = data->position;
+			obj->scaling = data->scale;if(pData->isStatic != false)
+			{
+				obj->linkedPhysicsObj = physics->GetLastStaticBody();
+			}
+			else
+			{
+				obj->linkedPhysicsObj = physics->GetLastRigidBody();
+			}
+		}
 		spriteObjs.push_back(obj);
+		return true;
 	}
+	return false;
 }
 //Left Mouse click function (to test things with), will be removed for engine use, as this is a gameplay feature
 void Game::LeftMouseClick()
@@ -390,7 +523,6 @@ void Game::ReleaseAll()
 {
 	for(unsigned int i=0;i<modelObjs.size();i++)
 	{
-		modelObjs.at(i)->ReleaseResources(); 
 		delete modelObjs.at(i);
 	}
 	for(unsigned int i=0;i<spriteObjs.size();i++)
@@ -424,14 +556,12 @@ int Game::KeyPressed(int key)
 		keys[key] = 0;
 		return 0;
 	}
-	return 0;
 }
 //speaks for itself
 void Game::DestroyLevel()
 {
 	for(unsigned int i=0;i<modelObjs.size();i++)
 	{
-		modelObjs.at(i)->ReleaseResources();
 		delete modelObjs.at(i);
 	}
 	modelObjs.clear(); 
@@ -465,7 +595,6 @@ void Game::SetUpEditorMode()
 		}
 		else if(editorObjs.at(i).obj3D != NULL)
 		{
-			editorObjs.at(i).obj3D->ReleaseResources();
 			delete editorObjs.at(i).obj3D;
 		}
 		else
@@ -599,72 +728,47 @@ void Game::LoadLevel()
 		{
 			string name,tag;
 			string check = "x";
-			string colCheck = "Collision";
 			string objName;
 			float XAnimRows;
 			float YAnimRows;
 			float sizeX;
 			float sizeY;
-			float posx,posy,posz,scalex,scaley,scalez,rotx,roty,rotz;
-			
-			fin >> name >> objName >>posx >> posy >> posz >> scalex >> scaley >> scalez >> rotx >> roty >> rotz >> sizeX >> sizeY >> XAnimRows >> YAnimRows >> tag;
+			float posx,posy,posz,scalex,scaley,scalez,rotx,roty,rotz,hitBoxX,hitBoxY,hitBoxZ;
+			bool hasPhysics,isStatic,doDraw;
+			fin >> name >> objName >>posx >> posy >> posz >> scalex >> scaley >> scalez >> rotx >> roty >> rotz >> sizeX >> sizeY >> XAnimRows >> YAnimRows >> tag >> hasPhysics >> isStatic >> doDraw >>hitBoxX >> hitBoxY >> hitBoxZ;
 
 			if(name.at(name.size()-1) == check[0])
 			{
 				char* mName = _strdup(name.c_str());
-				Object3D* obj = new Object3D(resources,mName);
-
-				obj->objName = objName;
-				obj->tag = tag;
-				obj->SetPosition(posx,posy,posz);
-				if(rotx != 0 && roty != 0 && rotz != 0)
+				Object3DData data = CreateObject3DData(mName,D3DXVECTOR3(posx,posy,posz),D3DXVECTOR3(scalex,scaley,scalez),D3DXVECTOR3(rotx,roty,rotz));
+				SPEEngine::RigidData pData = CreatePhysicsData(doDraw,isStatic,1,1,SPEVector(posx,posy,posz),SPEVector(scalex,scaley,scalez),SPEVector(0,0,0),SPEVector(0,0,0));
+				Create3DObject(hasPhysics,&data,&pData);
+				if(!hasPhysics)
 				{
-					obj->SetRotation(rotx,roty,rotz);
-				}
-				if(scalex != 1 && scaley != 1 && scalex != 1)
-				{
-					obj->SetScale(scalex,scaley,scalez);
-				}
-				modelObjs.push_back(obj);
-			}
-			else if(name != colCheck)
-			{
-				if(XAnimRows == 0 && YAnimRows == 0)
-				{
-					Object2D* obj = new Object2D(resources,_strdup(name.c_str()),player->GetCameraView());
-					obj->handleWindow = handleWindow;
+					Object3D* obj = modelObjs.at(modelObjs.size()-1);
 					obj->objName = objName;
 					obj->tag = tag;
-					obj->SetPosition(posx,posy,posz);
-					if(scalex != 1 && scaley != 1 && scalex != 1)
-					{
-						obj->SetScale(scalex,scaley,scalez);
-					}
-					spriteObjs.push_back(obj);
-
-				}
-				else
-				{
-					Object2D* obj = new Object2D(resources,_strdup(name.c_str()),player->GetCameraView(),sizeX,sizeY,XAnimRows,YAnimRows);
-					obj->handleWindow = handleWindow;
-					obj->objName = objName;
-					obj->tag = tag;	
-					obj->SetPosition(posx,posy,posz);
-					if(scalex != 1 && scaley != 1 && scalex != 1)
-					{
-						obj->SetScale(scalex,scaley,scalez);
-					}
-					spriteObjs.push_back(obj);
 				}
 			}
 			else
 			{
-				DebugCube* obj = new DebugCube(D3DXVECTOR3(posx,posy,posz),D3DXVECTOR3(rotx,roty,rotz),D3DXVECTOR3(-1,-1,-1),D3DXVECTOR3(1,1,1),resources);
-				obj->objName = "Collision";
-				obj->tag = tag;
-				obj->scaling = D3DXVECTOR3(scalex,scaley,scalez);
-				obj->AddPositionAndRotation(&collisionLock,0,0,0,0,0,0);
-				debugCubes.push_back(obj);
+				Object2D* obj;
+				if(XAnimRows == 0 && YAnimRows == 0)
+				{
+					CreateStatic2DObject(hasPhysics,&CreateObject2DData(_strdup(name.c_str()),false,D3DXVECTOR3(posx,posy,posz),D3DXVECTOR3(scalex,scaley,1),D3DXVECTOR2(0,0),D3DXVECTOR2(0,0)),&CreatePhysicsData(doDraw,isStatic,1,1,SPEVector(posx,posy,posz),SPEVector(hitBoxX,hitBoxY,hitBoxZ),SPEVector(0,0,0),SPEVector(0,0,0)));
+					obj = spriteObjs.at(spriteObjs.size()-1);
+					obj->handleWindow = handleWindow;
+					obj->objName = objName;
+					obj->tag = tag;
+				}
+				else
+				{
+					CreateStatic2DObject(hasPhysics,&CreateObject2DData(_strdup(name.c_str()),false,D3DXVECTOR3(posx,posy,posz),D3DXVECTOR3(scalex,scaley,1),D3DXVECTOR2(sizeX,sizeY),D3DXVECTOR2(XAnimRows,YAnimRows)),&CreatePhysicsData(doDraw,isStatic,1,1,SPEVector(posx,posy,posz),SPEVector(hitBoxX,hitBoxY,hitBoxZ),SPEVector(0,0,0),SPEVector(0,0,0)));
+					obj = spriteObjs.at(spriteObjs.size()-1);
+					obj->handleWindow = handleWindow;
+					obj->objName = objName;
+					obj->tag = tag;	
+				}
 			}
 		}
 		fin.close();
@@ -675,6 +779,7 @@ void Game::LoadLevel()
 D3DLIGHT9* Game::CreateLight(D3DXVECTOR3 position,D3DXVECTOR3 direction, D3DLIGHTTYPE lightType,D3DXCOLOR lightColor,float range,float falloff)
 {
 	D3DLIGHT9* light = new D3DLIGHT9();
+	light->Direction = direction;
 	light->Diffuse = lightColor;
 	light->Position = position;
 	light->Range = range;

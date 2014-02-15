@@ -4,12 +4,6 @@ GUI::GUI( LPDIRECT3DDEVICE9 d3dDev, ResourceManager* res)
 {
 	p_Device = res->GetDevice();
 	resources = res;
-	
-	Rectangle r;
-	r.x = 0;
-	r.y = 0;
-	r.w = 128;
-	r.h = 128;
 
 	LoadGUI();
 
@@ -38,14 +32,30 @@ void GUI::LoadGUI()
 		int xRows,yRows;
 		xRows = 0;
 		yRows = 0;
-		bool hasAnimation;
+		bool hasAnimation,relativeEndX,relativeEndY;
 		while(getline(fin,str))
 		{
-			fin >> path >> posX >> posY >> sizeX >> sizeY >> xRows >> yRows >> hasAnimation;
+			fin >> path >> posX >> posY >> sizeX >> sizeY >> xRows >> yRows >> hasAnimation >> relativeEndX >> relativeEndY;
 			Rectangle rect;
 			rect.Nullify();
-			rect.x = posX;
-			rect.y = posY;
+			if(!relativeEndX)
+			{
+				rect.x = posX;
+			}
+			else
+			{
+				rect.x = resources->GetWindowWidth()-posX;
+				std::cout << "relative posX = " << rect.x << std::endl;
+			}
+			if(!relativeEndY)
+			{
+				rect.y = posY;
+			}
+			else
+			{
+				rect.y = resources->GetWindowHeight()-posY;
+				std::cout << "relative posY = " << rect.y << std::endl;
+			}
 			rect.w = sizeX;
 			rect.h = sizeY;
 			if(hasAnimation)
@@ -54,6 +64,7 @@ void GUI::LoadGUI()
 			}
 			else
 			{
+				std::cout << "should be made" << std::endl;
 				CreateGUIObject(rect,_strdup(path.c_str()));
 			}
 		}

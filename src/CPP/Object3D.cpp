@@ -22,68 +22,21 @@ Object3D::Object3D(ResourceManager* resources,char* path)
 	model.materialBuffer = NULL;
     model.numMaterials = 0;
 	model.meshPath = path;
-	switch(LoadModel(path))
+	switch(LoadModel(path,resources))
 	{
 		case true: std::cout << "Model Loaded Succesfully" << std::endl; break;
 		case false: std::cout << "Something went wrong with loading the model" << std::endl; break;
 	}
 }
-bool Object3D::LoadModel(LPSTR pathName)
+bool Object3D::LoadModel(LPSTR pathName, ResourceManager* res)
 {
-	model.d3dxMaterials = NULL;
-	model.meshMaterials = NULL;
-	model.meshTextures = NULL;
-	model.numMaterials = 0;
-	model.mesh = NULL;
+	ResourceManager::Model* m = res->GetModelStructFromVector(res->GetMeshData(pathName));
+	model.d3dxMaterials = m->d3dxMaterials;
+	model.meshMaterials = m->meshMaterials;
+	model.meshTextures = m->meshTextures;
+	model.numMaterials = m->numMaterials;
+	model.mesh = m->mesh;
 
-	HRESULT result = D3DXLoadMeshFromX(pathName, D3DXMESH_SYSTEMMEM,p_Device, NULL, &model.materialBuffer,NULL, &model.numMaterials,  &model.mesh );
-	switch(result)
-	{
-		case D3DERR_INVALIDCALL: std::cout << "invalid call" << std::endl; break;
-		case E_OUTOFMEMORY: std::cout << "out of memory" << std::endl;break;
-	}
-
-	if(model.materialBuffer != NULL)
-	{
-		model.d3dxMaterials = (D3DXMATERIAL*)model.materialBuffer->GetBufferPointer();
-	}
-	model.meshMaterials = new D3DMATERIAL9[model.numMaterials];
-	model.meshTextures  = new LPDIRECT3DTEXTURE9[model.numMaterials];
-
-	   
-	// Filling material and texture arrays
-	for (DWORD i=0; i<model.numMaterials; i++)
-	{
-		// Copy the material
-		model.meshMaterials[i] = model.d3dxMaterials[i].MatD3D;
-
-		// Set the ambient color for the material (D3DX does not do this)
-		model.meshMaterials[i].Ambient = model.meshMaterials[i].Diffuse;
-
-		// Create the texture if it exists - it may not
-		model.meshTextures[i] = NULL;
-
-		if(model.d3dxMaterials[i].pTextureFilename != NULL)
-		{
-			std::string texturePath = model.d3dxMaterials[i].pTextureFilename; 
-
-			std::cout << model.d3dxMaterials[i].pTextureFilename << std::endl;
-			texturePath = "Resources/Models/"+texturePath;
-
-			if (texturePath != "")
-			{
-				result = D3DXCreateTextureFromFile(p_Device, texturePath.c_str(), &model.meshTextures[i]);
-				switch(result)
-				{
-				case D3DERR_NOTAVAILABLE:		std::cout << "Err: Not Available" << std::endl;			return false;  break;
-				case D3DERR_OUTOFVIDEOMEMORY:	std::cout << "Err: Out of Video Memory" << std::endl;	return false;  break;
-				case D3DERR_INVALIDCALL:		std::cout << "Err: Invalid Call" << std::endl;			return false;  break;
-				case D3DXERR_INVALIDDATA:		std::cout << "XErr: Invalid Data" << std::endl;			return false;  break;
-				case E_OUTOFMEMORY:				std::cout << "Err: Out of Memory" << std::endl;			return false;  break;
-				}
-			}
-		}
-	}
 	return true;
 }
 void Object3D::DrawModel()
@@ -122,28 +75,6 @@ void Object3D::DrawModel()
 		}
 	}
 	
-}
-void Object3D::ReleaseResources()
-{
-	if(model.mesh != NULL)
-	{
-		model.mesh->Release();
-	}
-	if(model.materialBuffer != NULL)
-	{
-		model.materialBuffer->Release();
-	}
-	for(unsigned int x=0; x < model.numMaterials;x++)
-	{
-		if(model.meshTextures != NULL)
-		{
-			if(model.meshTextures[x] != NULL)
-			{
-				model.meshTextures[x]->Release(); 
-				delete model.meshTextures[x];
-			}
-		}
-	}
 }
 HRESULT Object3D::CalcBoundingBox(ID3DXMesh *pMesh,D3DXVECTOR3* inner,D3DXVECTOR3 *outer)
 {
