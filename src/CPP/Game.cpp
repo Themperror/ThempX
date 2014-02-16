@@ -74,14 +74,16 @@ Game::Object3DData Game::CreateObject3DData(char* filePath,D3DXVECTOR3 pos,D3DXV
 void Game::Initialize()
 {
 	currentEditorObjIndex = 0;
-	D3DXCreateFont(p_Device,24, 0,400,0, false, DEFAULT_CHARSET, OUT_TT_PRECIS,CLIP_DEFAULT_PRECIS,DEFAULT_PITCH,"Arial",&resources->gameFont);
+	qualityLevel = 0;
+	//ResourceManager::TextData* t = resources->GetText(0);
+	
 	wireframe = false;
 	scaleMultiplier = 3;
 	EditorMode = false;
 	soundHandler->LoadWaveFile("test.wav","test",11025,8,1);
 	
 	keys.resize(256,0);
-	CreateTextObject("\n    Health: 100 \n\n    Armor: 100", 0, 600-128, data->windowSizeX, data->windowSizeY, 0xFFFF0000);
+	resources->CreateTextObject("Arial","\n    Health: 100 \n\n    Armor: 100",12, 0, 600-128, data->windowSizeX, data->windowSizeY, 0xFFFF0000);
 }
 void Game::Update(double deltaTime)
 {
@@ -121,6 +123,77 @@ void Game::FixedUpdate(double deltaTime)
 	DoInput(deltaTimeF);
 
 	player->FixedUpdate(deltaTimeF);
+
+	if(KeyPressed(DIK_COMMA) == 2)
+	{
+		data->changeDisplay = true;
+		data->windowed = !data->windowed;
+		data->renderSizeX = 800;
+		data->renderSizeY = 600;
+		if(data->windowed)
+		{
+			data->windowSizeX = 800;
+			data->windowSizeY = 600;
+		}
+		//p_Device->EvictManagedResources();
+		//resources->LostDeviceAllText();
+		return;
+	}
+	if(KeyPressed(DIK_M) == 2)
+	{
+		data->changeDisplay = true;
+		data->windowed = true;
+		if(data->windowed)
+		{
+			qualityLevel++;
+			std::cout << qualityLevel << std::endl;
+			if(qualityLevel == 1)
+			{
+				data->renderSizeX = 240;
+				data->renderSizeY = 180;
+			}
+			else if(qualityLevel == 2)
+			{
+				data->renderSizeX = 320;
+				data->renderSizeY = 240;
+			}
+			else if(qualityLevel == 3)
+			{
+				data->renderSizeX = 480;
+				data->renderSizeY = 360;
+			}
+			else if(qualityLevel == 4)
+			{
+				data->renderSizeX = 640;
+				data->renderSizeY = 480;
+			}
+			else if(qualityLevel == 5)
+			{
+				data->renderSizeX = 800;
+				data->renderSizeY = 600;
+			}
+			else if(qualityLevel == 6)
+			{
+				data->renderSizeX = 1024;
+				data->renderSizeY = 800;
+			}
+			else if(qualityLevel == 7)
+			{
+				data->renderSizeX = 1280;
+				data->renderSizeY = 1024;
+			}
+			else if(qualityLevel == 8)
+			{
+				qualityLevel = 1;
+				data->renderSizeX = 240;
+				data->renderSizeY = 180;
+			}
+
+		}
+		//p_Device->EvictManagedResources();
+		//resources->LostDeviceAllText();
+		return;
+	}
 }
 void Game::Render()
 {
@@ -166,25 +239,11 @@ void Game::Render()
 		}
 	}
 	gui->Render();
-	for(unsigned int i = 0; i < textObjs.size(); i++)
-	{
-		resources->gameFont->DrawTextA(NULL,textObjs.at(i).text,-1,&textObjs.at(i).textRect,DT_LEFT,textObjs.at(i).color);
-	}
+	resources->DrawAllText();
 	//Make sure this is last, as setting this before any renders/changes it will make the scene behind 1 frame;
 	player->Render();
 }
-int Game::CreateTextObject(char* text, int posX, int posY, int width, int height, D3DXCOLOR color)
-{
-	TextData obj;
-	obj.textRect.left = posX;
-	obj.textRect.top = posY;
-	obj.textRect.right = posX+width;
-	obj.textRect.bottom = posY+height;
-	obj.color = color;
-	obj.text = text;
-	textObjs.push_back(obj);
-	return textObjs.size()-1;
-}
+
 //Input Handling (for testing, this needs to be in game.cpp when a game is created)
 void Game::DoInput(float dT)
 {
@@ -212,16 +271,7 @@ void Game::DoInput(float dT)
 	{
 		mouseRightJustDown = false;
 	}
-	if(KeyPressed(DIK_COMMA) == 2)
-	{
-		data->changeDisplay = true;
-		data->windowed = !data->windowed;
-		if(data->windowed)
-		{
-			data->windowSizeX = 800;
-			data->windowSizeY = 600;
-		}
-	}
+	
 	if(KeyPressed(DIK_0) == 2)
 	{
 		EditorMode = !EditorMode;

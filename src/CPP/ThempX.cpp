@@ -9,8 +9,9 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 	}
 	return DefWindowProc(hWnd, message, wParam, lParam);
 }
-void ThempX::SetDisplayMode(bool isWindowed,int sizeX, int sizeY)
+void ThempX::SetDisplayMode(bool isWindowed,int sizeX, int sizeY, int renderSizeX,int renderSizeY)
 {
+	std::cout << "settings display mode to " << sizeX << "x" << sizeY << " with a rendering size of " << renderSizeX << "x" << renderSizeY << std::endl;
 	D3DPRESENT_PARAMETERS dx_PresParams;
 	data.windowed = isWindowed;
 	oldWSizeX = wSizeX;
@@ -29,8 +30,8 @@ void ThempX::SetDisplayMode(bool isWindowed,int sizeX, int sizeY)
 
 		dx_PresParams.Windowed = TRUE;
 		dx_PresParams.BackBufferFormat = D3DFMT_A8R8G8B8;
-		dx_PresParams.BackBufferHeight = sizeX;
-		dx_PresParams.BackBufferWidth = sizeY;
+		dx_PresParams.BackBufferHeight = renderSizeY;
+		dx_PresParams.BackBufferWidth = renderSizeX;
 	}
 	else
 	{
@@ -38,8 +39,8 @@ void ThempX::SetDisplayMode(bool isWindowed,int sizeX, int sizeY)
 
 		SetWindowPos(handleWindow,HWND_TOPMOST,0,0,sizeX,sizeY, NULL);
 		
-		dx_PresParams.BackBufferHeight = sizeY;
-		dx_PresParams.BackBufferWidth = sizeX;
+		dx_PresParams.BackBufferHeight = renderSizeY;
+		dx_PresParams.BackBufferWidth = renderSizeX;
 		dx_PresParams.Windowed = FALSE;
 		dx_PresParams.FullScreen_RefreshRateInHz = 60;
 		dx_PresParams.BackBufferFormat = D3DFMT_A8R8G8B8;
@@ -69,8 +70,10 @@ void ThempX::SetDisplayMode(bool isWindowed,int sizeX, int sizeY)
 	p_Device->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL);
 	p_Device->SetRenderState(D3DRS_SRCBLEND,D3DBLEND_ONE);
 	p_Device->SetRenderState(D3DRS_DESTBLEND,D3DBLEND_ZERO);
+	
+	Sleep(200);
 
-	Sleep(100);
+	CheckDevice();
 	
 }
 HWND ThempX::NewWindow(LPCTSTR windowName,int posX,int posY, int sizeX,int sizeY,bool isWindowed)
@@ -156,11 +159,11 @@ ThempX::ThempX(HINSTANCE hInstance,LPSTR lpCmdLine)
 
 	WINDOWINFO winInfo;
 	ZeroMemory(&data,sizeof(data));
+	data.windowed = true;
 	data.lockCursor = true;
 	data.loop = true;
 	data.applicationActive = true;
 	data.changeDisplay = false;
-	data.windowed = (p_Device->PresentParameters.Windowed == 0 ? true : false);
 	data.windowSizeX = wSizeX;
 	data.windowSizeY = wSizeY;
 	// Game loop starts here after everything is initialized
@@ -195,22 +198,24 @@ ThempX::ThempX(HINSTANCE hInstance,LPSTR lpCmdLine)
 					//application being brought back from alt-tabbed state (window with lost focus)
 					cout << "window restored" << endl;
 					data.applicationActive = true;
-					CheckDevice(1);
+					CheckDevice();
 				}
 			}	
         }
+		if(data.changeDisplay) //must stay above the testcooperative function of p_Device
+		{
+			data.changeDisplay = false;
+			SetDisplayMode(data.windowed,data.windowSizeX,data.windowSizeY,data.renderSizeX,data.renderSizeY);
+		}
 		if(p_Device->TestCooperativeLevel() != D3D_OK)
 		{
+			CheckDevice();
 			data.applicationActive = false;
 		}
+		
 		if(data.applicationActive)
 		{
-			if(data.changeDisplay)
-			{
-				data.changeDisplay = false;
-				SetDisplayMode(data.windowed,data.windowSizeX,data.windowSizeY);
-				//CheckDevice(1);
-			}
+			
 			if(data.lockCursor)
 			{
 				GetWindowInfo(handleWindow,&winInfo);
@@ -220,9 +225,8 @@ ThempX::ThempX(HINSTANCE hInstance,LPSTR lpCmdLine)
 				int windowPosY = winInfo.rcWindow.top;
 				SetCursorPos(windowPosX+(windowSizeX/2),windowPosY+(windowSizeY/2));
 			}
-		
+			
 			FixedUpdate();
-
 			currentTicks = timeGetTime();
 			cTicks = currentTicks;
 			if(cTicks-oTicks > 1000 + ((cTicks-oTicks) % 1000))
@@ -262,21 +266,19 @@ ThempX::ThempX(HINSTANCE hInstance,LPSTR lpCmdLine)
 
 	DestroyWindow(handleWindow);
 }
-void ThempX::CheckDevice(int isLost)
+void ThempX::CheckDevice()
 {
 	HRESULT result = p_Device->TestCooperativeLevel();
-	Sleep(50);
-
-
 	if(result == D3DERR_DEVICELOST)
 	{
 		data.lockCursor = false;
-		SetDisplayMode(data.windowed,wSizeX,wSizeY);
+		resources->LostDeviceAllText();
+		SetDisplayMode(data.windowed,wSizeX,wSizeY,data.renderSizeX,data.renderSizeY);
 		result = p_Device->TestCooperativeLevel();
 		if(result == D3DERR_DEVICELOST)
-			CheckDevice(0);
+			CheckDevice();
 		if(result == D3DERR_DEVICENOTRESET)
-			CheckDevice(0);
+			CheckDevice();
 		if(result == D3DERR_DRIVERINTERNALERROR)
 		{
 			data.applicationActive = false;
@@ -286,8 +288,8 @@ void ThempX::CheckDevice(int isLost)
 	}
 	if(result == D3DERR_DEVICENOTRESET)
 	{
-		SetDisplayMode(data.windowed,wSizeX,wSizeY);
-		CheckDevice(0);
+		resources->LostDeviceAllText();
+		SetDisplayMode(data.windowed,wSizeX,wSizeY,data.renderSizeX,data.renderSizeY);
 	}
 	if(result == D3DERR_DRIVERINTERNALERROR)
 	{
@@ -302,6 +304,7 @@ void ThempX::CheckDevice(int isLost)
 	int windowPosX = winInfo.rcWindow.left;
 	int windowPosY = winInfo.rcWindow.top;
 	SetCursorPos(windowPosX+(windowSizeX/2),windowPosY+(windowSizeY/2));
+	resources->ResetDeviceAllText();
 	data.applicationActive = true;
 	data.loop = true;
 }

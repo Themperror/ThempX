@@ -11,6 +11,24 @@ ResourceManager::ResourceManager(LPDIRECT3DDEVICE9 d3d_Device, HWND handle)
 	//soundHandler = NULL;
 	//inputHandler = NULL;
 }
+int ResourceManager::CreateTextObject(char* font,char* text,int fontsize, int posX, int posY, int width, int height, D3DXCOLOR color)
+{
+	TextData obj;
+	
+	obj.textRect.left = posX;
+	obj.textRect.top = posY;
+	obj.textRect.right = posX+width;
+	obj.textRect.bottom = posY+height;
+	obj.fontsize = fontsize;
+	obj.font = font;
+	obj.color = color;
+	obj.text = text;
+	obj.hasLostDone = false;
+	D3DXCreateFont(p_Device,fontsize, 0, 1 ,0, false, DEFAULT_CHARSET, OUT_TT_PRECIS,CLIP_DEFAULT_PRECIS,DEFAULT_PITCH,font,&obj.gameFont);
+
+	texts.push_back(obj);
+	return texts.size()-1;
+}
 void ResourceManager::ReleaseResources()	//main data release
 {
 	for(unsigned int i=0;i<models.size();i++)
@@ -26,6 +44,13 @@ void ResourceManager::ReleaseResources()	//main data release
 		{
 			quads.at(i).texture->Release();
 			quads.at(i).texture = NULL;
+		}
+	}
+	for(unsigned int i=0;i<texts.size();i++)
+	{
+		if(texts.at(i).gameFont != NULL)
+		{
+			texts.at(i).ReleaseFont();
 		}
 	}
 }

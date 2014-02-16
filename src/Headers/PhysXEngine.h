@@ -1,5 +1,5 @@
-#ifndef _SPEENGINE_H_
-#define _SPEENGINE_H_
+#ifndef _PHYSXENGINE_H_
+#define _PHYSXENGINE_H_
 
 #include <SPE.h>
 #include "ResourceManager.h"

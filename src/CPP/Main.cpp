@@ -7,7 +7,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 {
 	//start of the program here.
 	
-	//Sleep(1000);
 	engine = new ThempX(hInstance,lpCmdLine);
 
     return 0;

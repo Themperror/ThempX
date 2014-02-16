@@ -31,8 +31,38 @@ public:
 		DWORD numMaterials;
 		char* meshName;
 	};
-
-	LPD3DXFONT gameFont; //This should be private but as it's a pointer it's hard to make it un-editable when using get/set
+	struct TextData
+	{
+		bool render;
+		char* font;
+		int fontsize;
+		char* text;
+		RECT textRect;
+		D3DXCOLOR color;
+		LPD3DXFONT gameFont; 
+		bool hasLostDone;
+		void LostDevice()
+		{
+			//std::cout << "LostDevice called" << std::endl;
+			gameFont->OnLostDevice();
+			hasLostDone = true;
+		}
+		void ResetDevice()
+		{
+			//std::cout << "ResetDevice called" << std::endl;
+			gameFont->OnResetDevice();
+			hasLostDone = false;
+		}
+		void ReleaseFont()
+		{
+			gameFont->Release();
+			gameFont = NULL;
+		}
+		void DrawFont()
+		{
+			gameFont->DrawTextA(NULL,text,-1,&textRect,DT_LEFT | DT_TOP,color);
+		}
+	};
 
 	ResourceManager(LPDIRECT3DDEVICE9 d3d_Device, HWND handle);
 	void ReleaseResources();
@@ -60,17 +90,17 @@ public:
 	{
 		return screenWidth;
 	}
-	inline float GetWindowHeight()
+	inline int GetWindowHeight()
 	{
 		WINDOWINFO info;
 		GetWindowInfo(wHandle,&info);
-		return info.rcWindow.bottom - info.rcWindow.top;
+		return (int)(info.rcWindow.bottom - info.rcWindow.top);
 	}
-	inline float GetWindowWidth()
+	inline int GetWindowWidth()
 	{
 		WINDOWINFO info;
 		GetWindowInfo(wHandle,&info);
-		return info.rcWindow.right - info.rcWindow.left;
+		return (int)(info.rcWindow.right - info.rcWindow.left);
 	}
 	inline LPD3DXMESH GetMeshFromVector(int i)
 	{
@@ -79,6 +109,42 @@ public:
 	inline ResourceManager::Model* GetModelStructFromVector(int i)
 	{
 		return &models.at(i);
+	}
+	
+	int CreateTextObject(char* font,char* text,int fontsize, int posX, int posY, int width, int height, D3DXCOLOR color);
+	inline TextData* GetText(int i)
+	{
+		return &texts.at(i);
+	}
+	inline void ReleaseAllText()
+	{
+		for(unsigned int i =0;i<texts.size();i++)
+		{
+			texts.at(i).ReleaseFont();
+		}
+	}
+	inline void LostDeviceAllText()
+	{
+		std::cout << "Text device lost" << std::endl;
+		for(unsigned int i =0;i<texts.size();i++)
+		{
+			texts.at(i).LostDevice();
+		}
+	}
+	inline void ResetDeviceAllText()
+	{
+		std::cout << "Text device reset" << std::endl;
+		for(unsigned int i =0;i<texts.size();i++)
+		{
+			texts.at(i).ResetDevice();
+		}
+	}
+	inline void DrawAllText()
+	{
+		for(unsigned int i =0;i<texts.size();i++)
+		{
+			texts.at(i).DrawFont();
+		}
 	}
 	//inline void SetGUI(GUI* g)
 	//{
@@ -90,12 +156,14 @@ public:
 	//}
 
 private:
-
+	
+	
 	struct Quad
 	{
 		LPDIRECT3DTEXTURE9 texture;
 		char* textureName;
 	};
+	std::vector<TextData> texts;
 	std::vector<Model> models;
 	std::vector<Quad> quads;
 	bool LoadQuadTexture(char* path);

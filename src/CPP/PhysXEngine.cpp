@@ -1,4 +1,4 @@
-#include "../Headers/SPEENGINE.h"
+#include "../Headers/PHYSXENGINE.h"
 
 SPEEngine::SPEEngine(ResourceManager* res)
 {

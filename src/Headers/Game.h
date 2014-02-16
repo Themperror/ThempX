@@ -47,13 +47,9 @@ public:
 		bool windowed;
 		int windowSizeX;
 		int windowSizeY;
+		int renderSizeX;
+		int renderSizeY;
 		bool applicationActive;
-	};
-	struct TextData
-	{
-		char* text;
-		RECT textRect;
-		D3DXCOLOR color;
 	};
 	struct Object3DData
 	{
@@ -96,7 +92,6 @@ public:
 	void Initialize();
 	void ReleaseAll();
 
-	int CreateTextObject(char* text, int posX, int posY, int width, int height, D3DXCOLOR color);
 
 	bool Create3DObject(bool hasPhysics,Object3DData* data,SPEEngine::RigidData* pData);
 	bool CreateAnimated2DObject(bool hasPhysics, Object2DData* data, SPEEngine::RigidData* pData);
@@ -118,7 +113,7 @@ public:
 private:
 	//object holders
 	DataStruct* data;
-	std::vector<TextData> textObjs;
+	int qualityLevel;
 	std::vector<Object3D*> modelObjs;
 	std::vector<Object2D*> spriteObjs;
 	std::vector<DebugCube*> debugCubes;
