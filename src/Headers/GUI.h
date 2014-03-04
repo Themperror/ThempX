@@ -27,11 +27,17 @@ public:
 		D3DXVECTOR2 StartPosition;
 		D3DXVECTOR2 EndPosition;
 		std::string AnimationName;
+		float AnimationSpeed;
+		bool isFinished;
+		bool loop;
 		void Nullify()
 		{
 			StartPosition = D3DXVECTOR2(0,0);
 			EndPosition = D3DXVECTOR2(0,0);
 			AnimationName = "";
+			AnimationSpeed = 0;
+			isFinished = false;
+			loop = false;
 		}
 	};
 	struct GUITexture
@@ -72,9 +78,11 @@ public:
 	std::vector<GUITexture> guiObjs;
 	bool PlayAnimation(GUITexture* obj,std::string name);
 	void LoadAnimation(GUITexture* obj);
+	void ReloadGUI();
 private:
 	
 	void LoadGUI();
+	void SetUVValues(GUITexture* obj);
 	void Animate(GUITexture* obj , float dTime,float animSpeed);
 	D3DXMATRIX matProj;
 	LPDIRECT3DDEVICE9 p_Device;

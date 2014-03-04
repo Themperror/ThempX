@@ -1,3 +1,3 @@
-name				objName		posx	posy	posz	scalex	scaley	scalez	rotx	roty	rotz	sizeX	sizeY	XAnimRows	YAnimRows	tag		hasPhysics	isStatic	DoDraw 2DHitBoxX	2DHitBoxY	2DHitBoxZ
-resources/models/level1.x	Level		0	-20	0	2	2	2	0	0	0	0	0	0		0 		LevelModel	1 		1 		1	0		0		0
-resources/sprites/enemy.png	Enemy 		0	0	0	1 	1 	1	0	0	0	0	0	0		0		Enemy		1 		0		0	1.3		4		1
+name						objName		posx	posy	posz	scalex	scaley	scalez	rotx	roty	rotz	sizeX	sizeY	XAnimRows	YAnimRows	tag		hasPhysics	isStatic	DoDraw 2DHitBoxX	2DHitBoxY	2DHitBoxZ
+resources/models/level1.x			Level		0	-20	0	2	2	2	0	0	0	0	0	0		0 		LevelModel	0		1 		1	0		0		0
+resources/AnimationPNG/ManimatieSheet2.png	Enemy 		0	0	0	1 	1 	1	0	0	0	8	8	8		8		Enemy		0 		0		0	1.3		4		1

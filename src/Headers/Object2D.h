@@ -9,7 +9,6 @@
 #include <D3DX9Mesh.h>
 #include <string>
 #include "ResourceManager.h"
-#include <SPE.h>
 #include <fstream>
 #include <stdio.h>
 
@@ -63,7 +62,7 @@ public:
 	D3DXMATRIX worldMatrix;
 	std::string objName;
 	std::string tag;
-	LPSPERIGIDBODY linkedPhysicsObj;
+	//linkedphysX obj
 	bool PlayAnimation(std::string name);
 	std::string currentlyPlayingAnimation;
 	

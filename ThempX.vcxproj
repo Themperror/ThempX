@@ -11,6 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Headers\Camera.h" />
     <ClInclude Include="src\Headers\DebugCube.h" />
     <ClInclude Include="src\Headers\FirstPersonPlayer.h" />
     <ClInclude Include="src\Headers\Game.h" />
@@ -22,11 +23,13 @@
     <ClInclude Include="src\Headers\Particle.h" />
     <ClInclude Include="src\Headers\Particle2D.h" />
     <ClInclude Include="src\Headers\ResourceManager.h" />
+    <ClInclude Include="src\Headers\SceneManager.h" />
     <ClInclude Include="src\Headers\SoundHandler.h" />
-    <ClInclude Include="src\Headers\SPEEngine.h" />
+    <ClInclude Include="src\Headers\PhysXEngine.h" />
     <ClInclude Include="src\Headers\ThempX.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\CPP\Camera.cpp" />
     <ClCompile Include="src\CPP\DebugCube.cpp" />
     <ClCompile Include="src\CPP\FirstPersonPlayer.cpp" />
     <ClCompile Include="src\CPP\Game.cpp" />
@@ -38,8 +41,9 @@
     <ClCompile Include="src\CPP\Particle.cpp" />
     <ClCompile Include="src\CPP\Particle2D.cpp" />
     <ClCompile Include="src\CPP\ResourceManager.cpp" />
+    <ClCompile Include="src\CPP\SceneManager.cpp" />
     <ClCompile Include="src\CPP\SoundHandler.cpp" />
-    <ClCompile Include="src\CPP\SPEEngine.cpp" />
+    <ClCompile Include="src\CPP\PhysXEngine.cpp" />
     <ClCompile Include="src\CPP\ThempX.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -69,39 +73,45 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>C:\Program Files %28x86%29\boost\boost_1_55_0;C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Include;C:\Windows\system\SPE\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Program Files %28x86%29\boost\boost_1_55_0\bin.v2\libs;C:\Program Files %28x86%29\boost\boost_1_55_0\stage\lib;C:\Windows\system\SPE\lib;C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Include;C:\Windows\system\Nvidia PhysX\Include;C:\Windows\system\Nvidia PhysX\Include\cooking;C:\Windows\system\Nvidia PhysX\Samples\PxToolkit\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib;C:\Windows\system\Nvidia PhysX\Lib\win32;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>C:\Program Files %28x86%29\boost\boost_1_55_0;C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Include;C:\Windows\system\SPE\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Program Files %28x86%29\boost\boost_1_55_0\bin.v2\libs;C:\Program Files %28x86%29\boost\boost_1_55_0\stage\lib;C:\Windows\system\SPE\lib;C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Include;C:\Windows\system\Nvidia PhysX\Include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib;C:\Windows\system\Nvidia PhysX\Lib\win32;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <Optimization>Disabled</Optimization>
-      <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
       <FloatingPointExceptions>true</FloatingPointExceptions>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <StringPooling>true</StringPooling>
+      <ExceptionHandling>Sync</ExceptionHandling>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Program Files %28x86%29\boost\boost_1_55_0\stage\lib;C:\Program Files %28x86%29\boost\boost_1_55_0\libs;C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x86;C:\Windows\system\SPE\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>dinput8.lib;dsound.lib;dxguid.lib;winmm.lib;libboost_thread-vc100-mt-gd-1_55.lib;SPE.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x86;C:\Windows\system\Nvidia PhysX\Lib\win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>dinput8.lib;dsound.lib;dxguid.lib;winmm.lib;PhysX3CHECKED_x86.lib;PhysX3CommonCHECKED_x86.lib;PhysX3ExtensionsCHECKED.lib;PhysXProfileSDKCHECKED.lib;PhysXVisualDebuggerSDKCHECKED.lib;PxTaskCHECKED.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <CustomBuildStep>
+      <Command>-DDEBUG</Command>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <Optimization>MaxSpeed</Optimization>
+      <Optimization>Disabled</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
     </ClCompile>
     <Link>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>C:\Program Files %28x86%29\boost\boost_1_55_0\stage\lib;C:\Program Files %28x86%29\boost\boost_1_55_0\libs;C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x86;C:\Windows\system\SPE\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>dinput8.lib;dsound.lib;dxguid.lib;winmm.lib;libboost_thread-vc100-mt-gd-1_55.lib;SPE.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Program Files %28x86%29\boost\boost_1_55_0\stage\lib;C:\Program Files %28x86%29\boost\boost_1_55_0\libs;C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x86;C:\Windows\system\Nvidia PhysX\Lib\win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>dinput8.lib;dsound.lib;dxguid.lib;winmm.lib;PhysX3_x86.lib;PhysX3Common_x86.lib;PhysX3Extensions.lib;PhysXProfileSDK.lib;PhysXVisualDebuggerSDK.lib;PxTask.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

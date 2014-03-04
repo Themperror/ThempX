@@ -25,7 +25,7 @@ Object2D::Object2D(ResourceManager* res, char* texturePath, D3DXMATRIX* camView,
 	quad.texture = resources->GetTexture(texturePath);
 	hasAnimation = false;
 	
-	linkedPhysicsObj = NULL;
+	//linkedPhysicsObj = NULL;
 	if(quad.texture != NULL)
 	{
 		D3DMATERIAL9 mat;
@@ -70,12 +70,12 @@ Object2D::Object2D(ResourceManager* res,char* texturePath,D3DXMATRIX* camViewMat
 	quad.texture = NULL;
 	quad.textureName = texturePath;
 	quad.texture = resources->GetTexture(texturePath);
-	hasAnimation = true;
 	sizeX = tSizeX;
 	sizeY = tSizeY;
 	xRows = xRowsAnim;
 	yRows = yRowsAnim;
 	InitVars();
+	hasAnimation = true;
 	LoadAnimation();
 }
 void Object2D::LoadAnimation()
@@ -89,6 +89,7 @@ void Object2D::LoadAnimation()
 	if (!fin.good())
 	{
 		MessageBox(handleWindow,"Couldn't find animation textfile, Animation won't play. LoadAnimation()",T.c_str(),MB_OK);
+		hasAnimation = false;
 	}
 	else
 	{
@@ -110,7 +111,7 @@ void Object2D::LoadAnimation()
 		}
 	}
 	fin.close();
-	PlayAnimation("Idle");
+	//PlayAnimation("Idle");
 }
 bool Object2D::PlayAnimation(std::string name)
 {
@@ -123,6 +124,7 @@ bool Object2D::PlayAnimation(std::string name)
 			endXAnimValue = animations.at(i).EndPosition.x;
 			endYAnimValue = animations.at(i).EndPosition.y;
 			currentlyPlayingAnimation = name;
+			std::cout << "Animation found and playing: " << name << std::endl;
 			return true;			   
 		}
 	}
@@ -150,7 +152,7 @@ void Object2D::InitVars()
 		mat.Diffuse.b = 128;
 		quad.meshMaterial = mat;
 	}
-	linkedPhysicsObj = NULL;
+//linkedPhysicsObj = NULL;
 	scaling.x = 1;
 	scaling.y = 1;
 	scaling.z = 1;
@@ -176,12 +178,13 @@ void Object2D::Draw()
 	D3DXMATRIX m_ViewWorld;
 
 	
-	D3DXMatrixInverse(&m_ViewWorld, 0, cameraView); //turns toward camera
+	D3DXMatrixInverse(&m_ViewWorld, 0, cameraView); //turns toward camera  //CAMERA VIEW CHANGES MEMORY ADDRESS, POINTER WILL BE INVALID AND HAS TO KEEP UPDATING
 
 	D3DXMATRIX m_Scale;
 	D3DXMatrixScaling(&m_Scale,scaling.x,scaling.y,scaling.z); //scaling
 
 	D3DXMATRIX m_Translation;
+	/*
 	if(linkedPhysicsObj != NULL)
 	{
 		SPEVector pos = linkedPhysicsObj->GetPosition();
@@ -190,11 +193,9 @@ void Object2D::Draw()
 		position.x = pos.x;
 		position.y = pos.y;
 		position.z = pos.z;
-	}
-	else
-	{
-		D3DXMatrixTranslation(&m_Translation,position.x,position.y,position.z); //positioning
-	}
+	}*/
+	D3DXMatrixTranslation(&m_Translation,position.x,position.y,position.z); //positioning
+	
 
 	D3DXMatrixMultiply(&m_ViewScale, &m_ViewWorld, &m_Scale);
 
@@ -230,6 +231,7 @@ void Object2D::Draw()
 }
 void Object2D::Animate(float dTime)
 {		
+	//std::cout << "animate executed" << std::endl;
 	if(hasAnimation)
 	{
 		timeSinceChange += dTime;

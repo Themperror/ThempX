@@ -1,5 +1,117 @@
 #include "../Headers/PHYSXENGINE.h"
 
+
+PhysXEngine::PhysXEngine(ResourceManager* res)
+{
+	resources = res;
+	
+	mFoundation = PxCreateFoundation(PX_PHYSICS_VERSION, defaultAlloc, defaultError);
+
+	gPhysicsSDK = PxCreatePhysics(PX_PHYSICS_VERSION, *mFoundation, PxTolerancesScale());
+	PxInitExtensions(*gPhysicsSDK);
+
+	// Create the scene
+	PxSceneDesc sceneDesc(gPhysicsSDK->getTolerancesScale());
+	sceneDesc.gravity = PxVec3(0.0f, -9.8f, 0.0f);
+
+	if(!sceneDesc.cpuDispatcher)
+	{
+		PxDefaultCpuDispatcher* mCpuDispatcher = PxDefaultCpuDispatcherCreate(1);
+		sceneDesc.cpuDispatcher = mCpuDispatcher;
+	}
+
+	if(!sceneDesc.filterShader)
+	{
+		sceneDesc.filterShader  = PxDefaultSimulationFilterShader;
+	}
+
+	gScene = gPhysicsSDK->createScene(sceneDesc);
+
+
+	defaultMaterial = gPhysicsSDK->createMaterial(0.5f,0.5f,0.5f);
+
+	PxReal d = 0.0f;  
+	PxTransform pose = PxTransform(PxVec3(0.0f, -13.6f, 0.0f),PxQuat(PxHalfPi, PxVec3(0.0f, 0.0f, 1.0f)));
+	PxRigidStatic* plane = gPhysicsSDK->createRigidStatic(pose);
+	if (!plane)
+	{
+		std::cerr<<"create plane failed!"<<std::endl;
+	}
+	PxShape* shape = plane->createShape(PxPlaneGeometry(), *defaultMaterial);
+	if (!shape)
+	{
+		std::cerr<<"create shape failed!"<<std::endl;
+	}
+	gScene->addActor(*plane);
+	statics.push_back(plane);
+	/*physx::PxMaterial* mat;
+	mat = gPhysicsSDK->createMaterial(1.0f,1.0f,1.0f);
+
+	shape = gPhysicsSDK->createShape(physx::PxSphereGeometry(1.0f),&mat,1);
+	PxRigidDynamic* sphereactor = gPhysicsSDK->createRigidDynamic(PxTransform(PxVec3(0,10,0)));
+	sphereactor->attachShape(*shape);
+	sphereactor->setLinearVelocity(PxVec3(0,5,0));
+
+	PxRigidStatic* staticFloor = gPhysicsSDK->createRigidStatic(PxTransform(PxVec3(0,0,0)));
+	physx::PxShape* plane;
+	plane = gPhysicsSDK->createShape(PxPlaneGeometry(),&mat,1);
+	staticFloor->attachShape(*plane);*/
+	
+	//actor aanmaken
+	//actor.attachShape(shape);
+	profiler = &physx::PxProfileZoneManager::createProfileZoneManager(mFoundation);
+	//if(!mProfileZoneManager)
+	CreateCube();
+	//CreateTriangleMesh()
+}
+void PhysXEngine::ReleaseAll()
+{
+	profiler->release();
+	gScene->release();
+	mFoundation->release();
+}
+void PhysXEngine::DrawBoxes()
+{
+	for(unsigned int i = 0;i < visualCubes.size(); i++)
+	{
+		PxTransform t = dynamics.at(i)->getGlobalPose();
+		PxVec3 pos = t.p;
+		PxQuat rot = t.q;
+		D3DXMATRIX rotation;
+		D3DXMATRIX position;
+		D3DXMATRIX world;
+		D3DXMatrixRotationQuaternion(&rotation,&D3DXQUATERNION(t.q.x,t.q.y,t.q.z,t.q.w));
+		D3DXMatrixTranslation(&position,t.p.x,t.p.y,t.p.z);
+		D3DXMatrixMultiply(&world,&rotation,&position);
+		visualCubes.at(i)->hasExternalWorldMatrix = true;
+		visualCubes.at(i)->eWorldMatrix = world;
+		visualCubes.at(i)->position = D3DXVECTOR3(pos.x,pos.y,pos.z);
+		visualCubes.at(i)->doRender =true;
+		visualCubes.at(i)->Draw();
+	}
+}
+void PhysXEngine::CreateCube()
+{
+	for(int i = 0; i < 500 ; i++)
+	{
+		PxReal cubeDensity = 2.0f;
+		PxTransform cubeTransform(PxVec3(0.0f, 4.0, 0.0f));
+		PxVec3 cubeDims(0.5,0.5,0.5);
+		PxBoxGeometry cubeGeometry(cubeDims);
+		cubeTransform.p  = PxVec3(std::sin((float)i),9+ 3*i,std::sin((float)i));
+
+		PxRigidDynamic *cubeActor = PxCreateDynamic(*gPhysicsSDK, cubeTransform, cubeGeometry, *defaultMaterial, cubeDensity);
+
+		cubeActor->setAngularDamping(0.2f);
+		cubeActor->setLinearDamping(0.01f);
+		cubeActor->setMass(10);
+		gScene->addActor(*cubeActor);
+		dynamics.push_back(cubeActor);
+		DebugCube* vCube = new DebugCube(D3DXVECTOR3(0,10,0),D3DXVECTOR3(0,0,0),D3DXVECTOR3(-0.5f,-0.5f,-0.5f),D3DXVECTOR3(0.5f,0.5f,0.5f),resources);
+		visualCubes.push_back(vCube);
+	}
+}
+/*
 SPEEngine::SPEEngine(ResourceManager* res)
 {
 	resources = res;
@@ -227,3 +339,5 @@ void SPEEngine::OnFrameRender( IDirect3DDevice9* m_pd3dDevice )
 		}
 	}
 } 
+
+*/

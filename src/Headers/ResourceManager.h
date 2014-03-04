@@ -1,5 +1,6 @@
 #ifndef _RESOURCEMANAGER_H_
 #define _RESOURCEMANAGER_H_
+
 #define ToRadian 0.0174532925f
 
 #include <d3dx9.h>
@@ -14,8 +15,6 @@
 //#include "ThempX.h"
 //#include "SoundHandler.h"
 //#include "Game.h"
-
-#include <boost/thread.hpp>
 
 class ResourceManager
 {
@@ -76,7 +75,29 @@ public:
 	{
 		return wHandle;
 	}
-
+	/*
+	inline D3DXMATRIX* GetCameraView()
+	{
+		return &cam->GetView();
+	}
+	inline void SetCamera(Camera* camPtr)
+	{
+		cam = camPtr;
+	}
+	*/
+	inline void GetDesktopResolution(int& x, int& y)
+	{
+		RECT desktop;
+	   // Get a handle to the desktop window
+	   const HWND hDesktop = GetDesktopWindow();
+	   // Get the size of screen to the variable desktop
+	   GetWindowRect(hDesktop, &desktop);
+	   // The top left corner will have coordinates (0,0)
+	   // and the bottom right corner will have coordinates
+	   // (horizontal, vertical)
+	   x = desktop.right;
+	   y = desktop.bottom;
+	}
 	inline void SetScreenResolution(float x, float y)
 	{
 		screenWidth = x;
@@ -174,6 +195,7 @@ private:
 	//easy access classes and variables
 	HWND wHandle;
 	LPDIRECT3DDEVICE9 p_Device;
+	//Camera* cam;
 	//Game* game;
 	//ThempX* engine;
 	//SoundHandler* soundHandler;

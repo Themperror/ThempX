@@ -17,14 +17,12 @@
 #include "SoundHandler.h"
 #include "Particle.h"
 #include "Game.h"
-#include "SPEEngine.h"
 
 #include <iostream>
 #include <stdlib.h>
 #include <string>
 #include <fstream>
 #include <stdio.h>
-#include <boost/thread.hpp>
 
 #pragma comment(lib, "d3dx9.lib")
 #pragma comment (lib, "d3d9.lib")

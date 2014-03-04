@@ -22,16 +22,17 @@
 #include "../Headers/Particle.h"
 #include "../Headers/FirstPersonPlayer.h"
 #include "../Headers/GUI.h"
-#include "../Headers/SPEEngine.h"
+#include "../Headers/PhysXEngine.h"
+#include "../Headers/Camera.h"
 
-#include <SPE.h>
 #include <iostream>
+#include <ostream>
+#include <sstream>
 #include <stdlib.h>
 #include <string>
 #include <fstream>
 #include <stdio.h>
 #include <Windows.h>
-#include <boost/thread.hpp>
 
 #pragma comment(lib, "d3dx9.lib")
 #pragma comment (lib, "d3d9.lib")
@@ -69,6 +70,7 @@ public:
 	{
 		char* filePath;
 		bool hasAnimation;
+		Camera* cam;
 		D3DXVECTOR2 URVertexPos;
 		D3DXVECTOR2 LLVertexPos;
 		D3DXVECTOR3 position;
@@ -91,19 +93,19 @@ public:
 	void Render();
 	void Initialize();
 	void ReleaseAll();
+	void ReloadGUI();
 
-
-	bool Create3DObject(bool hasPhysics,Object3DData* data,SPEEngine::RigidData* pData);
-	bool CreateAnimated2DObject(bool hasPhysics, Object2DData* data, SPEEngine::RigidData* pData);
-	bool CreateStatic2DObject(bool hasPhysics, Object2DData* data, SPEEngine::RigidData* pData);
-	SPEEngine::RigidData CreatePhysicsData(bool draw,bool isStatic, float mass, float density, SPEVector pos,SPEVector scale, SPEVector vel, SPEVector aVel);
+	bool Create3DObject(bool hasPhysics,Object3DData* data);
+	bool CreateAnimated2DObject(bool hasPhysics, Object2DData* data);
+	bool CreateStatic2DObject(bool hasPhysics, Object2DData* data);
+	//SPEEngine::RigidData CreatePhysicsData(bool draw,bool isStatic, float mass, float density, SPEVector pos,SPEVector scale, SPEVector vel, SPEVector aVel);
 	Object2DData CreateObject2DData(char* filePath,bool hasAnim, D3DXVECTOR3 pos,D3DXVECTOR3 scale,D3DXVECTOR2 tSize, D3DXVECTOR2 rows);
 	Object3DData CreateObject3DData(char* filePath,D3DXVECTOR3 pos,D3DXVECTOR3 scale,D3DXVECTOR3 rot);
 	inline D3DXMATRIX* GetCameraView()
 	{
-		if(player != NULL)
+		if(cam != NULL)
 		{
-			return player->GetCameraView();
+			return &cam->GetView();
 		}
 		else
 		{
@@ -122,7 +124,6 @@ private:
 
 	D3DLIGHT9* CreateLight(D3DXVECTOR3 position,D3DXVECTOR3 direction, D3DLIGHTTYPE lightType,D3DXCOLOR lightColor,float range,float falloff);
 
-	FirstPersonPlayer* player;
 
 	//core engine
 	HWND handleWindow;
@@ -130,7 +131,8 @@ private:
 	ResourceManager* resources;
 	InputHandler* inputHandler;
 	SoundHandler* soundHandler;
-	SPEEngine* physics;
+	PhysXEngine* physics;
+	Camera* cam;
 	GUI* gui;
 	void LoadLevel();
 	void DestroyLevel();
@@ -166,7 +168,6 @@ private:
 
 	//CollisionThread
 	void CollisionThread();
-	boost::mutex collisionLock;
 
 
 	//math functions

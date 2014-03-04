@@ -1,0 +1,2 @@
+AnimationName		startposX	endposX		startposY	endposY  (animaties zijn zero based)
+Walk			0		0		1		4	0.25 1

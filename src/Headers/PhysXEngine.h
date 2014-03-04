@@ -1,12 +1,52 @@
 #ifndef _PHYSXENGINE_H_
 #define _PHYSXENGINE_H_
 
-#include <SPE.h>
+#include <PxPhysicsAPI.h>
+#include <Pxc.h>
+#include <pvd\PxVisualDebugger.h>
 #include "ResourceManager.h"
+#include "DebugCube.h"
 
-class SPEEngine
+#ifdef DEBUG
+#pragma comment(lib, "PhysX3CHECKED_x86.lib")
+#pragma comment(lib, "PhysX3ExtensionsCHECKED.lib")
+#endif
+#ifndef DEBUG
+#pragma comment(lib, "PhysX3_x86.lib")
+#pragma comment(lib, "PhysX3Extensions.lib")
+#endif
+
+
+using namespace physx;
+
+class PhysXEngine
 {
 public:
+
+	PhysXEngine(ResourceManager* res);
+	void ReleaseAll();
+	ResourceManager* resources;
+
+	physx::PxFoundation* mFoundation;
+	physx::PxPhysics* gPhysicsSDK;
+	physx::PxCooking* mCooking;
+	physx::PxScene* gScene;
+	physx::PxShape* shape;
+	physx::PxProfileZoneManager* profiler;
+	
+	void CreateCube();
+	//PxProfileZoneManager* profiler;
+	void DrawBoxes();
+private:
+
+	physx::PxDefaultAllocator defaultAlloc;
+	physx::PxDefaultErrorCallback defaultError;
+	PxMaterial* defaultMaterial;
+	std::vector<PxRigidStatic*> statics;
+	std::vector<PxRigidDynamic*> dynamics;
+	std::vector<DebugCube*> visualCubes;
+	PxTransform positionTest;
+	/*
 	struct RigidData
 	{
 		SPEVector scaleModel;
@@ -68,5 +108,7 @@ private:
 	std::vector<RigidModel> rigidbodies;
 	std::vector<RigidModel> staticbodies;
 	std::vector<LPSPESHAPE> shapes;
+
+	*/
 };
 #endif

@@ -9,30 +9,17 @@ Game::Game(Game::DataStruct* b,HWND windowHandle,ResourceManager* resMan,InputHa
 	inputHandler = inputHand;
 	soundHandler = soundHand;
 	p_Device = d3dDev;
-	physics = new SPEEngine(resources);
-	
-	player = new FirstPersonPlayer(D3DXVECTOR3(0,0,0),VECTOR3ZERO,resources,inputHandler,&keys);
+	physics = new PhysXEngine(resources);
+	cam = new Camera(resMan,THEMPX_CAM_PERSPECTIVE);
+	cam->SetPosition(0,0,0);
 	LoadLevel();
 	Initialize();
 
-	/*for(unsigned int i = 0; i < 100; i++)
-	{
-		SPEEngine::RigidData physicsData;
-		physicsData.Nullify();
-		physicsData.doRender = true;
-		physicsData.density = 1;
-		physicsData.mass = 10;
-		physicsData.isStatic = false;
-		physicsData.scaleModel = SPEVector(1,1,1);
-		physicsData.position = SPEVector(0,i*1.1f,3*sin(i*0.5f));
-		physics->Create3DPhysicsObject("resources/models/cube.x",&physicsData);
-	}*/
-	//CreateStatic2DObject(true,&CreateObject2DData("Resources/Sprites/enemy.png",false,VECTOR3ZERO,VECTOR3ONE,D3DXVECTOR2(0,0),D3DXVECTOR2(0,0)),&pData);
-	//cout << debugCubes.at(0)->collision->GetPosition().x <<"  " <<debugCubes.at(0)->collision->GetPosition().y << "  " <<debugCubes.at(0)->collision->GetPosition().z << endl;
 	//particles.push_back(new Particle(resources,p_Device,"Resources/Particles/Lightning.png",&camera.m_View,D3DXVECTOR3(0,10,10),200,500,1,3));
 	//particles.at(0)->SetMovement(D3DXVECTOR3(0,0,0),D3DXVECTOR3(0,3,0));
 	//particles.at(0)->Release();
 }
+/*
 SPEEngine::RigidData Game::CreatePhysicsData(bool draw,bool isStatic, float mass, float density, SPEVector pos,SPEVector scale, SPEVector vel, SPEVector aVel)
 {
 	SPEEngine::RigidData p;
@@ -46,7 +33,7 @@ SPEEngine::RigidData Game::CreatePhysicsData(bool draw,bool isStatic, float mass
 	p.velocity = vel;
 	p.angularVelocity = aVel;
 	return p;
-}
+}*/
 Game::Object2DData Game::CreateObject2DData(char* filePath,bool hasAnim, D3DXVECTOR3 pos,D3DXVECTOR3 scale,D3DXVECTOR2 tSize, D3DXVECTOR2 rows)
 {
 	Game::Object2DData d;
@@ -100,30 +87,124 @@ void Game::Update(double deltaTime)
 	{
 		IFOBJ2D
 		{
-			currentEditorObj->obj2D->position = AddVector3(&player->GetLookAt(),&MultiplyVector3(&player->GetLookDir(),15));
+			currentEditorObj->obj2D->position = AddVector3(&cam->GetLookAt(),&MultiplyVector3(&cam->GetLookDir(),15));
 		}
 		else IFOBJ3D
 		{
-			currentEditorObj->obj3D->position = AddVector3(&player->GetLookAt(),&MultiplyVector3(&player->GetLookDir(),15));
+			currentEditorObj->obj3D->position = AddVector3(&cam->GetLookAt(),&MultiplyVector3(&cam->GetLookDir(),15));
 		}
 		else IFCOL
 		{
-			currentEditorObj->col->position = AddVector3(&player->GetLookAt(),&MultiplyVector3(&player->GetLookDir(),15));
+			currentEditorObj->col->position = AddVector3(&cam->GetLookAt(),&MultiplyVector3(&cam->GetLookDir(),15));
 			//currentEditorObj->col->HardUpdateCollisionGeo(&collisionLock);
 		}
 	}
-	player->Update(deltaTimeF);
+	
+	inputHandler->Update();
+	DoInput(deltaTimeF);
+	cam->Update(deltaTimeF,inputHandler->GetMousePosX(),inputHandler->GetMousePosY());
+
+	physx::PxReal elapsed = 1.0f/60.0f;
+	physics->gScene->simulate(elapsed);
+	while(!physics->gScene->fetchResults())
+	{
+		
+	}
 	gui->Update(deltaTimeF);
 }
 void Game::FixedUpdate(double deltaTime)
 {
 	float deltaTimeF = (float)deltaTime;
-	physics->OnFrameMove(deltaTimeF);
-	inputHandler->Update();
-	DoInput(deltaTimeF);
+	if(deltaTimeF < 0 )
+	{
+		std::cout << "deltatime wasn't positive" << std::endl;
+	}
+	
+	
 
-	player->FixedUpdate(deltaTimeF);
 
+	
+}
+void Game::Render()
+{
+	p_Device->SetSamplerState(0,D3DSAMP_ADDRESSU,D3DTADDRESS_WRAP);
+	p_Device->SetSamplerState(0,D3DSAMP_ADDRESSV,D3DTADDRESS_WRAP);
+	for(unsigned int i = 0; i < modelObjs.size();i++)
+	{
+		modelObjs.at(i)->DrawModel();	
+	}
+	for(unsigned int i = 0; i < debugCubes.size();i++)
+	{
+		debugCubes.at(i)->Draw();
+	}
+	//physics->OnFrameRender(resources->GetDevice());
+
+	p_Device->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_CLAMP);
+	p_Device->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP);
+	for(unsigned int i = 0; i < spriteObjs.size();i++)
+	{
+		spriteObjs.at(i)->cameraView = &cam->GetView();
+		spriteObjs.at(i)->Draw();
+	}
+	for(unsigned int i = 0; i < particles.size(); i++)
+	{
+		particles.at(i)->Draw();
+	}
+	if(EditorMode)
+	{
+		IFOBJ2D
+		{
+			p_Device->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_CLAMP);
+			p_Device->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP);
+			currentEditorObj->obj2D->Draw();
+		}
+		else IFOBJ3D
+		{
+			p_Device->SetSamplerState(0,D3DSAMP_ADDRESSU,D3DTADDRESS_WRAP);
+			p_Device->SetSamplerState(0,D3DSAMP_ADDRESSV,D3DTADDRESS_WRAP);
+			currentEditorObj->obj3D->DrawModel();
+		}
+		else IFCOL
+		{
+			currentEditorObj->col->Draw();
+		}
+	}
+	physics->DrawBoxes();
+	gui->Render();
+	cam->RenderCamera(THEMPX_CAM_PERSPECTIVE);
+	resources->DrawAllText();
+}
+void Game::ReloadGUI()
+{
+	gui->ReloadGUI();
+}
+//Input Handling (for testing, this needs to be in game.cpp when a game is created)
+void Game::DoInput(float dT)
+{
+	if(inputHandler->MouseButtonDown(0))
+	{
+		if(mouseLeftJustDown == false)
+		{
+			LeftMouseClick();
+			mouseLeftJustDown = true;
+		}
+	}
+	else
+	{
+		mouseLeftJustDown = false;
+	}
+	if(inputHandler->MouseButtonDown(1))
+	{
+		if(mouseRightJustDown == false)
+		{
+			data->lockCursor = !data->lockCursor;
+			mouseRightJustDown = true;
+		}
+	}
+	else
+	{
+		mouseRightJustDown = false;
+	}
 	if(KeyPressed(DIK_COMMA) == 2)
 	{
 		data->changeDisplay = true;
@@ -146,7 +227,63 @@ void Game::FixedUpdate(double deltaTime)
 		if(data->windowed)
 		{
 			qualityLevel++;
-			std::cout << qualityLevel << std::endl;
+			if(qualityLevel == 1)
+			{
+				data->renderSizeX = 240;
+				data->renderSizeY = 180;
+			}
+			else if(qualityLevel == 2)
+			{
+				data->renderSizeX = 320;
+				data->renderSizeY = 240;
+			}
+			else if(qualityLevel == 3)
+			{
+				data->renderSizeX = 480;
+				data->renderSizeY = 360;
+			}
+			else if(qualityLevel == 4)
+			{
+				data->renderSizeX = 640;
+				data->renderSizeY = 480;
+			}
+			else if(qualityLevel == 5)
+			{
+				data->renderSizeX = 800;
+				data->renderSizeY = 600;
+			}
+			else if(qualityLevel == 6)
+			{
+				data->renderSizeX = 1024;
+				data->renderSizeY = 800;
+			}
+			else if(qualityLevel == 7)
+			{
+				data->renderSizeX = 4096;
+				data->renderSizeY = 3072;
+			}
+			else if(qualityLevel == 8)
+			{
+				qualityLevel = 1;
+				data->renderSizeX = 240;
+				data->renderSizeY = 180;
+			}
+
+		}
+		//p_Device->EvictManagedResources();
+		//resources->LostDeviceAllText();
+		return;
+	}
+	if(KeyPressed(DIK_N) == 2)
+	{
+		data->changeDisplay = true;
+		data->windowed = false;
+		data->renderSizeX = 1366;
+		data->renderSizeY = 768;
+		resources->GetDesktopResolution(data->windowSizeX,data->windowSizeY);
+		if(!data->windowed)
+		{
+			qualityLevel++;
 			if(qualityLevel == 1)
 			{
 				data->renderSizeX = 240;
@@ -194,87 +331,52 @@ void Game::FixedUpdate(double deltaTime)
 		//resources->LostDeviceAllText();
 		return;
 	}
-}
-void Game::Render()
-{
-	p_Device->SetSamplerState(0,D3DSAMP_ADDRESSU,D3DTADDRESS_WRAP);
-	p_Device->SetSamplerState(0,D3DSAMP_ADDRESSV,D3DTADDRESS_WRAP);
-	for(unsigned int i = 0; i < modelObjs.size();i++)
+	int speed = 60;
+	if(KeyPressed(DIK_LSHIFT))
 	{
-		modelObjs.at(i)->DrawModel();	
+		speed = 90;
 	}
-	for(unsigned int i = 0; i < debugCubes.size();i++)
+	if(KeyPressed(DIK_Q))
 	{
-		debugCubes.at(i)->Draw();
+		cam->AddPosition(0,dT*speed,0);
 	}
-	physics->OnFrameRender(resources->GetDevice());
+	if(KeyPressed(DIK_E))
+	{
+		cam->AddPosition(0,-dT*speed,0);
+	}
+	if(KeyPressed(DIK_W))
+	{
+		cam->AddPosition(cam->GetLookDir().x *dT*speed,0,cam->GetLookDir().z *dT*speed);
+	}
+	if(KeyPressed(DIK_S))
+	{
+		cam->AddPosition(-cam->GetLookDir().x *dT*speed,0,-cam->GetLookDir().z *dT*speed);
+	}
+	if(KeyPressed(DIK_D))
+	{
+		D3DXVECTOR3 temp = cam->ReturnDirection(cam->angleX-90,cam->angleY);
+		cam->AddPosition(temp.x *dT*speed,0,temp.z *dT*speed);
+	}
+	if(KeyPressed(DIK_A))
+	{
+		D3DXVECTOR3 temp = cam->ReturnDirection(cam->angleX+90,cam->angleY);
+		cam->AddPosition(temp.x *dT*speed,0,temp.z *dT*speed);
+	}
+	if(KeyPressed(DIK_NUMPADPLUS) == 2)
+	{
+		cam->sensitivity += 30;
+		std::cout << "Mouse Sensitivity set to: " <<cam->sensitivity << std::endl;
+	}
+	if(KeyPressed(DIK_NUMPADMINUS) == 2)
+	{
+		cam->sensitivity -= 30;
+		std::cout << "Mouse Sensitivity set to: " <<cam->sensitivity << std::endl;
+	}
 
-	p_Device->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_CLAMP);
-	p_Device->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP);
-	for(unsigned int i = 0; i < spriteObjs.size();i++)
-	{
-		spriteObjs.at(i)->Draw();
-	}
-	for(unsigned int i = 0; i < particles.size(); i++)
-	{
-		particles.at(i)->Draw();
-	}
-	if(EditorMode)
-	{
-		IFOBJ2D
-		{
-			p_Device->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_CLAMP);
-			p_Device->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP);
-			currentEditorObj->obj2D->Draw();
-		}
-		else IFOBJ3D
-		{
-			p_Device->SetSamplerState(0,D3DSAMP_ADDRESSU,D3DTADDRESS_WRAP);
-			p_Device->SetSamplerState(0,D3DSAMP_ADDRESSV,D3DTADDRESS_WRAP);
-			currentEditorObj->obj3D->DrawModel();
-		}
-		else IFCOL
-		{
-			currentEditorObj->col->Draw();
-		}
-	}
-	gui->Render();
-	resources->DrawAllText();
-	//Make sure this is last, as setting this before any renders/changes it will make the scene behind 1 frame;
-	player->Render();
-}
 
-//Input Handling (for testing, this needs to be in game.cpp when a game is created)
-void Game::DoInput(float dT)
-{
-	if(inputHandler->MouseButtonDown(0))
-	{
-		if(mouseLeftJustDown == false)
-		{
-			LeftMouseClick();
-			mouseLeftJustDown = true;
-		}
-	}
-	else
-	{
-		mouseLeftJustDown = false;
-	}
-	if(inputHandler->MouseButtonDown(1))
-	{
-		if(mouseRightJustDown == false)
-		{
-			data->lockCursor = !data->lockCursor;
-			mouseRightJustDown = true;
-		}
-	}
-	else
-	{
-		mouseRightJustDown = false;
-	}
-	
 	if(KeyPressed(DIK_0) == 2)
 	{
-		EditorMode = !EditorMode;
+		EditorMode = false;
 		if(EditorMode == true)
 		{
 			currentEditorObjIndex = 0;
@@ -282,11 +384,7 @@ void Game::DoInput(float dT)
 		}
 		std::cout <<"Editor Mode has been set to: "<< EditorMode << std::endl;
 	}
-	if(KeyPressed(DIK_NUMPADPLUS) == 2)
-	{
-		scaleMultiplier = 3;
-		cout << "Scale Adding has been set to true" << endl;
-	}
+	
 	if(KeyPressed(DIK_PERIOD) == 2)
 	{
 		wireframe = !wireframe;
@@ -421,15 +519,15 @@ void Game::DoInput(float dT)
 		data->loop = false;
 	}
 }
-bool Game::Create3DObject(bool hasPhysics, Object3DData* data, SPEEngine::RigidData* pData)
+bool Game::Create3DObject(bool hasPhysics, Object3DData* data)
 {
 	if(data != NULL)
 	{
-		if(hasPhysics && pData != NULL)
+		if(hasPhysics)
 		{
-			pData->scaleModel = SPEVector(data->scale.x,data->scale.y,data->scale.z);
-			std::cout << pData->doRender << "<- do render" << endl;
-			physics->Create3DPhysicsObject(data->filePath,pData);
+			//pData->scaleModel = SPEVector(data->scale.x,data->scale.y,data->scale.z);
+			std::cout << hasPhysics << "<- has PhysX" << endl;
+			//physics->Create3DPhysicsObject(data->filePath,pData);
 		}
 		else
 		{
@@ -443,25 +541,27 @@ bool Game::Create3DObject(bool hasPhysics, Object3DData* data, SPEEngine::RigidD
 	}
 	return false;
 }
-bool Game::CreateAnimated2DObject(bool hasPhysics, Object2DData* data, SPEEngine::RigidData* pData)
+bool Game::CreateAnimated2DObject(bool hasPhysics, Object2DData* data)
 {
 	Object2D* obj;
-	if(hasPhysics && pData != NULL)
+	if(hasPhysics)
 	{
 		if(data->hasAnimation)
 		{
-			obj = new Object2D(resources,data->filePath,player->GetCameraView(),data->textureSizeX,data->textureSizeY,data->xRowsAnim,data->yRowsAnim);
+			obj = new Object2D(resources,data->filePath,GetCameraView(),data->textureSizeX,data->textureSizeY,data->xRowsAnim,data->yRowsAnim);
 			obj->position = data->position;
+			obj->hasAnimation = true;
 			obj->scaling = data->scale;
-			physics->Create2DPhysicsObject(pData);
-			if(pData->isStatic != false)
-			{
-				obj->linkedPhysicsObj = physics->GetLastStaticBody();
-			}
-			else
-			{
-				obj->linkedPhysicsObj = physics->GetLastRigidBody();
-			}
+			obj->PlayAnimation("Test");
+			//physics->Create2DPhysicsObject(pData);
+			//if(pData->isStatic != false)
+			//{
+			//	obj->linkedPhysicsObj = physics->GetLastStaticBody();
+			//}
+			//else
+			//{
+			//	obj->linkedPhysicsObj = physics->GetLastRigidBody();
+			//}
 		}
 		else
 		{
@@ -472,17 +572,19 @@ bool Game::CreateAnimated2DObject(bool hasPhysics, Object2DData* data, SPEEngine
 	{
 		if(data != NULL)
 		{
-			obj = new Object2D(resources,data->filePath,player->GetCameraView(),data->textureSizeX,data->textureSizeY,data->xRowsAnim,data->yRowsAnim);
+			obj = new Object2D(resources,data->filePath,GetCameraView(),data->textureSizeX,data->textureSizeY,data->xRowsAnim,data->yRowsAnim);
 			obj->position = data->position;
+			obj->hasAnimation = true;
 			obj->scaling = data->scale;
-			if(pData->isStatic != false)
-			{
-				obj->linkedPhysicsObj = physics->GetLastStaticBody();
-			}
-			else
-			{
-				obj->linkedPhysicsObj = physics->GetLastRigidBody();
-			}
+			obj->PlayAnimation("Test");
+			//if(pData->isStatic != false)
+			//{
+			//	obj->linkedPhysicsObj = physics->GetLastStaticBody();
+			//}
+			//else
+			//{
+			//	obj->linkedPhysicsObj = physics->GetLastRigidBody();
+			//}
 		}
 		else
 		{
@@ -492,38 +594,39 @@ bool Game::CreateAnimated2DObject(bool hasPhysics, Object2DData* data, SPEEngine
 	spriteObjs.push_back(obj);
 	return true;
 }
-bool Game::CreateStatic2DObject(bool hasPhysics, Object2DData* data, SPEEngine::RigidData* pData)
+bool Game::CreateStatic2DObject(bool hasPhysics, Object2DData* data)
 {
 	if(data != NULL)
 	{
 		Object2D* obj;
 		if(hasPhysics)
 		{
-			obj = new Object2D(resources,data->filePath,player->GetCameraView());
+			obj = new Object2D(resources,data->filePath,GetCameraView());
 			obj->position = data->position;
 			obj->scaling = data->scale;
-			physics->Create2DPhysicsObject(pData);
-			if(pData->isStatic != false)
-			{
-				obj->linkedPhysicsObj = physics->GetLastStaticBody();
-			}
-			else
-			{
-				obj->linkedPhysicsObj = physics->GetLastRigidBody();
-			}
+			//physics->Create2DPhysicsObject(pData);
+			//if(pData->isStatic != false)
+			//{
+			//	obj->linkedPhysicsObj = physics->GetLastStaticBody();
+			//}
+			//else
+			//{
+			//	obj->linkedPhysicsObj = physics->GetLastRigidBody();
+			//}
 		}
 		else
 		{
-			obj = new Object2D(resources,data->filePath,player->GetCameraView());
+			obj = new Object2D(resources,data->filePath,GetCameraView());
 			obj->position = data->position;
-			obj->scaling = data->scale;if(pData->isStatic != false)
-			{
-				obj->linkedPhysicsObj = physics->GetLastStaticBody();
-			}
-			else
-			{
-				obj->linkedPhysicsObj = physics->GetLastRigidBody();
-			}
+			obj->scaling = data->scale;
+			//if(pData->isStatic != false)
+			//{
+			//	obj->linkedPhysicsObj = physics->GetLastStaticBody();
+			//}
+			//else
+			//{
+			//	obj->linkedPhysicsObj = physics->GetLastRigidBody();
+			//}
 		}
 		spriteObjs.push_back(obj);
 		return true;
@@ -533,20 +636,24 @@ bool Game::CreateStatic2DObject(bool hasPhysics, Object2DData* data, SPEEngine::
 //Left Mouse click function (to test things with), will be removed for engine use, as this is a gameplay feature
 void Game::LeftMouseClick()
 {
+	if(gui->guiObjs.size() > 0)
+	{
+		gui->PlayAnimation(&gui->guiObjs.at(1),"Attack");
+	}
 	if(EditorMode)
 	{
 		if(currentEditorObj->obj2D != NULL)
 		{
 			if(!currentEditorObj->obj2D->hasAnimation)
 			{
-				Object2D* obj = new Object2D(resources,currentEditorObj->obj2D->quad.textureName,player->GetCameraView());
+				Object2D* obj = new Object2D(resources,currentEditorObj->obj2D->quad.textureName,GetCameraView());
 				obj->SetPosition(currentEditorObj->obj2D->position.x,currentEditorObj->obj2D->position.y,currentEditorObj->obj2D->position.z);
 				obj->objName = currentEditorObj->obj2D->objName;
 				spriteObjs.push_back(obj);
 			}
 			else
 			{
-				Object2D* obj = new Object2D(resources,currentEditorObj->obj2D->quad.textureName,player->GetCameraView(),currentEditorObj->obj2D->GetXSize(),currentEditorObj->obj2D->GetYSize(),currentEditorObj->obj2D->GetXRows(),currentEditorObj->obj2D->GetYRows());
+				Object2D* obj = new Object2D(resources,currentEditorObj->obj2D->quad.textureName,GetCameraView(),currentEditorObj->obj2D->GetXSize(),currentEditorObj->obj2D->GetYSize(),currentEditorObj->obj2D->GetXRows(),currentEditorObj->obj2D->GetYRows());
 				obj->SetPosition(currentEditorObj->obj2D->position.x,currentEditorObj->obj2D->position.y,currentEditorObj->obj2D->position.z);
 				obj->objName = currentEditorObj->obj2D->objName;
 				spriteObjs.push_back(obj);
@@ -563,7 +670,7 @@ void Game::LeftMouseClick()
 		{
 			DebugCube* src = currentEditorObj->col;
 			DebugCube* obj = new DebugCube(src->position,src->rotation,src->LLFPos,src->URBPos,resources);
-			obj->SetPosRotScale(&collisionLock,src->position,src->rotation,src->scaling);
+			obj->SetPosRotScale(src->position,src->rotation,src->scaling);
 			debugCubes.push_back(obj);
 		}
 		CreateLevelFile();
@@ -571,6 +678,7 @@ void Game::LeftMouseClick()
 }
 void Game::ReleaseAll()
 {
+	DestroyLevel();
 	for(unsigned int i=0;i<modelObjs.size();i++)
 	{
 		delete modelObjs.at(i);
@@ -585,9 +693,10 @@ void Game::ReleaseAll()
 		debugCubes.at(i)->Release(); 
 		delete debugCubes.at(i);
 	}
+	physics->ReleaseAll();
 	gui->Release();
-	delete player;
 	delete gui;
+	delete cam;
 }
 //easy-for-use function for testing keys to be pressed
 int Game::KeyPressed(int key)
@@ -700,7 +809,7 @@ void Game::SetUpEditorMode()
 				if(hasAnim == false)
 				{
 					staticSpriteNr++;
-					Object2D* spriteObj = new Object2D(resources,_strdup(name.c_str()),player->GetCameraView());
+					Object2D* spriteObj = new Object2D(resources,_strdup(name.c_str()),GetCameraView());
 					std::ostringstream oss;
 					oss<<"StaticSprite"<<staticSpriteNr;
 					spriteObj->objName = oss.str();
@@ -713,10 +822,10 @@ void Game::SetUpEditorMode()
 				else
 				{
 					animatedSpriteNr++;
-					Object2D* spriteObj = new Object2D(resources,_strdup(name.c_str()),player->GetCameraView(),sizeX,sizeY,xRows,yRows);
+					Object2D* spriteObj = new Object2D(resources,_strdup(name.c_str()),GetCameraView(),sizeX,sizeY,xRows,yRows);
 					spriteObj->handleWindow = handleWindow;
 					std::ostringstream oss;
-					oss<<"AnimatedSprite"<<animatedSpriteNr;
+					oss << "AnimatedSprite" << animatedSpriteNr;
 					spriteObj->objName = oss.str();
 					obj.obj2D = spriteObj;
 					spriteObj->tag = tag;
@@ -791,8 +900,8 @@ void Game::LoadLevel()
 			{
 				char* mName = _strdup(name.c_str());
 				Object3DData data = CreateObject3DData(mName,D3DXVECTOR3(posx,posy,posz),D3DXVECTOR3(scalex,scaley,scalez),D3DXVECTOR3(rotx,roty,rotz));
-				SPEEngine::RigidData pData = CreatePhysicsData(doDraw,isStatic,1,1,SPEVector(posx,posy,posz),SPEVector(scalex,scaley,scalez),SPEVector(0,0,0),SPEVector(0,0,0));
-				Create3DObject(hasPhysics,&data,&pData);
+				//SPEEngine::RigidData pData = CreatePhysicsData(doDraw,isStatic,1,1,SPEVector(posx,posy,posz),SPEVector(scalex,scaley,scalez),SPEVector(0,0,0),SPEVector(0,0,0));
+				Create3DObject(hasPhysics,&data);
 				if(!hasPhysics)
 				{
 					Object3D* obj = modelObjs.at(modelObjs.size()-1);
@@ -805,7 +914,7 @@ void Game::LoadLevel()
 				Object2D* obj;
 				if(XAnimRows == 0 && YAnimRows == 0)
 				{
-					CreateStatic2DObject(hasPhysics,&CreateObject2DData(_strdup(name.c_str()),false,D3DXVECTOR3(posx,posy,posz),D3DXVECTOR3(scalex,scaley,1),D3DXVECTOR2(0,0),D3DXVECTOR2(0,0)),&CreatePhysicsData(doDraw,isStatic,1,1,SPEVector(posx,posy,posz),SPEVector(hitBoxX,hitBoxY,hitBoxZ),SPEVector(0,0,0),SPEVector(0,0,0)));
+					CreateStatic2DObject(hasPhysics,&CreateObject2DData(_strdup(name.c_str()),false,D3DXVECTOR3(posx,posy,posz),D3DXVECTOR3(scalex,scaley,1),D3DXVECTOR2(0,0),D3DXVECTOR2(0,0)));//,&CreatePhysicsData(doDraw,isStatic,1,1,SPEVector(posx,posy,posz),SPEVector(hitBoxX,hitBoxY,hitBoxZ),SPEVector(0,0,0),SPEVector(0,0,0)));
 					obj = spriteObjs.at(spriteObjs.size()-1);
 					obj->handleWindow = handleWindow;
 					obj->objName = objName;
@@ -813,7 +922,8 @@ void Game::LoadLevel()
 				}
 				else
 				{
-					CreateStatic2DObject(hasPhysics,&CreateObject2DData(_strdup(name.c_str()),false,D3DXVECTOR3(posx,posy,posz),D3DXVECTOR3(scalex,scaley,1),D3DXVECTOR2(sizeX,sizeY),D3DXVECTOR2(XAnimRows,YAnimRows)),&CreatePhysicsData(doDraw,isStatic,1,1,SPEVector(posx,posy,posz),SPEVector(hitBoxX,hitBoxY,hitBoxZ),SPEVector(0,0,0),SPEVector(0,0,0)));
+					std::cout << "Animation PNG added" << std::endl;
+					CreateAnimated2DObject(hasPhysics,&CreateObject2DData(_strdup(name.c_str()),true,D3DXVECTOR3(posx,posy,posz),D3DXVECTOR3(scalex,scaley,1),D3DXVECTOR2(sizeX,sizeY),D3DXVECTOR2(XAnimRows,YAnimRows)));//,&CreatePhysicsData(doDraw,isStatic,1,1,SPEVector(posx,posy,posz),SPEVector(hitBoxX,hitBoxY,hitBoxZ),SPEVector(0,0,0),SPEVector(0,0,0)));
 					obj = spriteObjs.at(spriteObjs.size()-1);
 					obj->handleWindow = handleWindow;
 					obj->objName = objName;

@@ -8,6 +8,8 @@ DebugCube::DebugCube(D3DXVECTOR3 cubePosition,D3DXVECTOR3 cubeRotation, D3DXVECT
 	iBuffer = NULL;
 	resource = NULL;
 
+	D3DXMatrixIdentity(&eWorldMatrix);
+	hasExternalWorldMatrix = false;
 	p_Device = resources->GetDevice();
 	position = cubePosition;
 	rotation = cubeRotation;
@@ -24,11 +26,9 @@ DebugCube::DebugCube(D3DXVECTOR3 cubePosition,D3DXVECTOR3 cubeRotation, D3DXVECT
 	vBuffer= FillVertices();
 	iBuffer = FillIndices();
 }
-void DebugCube::ChangeTexture(char* path,boost::mutex* current)
+void DebugCube::ChangeTexture(char* path)
 {
-	current->lock();
 	texture = resource->GetTexture(path);
-	current->unlock();
 }
 void DebugCube::Release()
 {
@@ -52,18 +52,27 @@ void DebugCube::Draw()
 		D3DXMATRIX translationMatrix;
 		D3DXMATRIX RotScaleMatrix;
 
-		D3DXMatrixTranslation(&translationMatrix,position.x,position.y,position.z);
-		D3DXMatrixRotationYawPitchRoll(&rotationMatrix,rotation.x*ToRadian,rotation.y*ToRadian,rotation.z*ToRadian);
-		D3DXMatrixScaling(&scalingMatrix,scaling.x,scaling.y,scaling.z);
-
-		D3DXMatrixMultiply(&RotScaleMatrix,&scalingMatrix,&rotationMatrix);
-		D3DXMatrixMultiply(&worldMatrix,&RotScaleMatrix,&translationMatrix);
-
+		
 		p_Device->SetFVF(D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_TEX1);
 
 		result = p_Device->SetIndices(iBuffer);
 		result = p_Device->SetStreamSource(0, vBuffer, 0, sizeof(VertexPNT));
-		result = p_Device->SetTransform(D3DTS_WORLD, &worldMatrix);
+
+		if(!hasExternalWorldMatrix)
+		{
+			D3DXMatrixTranslation(&translationMatrix,position.x,position.y,position.z);
+			D3DXMatrixRotationYawPitchRoll(&rotationMatrix,rotation.x*ToRadian,rotation.y*ToRadian,rotation.z*ToRadian);
+			D3DXMatrixScaling(&scalingMatrix,scaling.x,scaling.y,scaling.z);
+
+			D3DXMatrixMultiply(&RotScaleMatrix,&scalingMatrix,&rotationMatrix);
+			D3DXMatrixMultiply(&worldMatrix,&RotScaleMatrix,&translationMatrix);
+			
+			result = p_Device->SetTransform(D3DTS_WORLD, &worldMatrix);
+		}
+		else
+		{
+			result = p_Device->SetTransform(D3DTS_WORLD, &eWorldMatrix);	
+		}
 		if(texture != NULL)
 		{
 			result = p_Device->SetTexture(0,texture);

@@ -24,6 +24,10 @@ public:
 	D3DXVECTOR3 scaling;
 	D3DXVECTOR3 LLFPos;
 	D3DXVECTOR3 URBPos;
+	
+	D3DXMATRIX eWorldMatrix;
+	bool hasExternalWorldMatrix;
+
 	LPDIRECT3DINDEXBUFFER9 iBuffer;
 	LPDIRECT3DVERTEXBUFFER9 vBuffer;
 	D3DXMATERIAL d3dxMaterial;
@@ -35,7 +39,7 @@ public:
 	bool doRender;
 	void Release();
 	void Draw();
-	void ChangeTexture(char* path,boost::mutex* current);
+	void ChangeTexture(char* path);
 	LPDIRECT3DINDEXBUFFER9 FillIndices();
 	LPDIRECT3DVERTEXBUFFER9 FillVertices();
 	HWND handleWindow;
@@ -45,18 +49,17 @@ public:
 
 	short cubeIndices[36];
 
-	inline bool SetPosRotScale(boost::mutex* current,D3DXVECTOR3 pos, D3DXVECTOR3 rot, D3DXVECTOR3 scale) //safe version
+	inline bool SetPosRotScale(D3DXVECTOR3 pos, D3DXVECTOR3 rot, D3DXVECTOR3 scale) //safe version
 	{	
-		current->lock();
+		
 		position = pos;
 		rotation = rot;
 		scaling = scale;
-		current->unlock();
+		
 		return true;
 	}
-	inline bool AddPositionAndRotation(boost::mutex* current,float x, float y, float z,float rx, float ry, float rz)
+	inline bool AddPositionAndRotation(float x, float y, float z,float rx, float ry, float rz)
 	{
-		current->lock();
 		position.x += x;
 		position.y += y;
 		position.z += z;
@@ -87,7 +90,7 @@ public:
 		{
 			rotation.z =360;
 		}
-		current->unlock();
+		
 		return true;
 	}
 };

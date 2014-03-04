@@ -37,7 +37,7 @@ void ThempX::SetDisplayMode(bool isWindowed,int sizeX, int sizeY, int renderSize
 	{
 		//WS_EX_TOPMOST | WS_POPUPGetDesktopResolution(dHorizontal, dVertical);
 
-		SetWindowPos(handleWindow,HWND_TOPMOST,0,0,sizeX,sizeY, NULL);
+		SetWindowPos(handleWindow,HWND_TOPMOST,0,0,dHorizontal,dVertical, SWP_NOZORDER | SWP_SHOWWINDOW);
 		
 		dx_PresParams.BackBufferHeight = renderSizeY;
 		dx_PresParams.BackBufferWidth = renderSizeX;
@@ -74,6 +74,8 @@ void ThempX::SetDisplayMode(bool isWindowed,int sizeX, int sizeY, int renderSize
 	Sleep(200);
 
 	CheckDevice();
+	resources->SetScreenResolution(renderSizeX,renderSizeY);
+	g->ReloadGUI();
 	
 }
 HWND ThempX::NewWindow(LPCTSTR windowName,int posX,int posY, int sizeX,int sizeY,bool isWindowed)
@@ -215,7 +217,6 @@ ThempX::ThempX(HINSTANCE hInstance,LPSTR lpCmdLine)
 		
 		if(data.applicationActive)
 		{
-			
 			if(data.lockCursor)
 			{
 				GetWindowInfo(handleWindow,&winInfo);
@@ -227,13 +228,15 @@ ThempX::ThempX(HINSTANCE hInstance,LPSTR lpCmdLine)
 			}
 			
 			FixedUpdate();
+			realframes++;
 			currentTicks = timeGetTime();
 			cTicks = currentTicks;
 			if(cTicks-oTicks > 1000 + ((cTicks-oTicks) % 1000))
 			{
-				realframes = frames*(cTicks-oTicks)/(cTicks-oTicks);
-				std::cout << realframes << std::endl;
+				std::cout << "FixedUpdate running at "<<realframes <<" times per second"<< std::endl;
+				std::cout << "FPS: " << frames << std::endl;
 				frames = 0;
+				realframes = 0;
 				oTicks = cTicks;
 			}
 			if(currentTicks > oldTicks+16)

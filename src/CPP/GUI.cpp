@@ -16,6 +16,12 @@ void GUI::Release()
 		guiObjs.at(i).iBuffer->Release();
 		guiObjs.at(i).vBuffer->Release();
 	}
+	guiObjs.clear();
+}
+void GUI::ReloadGUI()
+{
+	Release();
+	LoadGUI();
 }
 void GUI::LoadGUI()
 {
@@ -33,9 +39,10 @@ void GUI::LoadGUI()
 		xRows = 0;
 		yRows = 0;
 		bool hasAnimation,relativeEndX,relativeEndY;
+		std::string startAnimation;
 		while(getline(fin,str))
 		{
-			fin >> path >> posX >> posY >> sizeX >> sizeY >> xRows >> yRows >> hasAnimation >> relativeEndX >> relativeEndY;
+			fin >> path >> posX >> posY >> sizeX >> sizeY >> xRows >> yRows >> hasAnimation >> relativeEndX >> relativeEndY >> startAnimation;
 			Rectangle rect;
 			rect.Nullify();
 			if(!relativeEndX)
@@ -58,9 +65,21 @@ void GUI::LoadGUI()
 			}
 			rect.w = sizeX;
 			rect.h = sizeY;
+
+			
+			rect.x = resources->GetWindowWidth() * posX / 100;
+			rect.y = resources->GetWindowHeight() * posY / 100;
+			rect.w = resources->GetWindowWidth() * sizeX / 100;
+			rect.h = resources->GetWindowHeight() * sizeY / 100;
+
 			if(hasAnimation)
 			{
 				CreateGUIObject(rect,_strdup(path.c_str()),xRows,yRows);
+				if(std::strcmp(_strdup(startAnimation.c_str()),"NULL") != 0)
+				{
+					std::cout << "start animation was : " << startAnimation << std::endl;
+					PlayAnimation(&guiObjs.at(guiObjs.size()-1),startAnimation);
+				}
 			}
 			else
 			{
@@ -98,11 +117,10 @@ bool GUI::CreateGUIObject(Rectangle rect,char* textureName, int xRows,int yRows)
 	GText.animationSpeed = 0.25f;
 	GText.xRows = xRows;
 	GText.yRows = yRows;
+	GText.currentAnim = -1;
 
 	LoadAnimation(&GText);
 	guiObjs.push_back(GText);
-	
-	PlayAnimation(&GText,"Walk");
 	return true;
 }
 void GUI::Render()
@@ -122,7 +140,30 @@ void GUI::Render()
 		result = p_Device->SetTransform(D3DTS_WORLD,&world);
 		result = p_Device->SetTexture(0,guiObjs.at(i).texture);
 
-		result = p_Device->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP,0,0,4,0,2);
+		GUITexture* g =  &guiObjs.at(i);
+		
+		if(g->currentAnim >= 0 )
+		{
+			Animation* anim = &g->animations.at(g->currentAnim);
+			if(g->hasAnimation && g->currentAnim != -1 && anim->isFinished == false)
+			{
+				result = p_Device->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP,0,0,4,0,2);
+			}
+			else if(g->hasAnimation && anim->loop == false && anim->isFinished)
+			{
+				result = p_Device->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP,0,0,4,0,2);
+				g->timeSinceChange += 0.016f;
+				if(g->timeSinceChange > anim->AnimationSpeed)
+				{
+					g->timeSinceChange = 0;
+					g->currentAnim = -1;
+				}
+			}
+		}
+		if(!g->hasAnimation)
+		{
+			result = p_Device->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP,0,0,4,0,2);
+		}
 		switch(result)
 		{
 			case D3DERR_INVALIDCALL: std::cout << "Invalid Call" << std::endl;
@@ -134,26 +175,29 @@ void GUI::Render()
 			case D3DERR_TOOMANYOPERATIONS : std::cout << "too many operations" << std::endl; 
 				break;
 		}
-		//std::cout << "draw gui" << std::endl;
 	}
 }
 void GUI::Update(float deltaTime)
 {
 	for(unsigned int i = 0; i < guiObjs.size();i++)
 	{
-		if(guiObjs.at(i).hasAnimation)
+		GUITexture* t = &guiObjs.at(i);
+		if(t->currentAnim != -1)
 		{
-			Animate(&guiObjs.at(i),deltaTime,guiObjs.at(i).animationSpeed);
+			Animation* a = &t->animations.at(t->currentAnim);
+			if(t->hasAnimation && !a->isFinished)
+			{
+				Animate(&guiObjs.at(i),deltaTime,guiObjs.at(i).animationSpeed);
+			}
+			if(t->hasAnimation && a->isFinished && a->loop)
+			{
+				a->isFinished = false;
+			}
 		}
 	}
 }
-void GUI::Animate(GUITexture* obj , float dTime ,float animSpeed)
-{		
-	obj->timeSinceChange += dTime;
-	if(obj->timeSinceChange > animSpeed)
-	{
-		Animation* currentAnim = &obj->animations.at(obj->currentAnim);
-		obj->timeSinceChange = 0;
+void GUI::SetUVValues(GUITexture* obj)
+{
 		HRESULT result;
 		BYTE* ptr;
 		result = obj->vBuffer->Lock(0,sizeof(Vertex2D)*4,(LPVOID*)&ptr,NULL);
@@ -181,14 +225,6 @@ void GUI::Animate(GUITexture* obj , float dTime ,float animSpeed)
 			case 0:
 				vPtr->texC.x = stepSizeX * obj->currentXAnimValue;
 				vPtr->texC.y = stepSizeY * obj->currentYAnimValue;
-				if(vPtr->texC.x	> 1 - stepSizeX*(obj->xRows-(currentAnim->EndPosition.x-currentAnim->StartPosition.x)))
-				{
-					vPtr->texC.x = 0;
-				}
-				if(vPtr->texC.y	> 1 - stepSizeY*(obj->yRows-(currentAnim->EndPosition.y-currentAnim->StartPosition.y)))
-				{
-					vPtr->texC.y = 0;
-				}
 				UVs.x = vPtr->texC.x;
 				UVs.y = vPtr->texC.y;
 			break;
@@ -211,23 +247,98 @@ void GUI::Animate(GUITexture* obj , float dTime ,float animSpeed)
 				UVs3.y = vPtr->texC.y;
 			break;
 			}
-
-			
 			// increment pointer to next vertex
 			ptr+=sizeof(Vertex2D);
 		}
+		// unlock the vertex buffer
+		result = obj->vBuffer->Unlock();
+		if (result != D3D_OK)
+		{
+			MessageBox(resources->GetWindowHandle(),"Failed to unlock vertexBuffer of quad","Animate()",MB_OK);
+		}
+}
+void GUI::Animate(GUITexture* obj , float dTime ,float animSpeed)
+{		
+	obj->timeSinceChange += dTime;
+	if(obj->timeSinceChange > obj->animations.at(obj->currentAnim).AnimationSpeed)
+	{
+		Animation* currentAnim = &obj->animations.at(obj->currentAnim);
+		obj->timeSinceChange = 0;
+		HRESULT result;
+		BYTE* ptr;
+		result = obj->vBuffer->Lock(0,sizeof(Vertex2D)*4,(LPVOID*)&ptr,NULL);
+		if(result != D3D_OK)
+		{
+			MessageBox(resources->GetWindowHandle(),"Failed to lock vertexBuffer of quad","Animate()",MB_OK);
+		}
+		// loop through the vertices
+		float toAdd = 0;
+		float stepSizeX = 0;
+		float stepSizeY = 0;
+		D3DXVECTOR2 UVs;
+		D3DXVECTOR2 UVs1;
+		D3DXVECTOR2 UVs2;
+		D3DXVECTOR2 UVs3;
+		stepSizeX = (1.0f / obj->xRows);
+		stepSizeY = (1.0f / obj->yRows);
+
+		for (DWORD i=0;i<4;i++) // hardcoded 4 because 4 vertices
+		{
+			Vertex2D* vPtr=(Vertex2D*) ptr;
+			switch(i)
+			{
+			case 0:
+				vPtr->texC.x = stepSizeX * obj->currentXAnimValue;
+				vPtr->texC.y = stepSizeY * obj->currentYAnimValue;
+				
+				UVs.x = vPtr->texC.x;
+				UVs.y = vPtr->texC.y;
+			break;
+			case 1:
+				vPtr->texC.x = UVs.x+stepSizeX;
+				vPtr->texC.y = UVs.y;
+				UVs1.x = vPtr->texC.x;
+				UVs1.y = vPtr->texC.y;
+			break;
+			case 2:
+				vPtr->texC.x = UVs.x;
+				vPtr->texC.y = UVs.y + stepSizeY;
+				UVs2.x = vPtr->texC.x;
+				UVs2.y = vPtr->texC.y;
+			break;
+			case 3:
+				vPtr->texC.x = UVs.x + stepSizeX;
+				vPtr->texC.y = UVs.y + stepSizeY;
+				UVs3.x = vPtr->texC.x;
+				UVs3.y = vPtr->texC.y;
+			break;
+			}
+			ptr+=sizeof(Vertex2D);
+		}
+
+		// unlock the vertex buffer
+		result = obj->vBuffer->Unlock();
+
 		obj->currentXAnimValue++;
 		if(obj->currentXAnimValue > currentAnim->EndPosition.x)
 		{
 			obj->currentYAnimValue++;
-			obj->currentXAnimValue = 0;
+			obj->currentXAnimValue = currentAnim->StartPosition.x;
+			if(obj->currentYAnimValue > currentAnim->EndPosition.y)
+			{
+				if(currentAnim->loop)
+				{
+					obj->currentYAnimValue = currentAnim->StartPosition.y;
+				}
+				else
+				{
+					obj->currentXAnimValue = currentAnim->EndPosition.x;
+					obj->currentYAnimValue = currentAnim->EndPosition.y;
+				}
+				
+				currentAnim->isFinished = true;
+			}
 		}
-		if(obj->currentYAnimValue > currentAnim->EndPosition.y)
-		{
-			obj->currentYAnimValue = 0;
-		}
-		// unlock the vertex buffer
-		result = obj->vBuffer->Unlock();
 		if (result != D3D_OK)
 		{
 			MessageBox(resources->GetWindowHandle(),"Failed to unlock vertexBuffer of quad","Animate()",MB_OK);
@@ -252,7 +363,8 @@ void GUI::LoadAnimation(GUITexture* obj)
 	{
 		obj->hasAnimation = true;
 		std::string str;
-		float startPosX = 0,startPosY = 0,endPosX = 0,endPosY = 0;
+		float startPosX = 0,startPosY = 0,endPosX = 0,endPosY = 0,animSpeed = 0;
+		int loop = 0;
 		while(getline(fin, str))
 		{
 			Animation anim;
@@ -260,7 +372,7 @@ void GUI::LoadAnimation(GUITexture* obj)
 			std::string name;
 
 
-			fin >> name >> startPosX >> endPosX >> startPosY >> endPosY;
+			fin >> name >> startPosX >> endPosX >> startPosY >> endPosY >> animSpeed >> loop;
 			//std::cout << endPosX << " 1 "<< endPosY << std::endl;
 			anim.AnimationName = name;
 			anim.StartPosition = D3DXVECTOR2(0,0);
@@ -269,15 +381,12 @@ void GUI::LoadAnimation(GUITexture* obj)
 			anim.StartPosition.y = startPosY;
 			anim.EndPosition.x = endPosX;
 			anim.EndPosition.y = endPosY;
-			obj->currentAnim = NULL;
+			anim.AnimationSpeed = animSpeed;
+			(loop == 1 ? anim.loop = true : anim.loop = false);
 			obj->animations.push_back(anim);
 		}
 	}
 	fin.close();
-	if(obj->hasAnimation)
-	{
-		PlayAnimation(obj,"Walk");
-	}
 }
 bool GUI::PlayAnimation(GUITexture* obj,std::string name)
 {
@@ -285,8 +394,15 @@ bool GUI::PlayAnimation(GUITexture* obj,std::string name)
 	{
 		if(obj->animations.at(i).AnimationName == name)
 		{
+			std::cout << "Animation executed" << std::endl;
+			obj->currentXAnimValue = obj->animations.at(i).StartPosition.x;
+			obj->currentYAnimValue = obj->animations.at(i).StartPosition.y;
+			obj->animationSpeed = obj->animations.at(i).AnimationSpeed;
 			obj->currentlyPlayingAnimation = name;
 			obj->currentAnim = i;
+			obj->animations.at(i).isFinished = false;
+			obj->timeSinceChange = obj->animationSpeed/2;
+			SetUVValues(obj);
 			return true;			   
 		}
 	}
@@ -384,7 +500,6 @@ LPDIRECT3DVERTEXBUFFER9 GUI::CreateQuadVBuffer(GUI::GUITexture* gui)
 		return p_dx_VertexBuffer;
 	}
 }
-
 LPDIRECT3DINDEXBUFFER9 GUI::CreateQuadIndices() //zelfde als FillVertices, zie uitleg daar
 {
     short s_Indices[4];
