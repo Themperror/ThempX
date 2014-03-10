@@ -61,11 +61,23 @@ PhysXEngine::PhysXEngine(ResourceManager* res)
 	//actor.attachShape(shape);
 	profiler = &physx::PxProfileZoneManager::createProfileZoneManager(mFoundation);
 	//if(!mProfileZoneManager)
-	CreateCube();
+	//CreateCube();
 	//CreateTriangleMesh()
 }
 void PhysXEngine::ReleaseAll()
 {
+	for(unsigned int i = 0; i < statics.size(); i++)
+	{
+		statics.at(i)->release();
+	}
+	for(unsigned int i = 0; i < dynamics.size(); i++)
+	{
+		dynamics.at(i)->release();
+	}
+	for(unsigned int i = 0; i < visualCubes.size(); i++)
+	{
+		visualCubes.at(i)->Release();
+	}
 	profiler->release();
 	gScene->release();
 	mFoundation->release();
@@ -99,7 +111,7 @@ void PhysXEngine::CreateCube()
 		PxVec3 cubeDims(0.5,0.5,0.5);
 		PxBoxGeometry cubeGeometry(cubeDims);
 		cubeTransform.p  = PxVec3(std::sin((float)i),9+ 3*i,std::sin((float)i));
-
+		
 		PxRigidDynamic *cubeActor = PxCreateDynamic(*gPhysicsSDK, cubeTransform, cubeGeometry, *defaultMaterial, cubeDensity);
 
 		cubeActor->setAngularDamping(0.2f);

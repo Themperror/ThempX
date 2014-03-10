@@ -19,21 +19,6 @@ Game::Game(Game::DataStruct* b,HWND windowHandle,ResourceManager* resMan,InputHa
 	//particles.at(0)->SetMovement(D3DXVECTOR3(0,0,0),D3DXVECTOR3(0,3,0));
 	//particles.at(0)->Release();
 }
-/*
-SPEEngine::RigidData Game::CreatePhysicsData(bool draw,bool isStatic, float mass, float density, SPEVector pos,SPEVector scale, SPEVector vel, SPEVector aVel)
-{
-	SPEEngine::RigidData p;
-	p.Nullify();
-	p.doRender = draw;
-	p.isStatic = isStatic;
-	p.scaleModel = scale;
-	p.position = pos;
-	p.density = density;
-	p.mass = mass;
-	p.velocity = vel;
-	p.angularVelocity = aVel;
-	return p;
-}*/
 Game::Object2DData Game::CreateObject2DData(char* filePath,bool hasAnim, D3DXVECTOR3 pos,D3DXVECTOR3 scale,D3DXVECTOR2 tSize, D3DXVECTOR2 rows)
 {
 	Game::Object2DData d;
@@ -62,7 +47,6 @@ void Game::Initialize()
 {
 	currentEditorObjIndex = 0;
 	qualityLevel = 0;
-	//ResourceManager::TextData* t = resources->GetText(0);
 	
 	wireframe = false;
 	scaleMultiplier = 3;
@@ -70,7 +54,7 @@ void Game::Initialize()
 	soundHandler->LoadWaveFile("test.wav","test",11025,8,1);
 	
 	keys.resize(256,0);
-	resources->CreateTextObject("Arial","\n    Health: 100 \n\n    Armor: 100",12, 0, 600-128, data->windowSizeX, data->windowSizeY, 0xFFFF0000);
+	resources->CreateTextObject("Arial","\n    THIS IS TESTING TEXT",12, 0, 0, 30, 20, 0xFFFF0000);
 }
 void Game::Update(double deltaTime)
 {
@@ -96,14 +80,15 @@ void Game::Update(double deltaTime)
 		else IFCOL
 		{
 			currentEditorObj->col->position = AddVector3(&cam->GetLookAt(),&MultiplyVector3(&cam->GetLookDir(),15));
-			//currentEditorObj->col->HardUpdateCollisionGeo(&collisionLock);
 		}
 	}
-	
 	inputHandler->Update();
+	if(data->changeDisplay)
+	{
+		return;
+	}
 	DoInput(deltaTimeF);
 	cam->Update(deltaTimeF,inputHandler->GetMousePosX(),inputHandler->GetMousePosY());
-
 	physx::PxReal elapsed = 1.0f/60.0f;
 	physics->gScene->simulate(elapsed);
 	while(!physics->gScene->fetchResults())
@@ -115,20 +100,12 @@ void Game::Update(double deltaTime)
 void Game::FixedUpdate(double deltaTime)
 {
 	float deltaTimeF = (float)deltaTime;
-	if(deltaTimeF < 0 )
-	{
-		std::cout << "deltatime wasn't positive" << std::endl;
-	}
-	
-	
-
-
-	
 }
 void Game::Render()
 {
 	p_Device->SetSamplerState(0,D3DSAMP_ADDRESSU,D3DTADDRESS_WRAP);
 	p_Device->SetSamplerState(0,D3DSAMP_ADDRESSV,D3DTADDRESS_WRAP);
+
 	for(unsigned int i = 0; i < modelObjs.size();i++)
 	{
 		modelObjs.at(i)->DrawModel();	
@@ -137,8 +114,6 @@ void Game::Render()
 	{
 		debugCubes.at(i)->Draw();
 	}
-	//physics->OnFrameRender(resources->GetDevice());
-
 	p_Device->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_CLAMP);
 	p_Device->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP);
 	for(unsigned int i = 0; i < spriteObjs.size();i++)
@@ -209,12 +184,16 @@ void Game::DoInput(float dT)
 	{
 		data->changeDisplay = true;
 		data->windowed = !data->windowed;
-		data->renderSizeX = 800;
-		data->renderSizeY = 600;
 		if(data->windowed)
 		{
 			data->windowSizeX = 800;
 			data->windowSizeY = 600;
+			data->renderSizeX = 800;
+			data->renderSizeY = 600;
+		}
+		else
+		{
+			data->devmodeIndex = resources->GetDevModeWithHeight(768);
 		}
 		//p_Device->EvictManagedResources();
 		//resources->LostDeviceAllText();

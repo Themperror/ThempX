@@ -187,15 +187,15 @@ LPDIRECT3DINDEXBUFFER9 DebugCube::FillIndices()
 	switch(result)
 	{
 	case D3DERR_INVALIDCALL: 
-		MessageBox(handleWindow,"Invalid Call while creating IndexBuffer","FillIndices()",MB_OK);
+		MessageBox(handleWindow,"Invalid Call while creating IndexBuffer","DEBUGCUBE FillIndices()",MB_OK);
 		return NULL;
 		break;
 	case D3DERR_OUTOFVIDEOMEMORY:
-		MessageBox(handleWindow,"Out of Video Memory while creating IndexBuffer","FillIndices()",MB_OK);
+		MessageBox(handleWindow,"Out of Video Memory while creating IndexBuffer","DEBUGCUBE FillIndices()",MB_OK);
 		return NULL;
 		break;
 	case E_OUTOFMEMORY:
-		MessageBox(handleWindow,"Out of Memory while creating IndexBuffer","FillIndices()",MB_OK);
+		MessageBox(handleWindow,"Out of Memory while creating IndexBuffer","DEBUGCUBE FillIndices()",MB_OK);
 		return NULL;
 		break;
 	}
@@ -204,7 +204,7 @@ LPDIRECT3DINDEXBUFFER9 DebugCube::FillIndices()
 	switch(result)
 	{
 	case D3DERR_INVALIDCALL: 
-		MessageBox(handleWindow,"Error trying to lock","FillIndices()",MB_OK);
+		MessageBox(handleWindow,"Error trying to lock","DEBUGCUBE FillIndices()",MB_OK);
 		return NULL;
 		break;
 	}

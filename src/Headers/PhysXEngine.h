@@ -2,7 +2,6 @@
 #define _PHYSXENGINE_H_
 
 #include <PxPhysicsAPI.h>
-#include <Pxc.h>
 #include <pvd\PxVisualDebugger.h>
 #include "ResourceManager.h"
 #include "DebugCube.h"

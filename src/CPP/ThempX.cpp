@@ -9,11 +9,14 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 	}
 	return DefWindowProc(hWnd, message, wParam, lParam);
 }
-void ThempX::SetDisplayMode(bool isWindowed,int sizeX, int sizeY, int renderSizeX,int renderSizeY)
+
+void ThempX::SetDisplayModeWindowed(int sizeX, int sizeY, int renderSizeX,int renderSizeY)
 {
-	std::cout << "settings display mode to " << sizeX << "x" << sizeY << " with a rendering size of " << renderSizeX << "x" << renderSizeY << std::endl;
+	
+	data.applicationActive = false;
+
 	D3DPRESENT_PARAMETERS dx_PresParams;
-	data.windowed = isWindowed;
+	data.windowed = true;
 	oldWSizeX = wSizeX;
 	oldWSizeY = wSizeY;
 	wSizeX = sizeX;
@@ -24,27 +27,13 @@ void ThempX::SetDisplayMode(bool isWindowed,int sizeX, int sizeY, int renderSize
 	int dVertical = 0;
 	GetDesktopResolution(dHorizontal, dVertical);
 
-	if(isWindowed)
-	{
-		SetWindowPos(handleWindow,HWND_TOPMOST,dHorizontal/2-(sizeX/2),dVertical/2-(sizeY/2),sizeX,sizeY, NULL);
+	SetWindowPos(handleWindow,HWND_TOPMOST,dHorizontal/2-(sizeX/2),dVertical/2-(sizeY/2),sizeX,sizeY, NULL);
 
-		dx_PresParams.Windowed = TRUE;
-		dx_PresParams.BackBufferFormat = D3DFMT_A8R8G8B8;
-		dx_PresParams.BackBufferHeight = renderSizeY;
-		dx_PresParams.BackBufferWidth = renderSizeX;
-	}
-	else
-	{
-		//WS_EX_TOPMOST | WS_POPUPGetDesktopResolution(dHorizontal, dVertical);
+	dx_PresParams.Windowed = TRUE;
+	dx_PresParams.BackBufferFormat = D3DFMT_A8R8G8B8;
+	dx_PresParams.BackBufferHeight = renderSizeY;
+	dx_PresParams.BackBufferWidth = renderSizeX;
 
-		SetWindowPos(handleWindow,HWND_TOPMOST,0,0,dHorizontal,dVertical, SWP_NOZORDER | SWP_SHOWWINDOW);
-		
-		dx_PresParams.BackBufferHeight = renderSizeY;
-		dx_PresParams.BackBufferWidth = renderSizeX;
-		dx_PresParams.Windowed = FALSE;
-		dx_PresParams.FullScreen_RefreshRateInHz = 60;
-		dx_PresParams.BackBufferFormat = D3DFMT_A8R8G8B8;
-	}
 	dx_PresParams.hDeviceWindow = handleWindow;
 	dx_PresParams.SwapEffect = D3DSWAPEFFECT_DISCARD;
 	dx_PresParams.BackBufferCount = 1;
@@ -71,12 +60,114 @@ void ThempX::SetDisplayMode(bool isWindowed,int sizeX, int sizeY, int renderSize
 	p_Device->SetRenderState(D3DRS_SRCBLEND,D3DBLEND_ONE);
 	p_Device->SetRenderState(D3DRS_DESTBLEND,D3DBLEND_ZERO);
 	
-	Sleep(200);
 
-	CheckDevice();
 	resources->SetScreenResolution(renderSizeX,renderSizeY);
+	data.d3dxpresentationparams = dx_PresParams;
 	g->ReloadGUI();
+}
+void ThempX::SetDisplayModeFullScreen(int devmodeIndex)
+{
+	data.applicationActive = false;
+	DEVMODE devmode = resources->GetDevMode(devmodeIndex);
 	
+	std::cout << "settings fullscreen display mode to " << devmode.dmPelsWidth << "x" << devmode.dmPelsHeight << " with a rendering size of " << devmode.dmPelsWidth << "x" << devmode.dmPelsHeight << std::endl;
+
+	D3DPRESENT_PARAMETERS dx_PresParams;
+	data.windowed = false;
+	oldWSizeX = wSizeX;
+	oldWSizeY = wSizeY;
+	wSizeX = devmode.dmPelsWidth;
+	wSizeY = devmode.dmPelsHeight;
+
+	ZeroMemory( &dx_PresParams, sizeof(dx_PresParams)); 
+	
+	int dHorizontal = 0;
+	int dVertical = 0;
+	
+	GetDesktopResolution(dHorizontal, dVertical);
+	//WS_EX_TOPMOST | WS_POPUPGetDesktopResolution(dHorizontal, dVertical);
+	/*if(ChangeDisplaySettings(&resources->GetDevMode(devmodeIndex),CDS_FULLSCREEN | CDS_TEST) != DISP_CHANGE_SUCCESSFUL)
+	{
+		std::cout << "Changing display mode failed" << std::endl;
+		return;
+	}
+	ChangeDisplaySettings(&resources->GetDevMode(devmodeIndex),CDS_FULLSCREEN);
+	*/
+	Sleep(200);
+	//SetWindowLong(handleWindow,0,WS_EX_TOPMOST | WS_POPUP);
+	SetWindowPos(handleWindow,HWND_TOPMOST,0,0, wSizeX,wSizeY, SWP_NOZORDER | SWP_SHOWWINDOW);
+
+	dx_PresParams.BackBufferHeight = wSizeY;
+	dx_PresParams.BackBufferWidth = wSizeX;
+	dx_PresParams.Windowed = FALSE;
+	dx_PresParams.FullScreen_RefreshRateInHz = devmode.dmDisplayFrequency;
+	dx_PresParams.BackBufferFormat = D3DFMT_A8R8G8B8;
+	
+	dx_PresParams.hDeviceWindow = handleWindow;
+	dx_PresParams.SwapEffect = D3DSWAPEFFECT_DISCARD;
+	dx_PresParams.BackBufferCount = 1;
+	dx_PresParams.MultiSampleQuality = 0;
+	dx_PresParams.MultiSampleType = D3DMULTISAMPLE_NONE;
+	dx_PresParams.EnableAutoDepthStencil = TRUE;
+	dx_PresParams.AutoDepthStencilFormat = D3DFMT_D16;
+	
+	p_Device->Reset(&dx_PresParams);
+	p_Device->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE); //double sided plane
+	//p_Device->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW); //single sided plane
+    p_Device->SetRenderState(D3DRS_LIGHTING,false);
+	p_Device->SetRenderState(D3DRS_ZENABLE, true);
+	p_Device->SetRenderState(D3DRS_FILLMODE,D3DFILL_SOLID);
+	//p_Device->SetRenderState(D3DRS_FILLMODE,D3DFILL_WIREFRAME);
+	p_Device->SetSamplerState(0,D3DSAMP_MAXANISOTROPY,1);
+	p_Device->SetSamplerState(0,D3DSAMP_MAGFILTER,D3DTEXF_POINT);
+	p_Device->SetSamplerState(0,D3DSAMP_MINFILTER,D3DTEXF_POINT);
+	p_Device->SetSamplerState(0,D3DSAMP_MIPFILTER,D3DTEXF_POINT);
+	p_Device->SetRenderState(D3DRS_ALPHAREF, (DWORD)0x0000008f);
+	p_Device->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE); 
+	p_Device->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL);
+	p_Device->SetRenderState(D3DRS_SRCBLEND,D3DBLEND_ONE);
+	p_Device->SetRenderState(D3DRS_DESTBLEND,D3DBLEND_ZERO);
+	
+	Sleep(500);
+	data.d3dxpresentationparams = dx_PresParams;
+	resources->SetScreenResolution(wSizeX,wSizeY);	
+	
+	g->ReloadGUI();
+}
+void ThempX::GetListofDisplayModes()
+{
+	DISPLAY_DEVICE device;
+	device.cb = sizeof(DISPLAY_DEVICE);
+	if(EnumDisplayDevices(NULL,0,&device,EDD_GET_DEVICE_INTERFACE_NAME))
+	{
+		DEVMODE mode;
+		mode.dmSize = sizeof(DEVMODE);
+		int i = 0;
+		while(EnumDisplaySettings(device.DeviceName,i,&mode))
+		{
+			i++;
+			if(mode.dmBitsPerPel == 32)
+			{
+				resources->PushDevmode(mode);
+			}
+		}
+		/*D3DDISPLAYMODE mode;
+		std::cout << "capable screen modes are: "<<std::endl;
+		IDirect3D9* dev;
+		p_Device->GetDirect3D(&dev);
+		for(unsigned int i =0;i < dev->GetAdapterModeCount(0,D3DFMT_X8R8G8B8);i++)
+		{
+			dev->EnumAdapterModes(0,D3DFMT_X8R8G8B8, i,&mode);
+			std::cout<<mode.Width << "x" << mode.Height << std::endl;
+		}*/
+	
+	}
+	else
+	{
+		MessageBox(handleWindow,"No display devices found","GetListofDisplayModes",MB_OK);
+		data.loop = false;
+		return;
+	}
 }
 HWND ThempX::NewWindow(LPCTSTR windowName,int posX,int posY, int sizeX,int sizeY,bool isWindowed)
 {
@@ -150,14 +241,15 @@ ThempX::ThempX(HINSTANCE hInstance,LPSTR lpCmdLine)
 	
 	//Render loading screen
 	CreateLoadingScreen();
-	
 	//SetDisplayMode(false,800,600);
-
 	//instantiate all necessities
 	resources = new ResourceManager(p_Device,handleWindow);
 	resources->SetScreenResolution((float)wSizeX,(float)wSizeY);
 	inputHandler = new InputHandler(handleWindow);
 	soundHandler = new SoundHandler(handleWindow,44100,16,2);
+	
+	GetListofDisplayModes();
+	//SetDisplayMode(false,320,200,320,200);
 
 	WINDOWINFO winInfo;
 	ZeroMemory(&data,sizeof(data));
@@ -170,7 +262,12 @@ ThempX::ThempX(HINSTANCE hInstance,LPSTR lpCmdLine)
 	data.windowSizeY = wSizeY;
 	// Game loop starts here after everything is initialized
 
+	std::cout << "Initialized OK, starting game..." << std::endl;
+
 	g = new Game(&data,handleWindow,resources,inputHandler,soundHandler,p_Device);
+
+	
+	std::cout << "Game created, now starting game loop..." << std::endl;
 
 	MSG msg;
 
@@ -207,12 +304,24 @@ ThempX::ThempX(HINSTANCE hInstance,LPSTR lpCmdLine)
 		if(data.changeDisplay) //must stay above the testcooperative function of p_Device
 		{
 			data.changeDisplay = false;
-			SetDisplayMode(data.windowed,data.windowSizeX,data.windowSizeY,data.renderSizeX,data.renderSizeY);
+			if(data.windowed == true)
+			{
+				SetDisplayModeWindowed(data.windowSizeX,data.windowSizeY,data.renderSizeX,data.renderSizeY);
+			}
+			else
+			{
+				SetDisplayModeFullScreen(data.devmodeIndex);
+			}
 		}
 		if(p_Device->TestCooperativeLevel() != D3D_OK)
 		{
 			CheckDevice();
 			data.applicationActive = false;
+		}
+		else
+		{
+			data.applicationActive = true;
+			data.lockCursor = true;
 		}
 		
 		if(data.applicationActive)
@@ -242,8 +351,11 @@ ThempX::ThempX(HINSTANCE hInstance,LPSTR lpCmdLine)
 			if(currentTicks > oldTicks+16)
 			{
 				frames++;
-				Update();
-				DrawScene();
+				if(p_Device->TestCooperativeLevel() == D3D_OK)
+				{
+					Update();
+					DrawScene();
+				}
 				oldTicks = currentTicks;
 			}
 		}
@@ -276,23 +388,35 @@ void ThempX::CheckDevice()
 	{
 		data.lockCursor = false;
 		resources->LostDeviceAllText();
-		SetDisplayMode(data.windowed,wSizeX,wSizeY,data.renderSizeX,data.renderSizeY);
-		result = p_Device->TestCooperativeLevel();
-		if(result == D3DERR_DEVICELOST)
-			CheckDevice();
-		if(result == D3DERR_DEVICENOTRESET)
-			CheckDevice();
-		if(result == D3DERR_DRIVERINTERNALERROR)
-		{
-			data.applicationActive = false;
-			data.loop = false;
-			return;
-		}
+		return;
 	}
 	if(result == D3DERR_DEVICENOTRESET)
 	{
 		resources->LostDeviceAllText();
-		SetDisplayMode(data.windowed,wSizeX,wSizeY,data.renderSizeX,data.renderSizeY);
+		while(result != D3D_OK)
+		{
+			result = p_Device->Reset(&data.d3dxpresentationparams);
+			
+			p_Device->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE); //double sided plane
+			//p_Device->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW); //single sided plane
+			p_Device->SetRenderState(D3DRS_LIGHTING,false);
+			p_Device->SetRenderState(D3DRS_ZENABLE, true);
+			p_Device->SetRenderState(D3DRS_FILLMODE,D3DFILL_SOLID);
+			//p_Device->SetRenderState(D3DRS_FILLMODE,D3DFILL_WIREFRAME);
+			p_Device->SetSamplerState(0,D3DSAMP_MAXANISOTROPY,1);
+			p_Device->SetSamplerState(0,D3DSAMP_MAGFILTER,D3DTEXF_POINT);
+			p_Device->SetSamplerState(0,D3DSAMP_MINFILTER,D3DTEXF_POINT);
+			p_Device->SetSamplerState(0,D3DSAMP_MIPFILTER,D3DTEXF_POINT);
+			p_Device->SetRenderState(D3DRS_ALPHAREF, (DWORD)0x0000008f);
+			p_Device->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE); 
+			p_Device->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL);
+			p_Device->SetRenderState(D3DRS_SRCBLEND,D3DBLEND_ONE);
+			p_Device->SetRenderState(D3DRS_DESTBLEND,D3DBLEND_ZERO);
+
+			Sleep(200);
+		}
+	//	CheckDevice();
+		return;
 	}
 	if(result == D3DERR_DRIVERINTERNALERROR)
 	{
@@ -300,16 +424,19 @@ void ThempX::CheckDevice()
 		data.loop = false;
 		return;
 	}
-	WINDOWINFO winInfo;
-	GetWindowInfo(handleWindow,&winInfo);
-	int windowSizeX = winInfo.rcWindow.right-winInfo.rcWindow.left;
-	int windowSizeY = winInfo.rcWindow.bottom-winInfo.rcWindow.top;
-	int windowPosX = winInfo.rcWindow.left;
-	int windowPosY = winInfo.rcWindow.top;
-	SetCursorPos(windowPosX+(windowSizeX/2),windowPosY+(windowSizeY/2));
-	resources->ResetDeviceAllText();
-	data.applicationActive = true;
-	data.loop = true;
+	if(result == D3D_OK)
+	{
+		WINDOWINFO winInfo;
+		GetWindowInfo(handleWindow,&winInfo);
+		int windowSizeX = winInfo.rcWindow.right-winInfo.rcWindow.left;
+		int windowSizeY = winInfo.rcWindow.bottom-winInfo.rcWindow.top;
+		int windowPosX = winInfo.rcWindow.left;
+		int windowPosY = winInfo.rcWindow.top;
+		SetCursorPos(windowPosX+(windowSizeX/2),windowPosY+(windowSizeY/2));
+		data.applicationActive = true;
+		data.loop = true;
+		return;
+	}
 }
 //Update, this will run every frame (61 fps max)
 void ThempX::Update()
@@ -354,6 +481,7 @@ void ThempX::DrawScene()
 	p_Device->Clear(0, NULL, D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(0, 0, 0), 1.0f, 0);
 
     p_Device->BeginScene();
+
 
 	g->Render();
 	

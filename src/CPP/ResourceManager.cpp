@@ -11,14 +11,15 @@ ResourceManager::ResourceManager(LPDIRECT3DDEVICE9 d3d_Device, HWND handle)
 	//soundHandler = NULL;
 	//inputHandler = NULL;
 }
-int ResourceManager::CreateTextObject(char* font,char* text,int fontsize, int posX, int posY, int width, int height, D3DXCOLOR color)
+int ResourceManager::CreateTextObject(char* font,char* text,int fontsize, int posXPercentage, int posYPercentage, int widthPercentage, int heightPercentage, D3DXCOLOR color)
 {
 	TextData obj;
 	
-	obj.textRect.left = posX;
-	obj.textRect.top = posY;
-	obj.textRect.right = posX+width;
-	obj.textRect.bottom = posY+height;
+	obj.textRect.left =		GetScreenWidth()	*	posXPercentage	/ 100;
+	obj.textRect.top=		GetScreenHeight()	*	posYPercentage	/ 100;
+	obj.textRect.right =	GetScreenWidth()	*	widthPercentage+posXPercentage / 100;
+	obj.textRect.bottom =	GetScreenHeight()	*	heightPercentage+posYPercentage/ 100;
+
 	obj.fontsize = fontsize;
 	obj.font = font;
 	obj.color = color;

@@ -167,6 +167,29 @@ public:
 			texts.at(i).DrawFont();
 		}
 	}
+	inline void PushDevmode(DEVMODE dev)
+	{
+		devmodes.push_back(dev);
+	}
+	inline DEVMODE GetDevMode(int i)
+	{
+		return devmodes.at(i);
+	}
+	inline DEVMODE GetLastDevMode()
+	{
+		return devmodes.at(devmodes.size()-1);
+	}
+	inline int GetDevModeWithHeight(int height)
+	{
+		for(int i =0; i < devmodes.size();i++)
+		{
+			if(devmodes.at(i).dmPelsHeight == height)
+			{
+				return i;
+			}
+		}
+		return devmodes.size()-1;
+	}
 	//inline void SetGUI(GUI* g)
 	//{
 	//	gui = g;
@@ -187,6 +210,7 @@ private:
 	std::vector<TextData> texts;
 	std::vector<Model> models;
 	std::vector<Quad> quads;
+	std::vector<DEVMODE> devmodes;
 	bool LoadQuadTexture(char* path);
 	bool CheckAvailableTexture(char* name);
 	bool CheckAvailableModel(char* name);

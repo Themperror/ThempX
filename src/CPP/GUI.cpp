@@ -13,15 +13,17 @@ void GUI::Release()
 {
 	for(unsigned int  i = 0; i < guiObjs.size();i++)
 	{
-		guiObjs.at(i).iBuffer->Release();
-		guiObjs.at(i).vBuffer->Release();
+		if(guiObjs.at(i).iBuffer != NULL)		guiObjs.at(i).iBuffer->Release();
+		if(guiObjs.at(i).vBuffer != NULL)		guiObjs.at(i).vBuffer->Release();
 	}
 	guiObjs.clear();
 }
 void GUI::ReloadGUI()
 {
 	Release();
-	LoadGUI();
+	
+	if(p_Device->TestCooperativeLevel() == D3D_OK)
+		LoadGUI();
 }
 void GUI::LoadGUI()
 {
@@ -51,7 +53,7 @@ void GUI::LoadGUI()
 			}
 			else
 			{
-				rect.x = resources->GetWindowWidth()-posX;
+				rect.x = resources->GetScreenWidth()-posX;
 				std::cout << "relative posX = " << rect.x << std::endl;
 			}
 			if(!relativeEndY)
@@ -60,17 +62,17 @@ void GUI::LoadGUI()
 			}
 			else
 			{
-				rect.y = resources->GetWindowHeight()-posY;
+				rect.y = resources->GetScreenHeight()-posY;
 				std::cout << "relative posY = " << rect.y << std::endl;
 			}
 			rect.w = sizeX;
 			rect.h = sizeY;
 
 			
-			rect.x = resources->GetWindowWidth() * posX / 100;
-			rect.y = resources->GetWindowHeight() * posY / 100;
-			rect.w = resources->GetWindowWidth() * sizeX / 100;
-			rect.h = resources->GetWindowHeight() * sizeY / 100;
+			rect.x = resources->GetScreenWidth() * posX / 100;
+			rect.y = resources->GetScreenHeight() * posY / 100;
+			rect.w = resources->GetScreenWidth() * sizeX / 100;
+			rect.h = resources->GetScreenHeight() * sizeY / 100;
 
 			if(hasAnimation)
 			{
@@ -142,7 +144,7 @@ void GUI::Render()
 
 		GUITexture* g =  &guiObjs.at(i);
 		
-		if(g->currentAnim >= 0 )
+		if(g->currentAnim >= 0 && g->currentAnim < g->animations.size())
 		{
 			Animation* anim = &g->animations.at(g->currentAnim);
 			if(g->hasAnimation && g->currentAnim != -1 && anim->isFinished == false)
@@ -184,14 +186,18 @@ void GUI::Update(float deltaTime)
 		GUITexture* t = &guiObjs.at(i);
 		if(t->currentAnim != -1)
 		{
-			Animation* a = &t->animations.at(t->currentAnim);
-			if(t->hasAnimation && !a->isFinished)
+			if(t->currentAnim >= 0 && t->currentAnim < t->animations.size())
 			{
-				Animate(&guiObjs.at(i),deltaTime,guiObjs.at(i).animationSpeed);
-			}
-			if(t->hasAnimation && a->isFinished && a->loop)
-			{
-				a->isFinished = false;
+				Animation* a = &t->animations.at(t->currentAnim);
+			
+				if(t->hasAnimation && !a->isFinished)
+				{
+					Animate(&guiObjs.at(i),deltaTime,guiObjs.at(i).animationSpeed);
+				}
+				if(t->hasAnimation && a->isFinished && a->loop)
+				{
+					a->isFinished = false;
+				}
 			}
 		}
 	}
@@ -260,6 +266,7 @@ void GUI::SetUVValues(GUITexture* obj)
 void GUI::Animate(GUITexture* obj , float dTime ,float animSpeed)
 {		
 	obj->timeSinceChange += dTime;
+	
 	if(obj->timeSinceChange > obj->animations.at(obj->currentAnim).AnimationSpeed)
 	{
 		Animation* currentAnim = &obj->animations.at(obj->currentAnim);
@@ -402,7 +409,10 @@ bool GUI::PlayAnimation(GUITexture* obj,std::string name)
 			obj->currentAnim = i;
 			obj->animations.at(i).isFinished = false;
 			obj->timeSinceChange = obj->animationSpeed/2;
-			SetUVValues(obj);
+			if(p_Device->TestCooperativeLevel() == D3D_OK)
+			{
+				SetUVValues(obj);
+			}
 			return true;			   
 		}
 	}
@@ -431,15 +441,15 @@ LPDIRECT3DVERTEXBUFFER9 GUI::CreateQuadVBuffer(GUI::GUITexture* gui)
 		switch(result) //error checking of het gelukt is, zo niet, sluit af, want anders krijgen we dalijk andere soorten errors die niet opgevangen worden. (Access violation of nullpointer references vanwegen random pointers)
 		{
 		case D3DERR_INVALIDCALL: 
-			MessageBox(resources->GetWindowHandle(),"Invalid Call while creating VertexBuffer","FillVertices()",MB_OK);
+			MessageBox(resources->GetWindowHandle(),"Invalid Call while creating VertexBuffer","GUI createQuad()",MB_OK);
 			return NULL;
 			break;
 		case D3DERR_OUTOFVIDEOMEMORY:
-			MessageBox(resources->GetWindowHandle(),"Out of Video Memory while creating VertexBuffer","FillVertices()",MB_OK);
+			MessageBox(resources->GetWindowHandle(),"Out of Video Memory while creating VertexBuffer","GUI createQuad()",MB_OK);
 			return NULL;
 			break;
 		case E_OUTOFMEMORY:
-			MessageBox(resources->GetWindowHandle(),"Out of Memory while creating VertexBuffer","FillVertices()",MB_OK);
+			MessageBox(resources->GetWindowHandle(),"Out of Memory while creating VertexBuffer","GUI createQuad()",MB_OK);
 			return NULL;
 			break;
 		}
@@ -448,7 +458,7 @@ LPDIRECT3DVERTEXBUFFER9 GUI::CreateQuadVBuffer(GUI::GUITexture* gui)
 		switch(result)
 		{
 		case D3DERR_INVALIDCALL: 
-			MessageBox(resources->GetWindowHandle(),"Error trying to lock","FillVertices()",MB_OK);
+			MessageBox(resources->GetWindowHandle(),"Error trying to lock","GUI FillVertices()",MB_OK);
 			return NULL;
 			break;
 		}//we konden de vertexbuffer locken dus ga door
@@ -473,15 +483,15 @@ LPDIRECT3DVERTEXBUFFER9 GUI::CreateQuadVBuffer(GUI::GUITexture* gui)
 		switch(result) //error checking of het gelukt is, zo niet, sluit af, want anders krijgen we dalijk andere soorten errors die niet opgevangen worden. (Access violation of nullpointer references vanwegen random pointers)
 		{
 		case D3DERR_INVALIDCALL: 
-			MessageBox(resources->GetWindowHandle(),"Invalid Call while creating VertexBuffer","FillVertices()",MB_OK);
+			MessageBox(resources->GetWindowHandle(),"Invalid Call while creating VertexBuffer"," GUI FillVertices()",MB_OK);
 			return NULL;
 			break;
 		case D3DERR_OUTOFVIDEOMEMORY:
-			MessageBox(resources->GetWindowHandle(),"Out of Video Memory while creating VertexBuffer","FillVertices()",MB_OK);
+			MessageBox(resources->GetWindowHandle(),"Out of Video Memory while creating VertexBuffer","GUI FillVertices()",MB_OK);
 			return NULL;
 			break;
 		case E_OUTOFMEMORY:
-			MessageBox(resources->GetWindowHandle(),"Out of Memory while creating VertexBuffer","FillVertices()",MB_OK);
+			MessageBox(resources->GetWindowHandle(),"Out of Memory while creating VertexBuffer","GUI FillVertices()",MB_OK);
 			return NULL;
 			break;
 		}
@@ -490,7 +500,7 @@ LPDIRECT3DVERTEXBUFFER9 GUI::CreateQuadVBuffer(GUI::GUITexture* gui)
 		switch(result)
 		{
 		case D3DERR_INVALIDCALL: 
-			MessageBox(resources->GetWindowHandle(),"Error trying to lock","FillVertices()",MB_OK);
+			MessageBox(resources->GetWindowHandle(),"Error trying to lock","GUI FillVertices()",MB_OK);
 			return NULL;
 			break;
 		}//we konden de vertexbuffer locken dus ga door
@@ -514,15 +524,15 @@ LPDIRECT3DINDEXBUFFER9 GUI::CreateQuadIndices() //zelfde als FillVertices, zie u
 	switch(result)
 	{
 	case D3DERR_INVALIDCALL: 
-		MessageBox(resources->GetWindowHandle(),"Invalid Call while creating IndexBuffer","FillIndices()",MB_OK);
+		MessageBox(resources->GetWindowHandle(),"Invalid Call while creating IndexBuffer","GUI FillIndices()",MB_OK);
 		return NULL;
 		break;
 	case D3DERR_OUTOFVIDEOMEMORY:
-		MessageBox(resources->GetWindowHandle(),"Out of Video Memory while creating IndexBuffer","FillIndices()",MB_OK);
+		MessageBox(resources->GetWindowHandle(),"Out of Video Memory while creating IndexBuffer","GUI FillIndices()",MB_OK);
 		return NULL;
 		break;
 	case E_OUTOFMEMORY:
-		MessageBox(resources->GetWindowHandle(),"Out of Memory while creating IndexBuffer","FillIndices()",MB_OK);
+		MessageBox(resources->GetWindowHandle(),"Out of Memory while creating IndexBuffer","GUI FillIndices()",MB_OK);
 		return NULL;
 		break;
 	}
@@ -533,7 +543,7 @@ LPDIRECT3DINDEXBUFFER9 GUI::CreateQuadIndices() //zelfde als FillVertices, zie u
 	switch(result)
 	{
 	case D3DERR_INVALIDCALL: 
-		MessageBox(resources->GetWindowHandle(),"Error trying to lock","FillIndices()",MB_OK);
+		MessageBox(resources->GetWindowHandle(),"Error trying to lock","GUI FillIndices()",MB_OK);
 		return NULL;
 		break;
 	}

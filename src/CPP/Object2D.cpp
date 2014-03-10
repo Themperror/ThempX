@@ -368,15 +368,15 @@ LPDIRECT3DVERTEXBUFFER9 Object2D::FillVertices()
 		switch(result) //error checking of het gelukt is, zo niet, sluit af, want anders krijgen we dalijk andere soorten errors die niet opgevangen worden. (Access violation of nullpointer references vanwegen random pointers)
 		{
 		case D3DERR_INVALIDCALL: 
-			MessageBox(handleWindow,"Invalid Call while creating VertexBuffer","FillVertices()",MB_OK);
+			MessageBox(handleWindow,"Invalid Call while creating VertexBuffer","Object2D fillverts()",MB_OK);
 			return NULL;
 			break;
 		case D3DERR_OUTOFVIDEOMEMORY:
-			MessageBox(handleWindow,"Out of Video Memory while creating VertexBuffer","FillVertices()",MB_OK);
+			MessageBox(handleWindow,"Out of Video Memory while creating VertexBuffer","Object2D fillverts()",MB_OK);
 			return NULL;
 			break;
 		case E_OUTOFMEMORY:
-			MessageBox(handleWindow,"Out of Memory while creating VertexBuffer","FillVertices()",MB_OK);
+			MessageBox(handleWindow,"Out of Memory while creating VertexBuffer","Object2D fillverts()",MB_OK);
 			return NULL;
 			break;
 		}
@@ -385,7 +385,7 @@ LPDIRECT3DVERTEXBUFFER9 Object2D::FillVertices()
 		switch(result)
 		{
 		case D3DERR_INVALIDCALL: 
-			MessageBox(handleWindow,"Error trying to lock","FillVertices()",MB_OK);
+			MessageBox(handleWindow,"Error trying to lock","Object2D fillverts()",MB_OK);
 			return NULL;
 			break;
 		}//we konden de vertexbuffer locken dus ga door
@@ -410,15 +410,15 @@ LPDIRECT3DVERTEXBUFFER9 Object2D::FillVertices()
 		switch(result) //error checking of het gelukt is, zo niet, sluit af, want anders krijgen we dalijk andere soorten errors die niet opgevangen worden. (Access violation of nullpointer references vanwegen random pointers)
 		{
 		case D3DERR_INVALIDCALL: 
-			MessageBox(handleWindow,"Invalid Call while creating VertexBuffer","FillVertices()",MB_OK);
+			MessageBox(handleWindow,"Invalid Call while creating VertexBuffer","Object2D fillverts()",MB_OK);
 			return NULL;
 			break;
 		case D3DERR_OUTOFVIDEOMEMORY:
-			MessageBox(handleWindow,"Out of Video Memory while creating VertexBuffer","FillVertices()",MB_OK);
+			MessageBox(handleWindow,"Out of Video Memory while creating VertexBuffer","Object2D fillverts()",MB_OK);
 			return NULL;
 			break;
 		case E_OUTOFMEMORY:
-			MessageBox(handleWindow,"Out of Memory while creating VertexBuffer","FillVertices()",MB_OK);
+			MessageBox(handleWindow,"Out of Memory while creating VertexBuffer","Object2D fillverts()",MB_OK);
 			return NULL;
 			break;
 		}
@@ -427,7 +427,7 @@ LPDIRECT3DVERTEXBUFFER9 Object2D::FillVertices()
 		switch(result)
 		{
 		case D3DERR_INVALIDCALL: 
-			MessageBox(handleWindow,"Error trying to lock","FillVertices()",MB_OK);
+			MessageBox(handleWindow,"Error trying to lock","Object2D fillverts()",MB_OK);
 			return NULL;
 			break;
 		}//we konden de vertexbuffer locken dus ga door
@@ -454,15 +454,15 @@ LPDIRECT3DVERTEXBUFFER9 Object2D::FillCustomVertices(D3DXVECTOR2 LLPos,D3DXVECTO
 		switch(result) //error checking of het gelukt is, zo niet, sluit af, want anders krijgen we dalijk andere soorten errors die niet opgevangen worden. (Access violation of nullpointer references vanwegen random pointers)
 		{
 		case D3DERR_INVALIDCALL: 
-			MessageBox(handleWindow,"Invalid Call while creating VertexBuffer","FillVertices()",MB_OK);
+			MessageBox(handleWindow,"Invalid Call while creating VertexBuffer","Object2D fillverts()",MB_OK);
 			return NULL;
 			break;
 		case D3DERR_OUTOFVIDEOMEMORY:
-			MessageBox(handleWindow,"Out of Video Memory while creating VertexBuffer","FillVertices()",MB_OK);
+			MessageBox(handleWindow,"Out of Video Memory while creating VertexBuffer","Object2D fillverts()",MB_OK);
 			return NULL;
 			break;
 		case E_OUTOFMEMORY:
-			MessageBox(handleWindow,"Out of Memory while creating VertexBuffer","FillVertices()",MB_OK);
+			MessageBox(handleWindow,"Out of Memory while creating VertexBuffer","Object2D fillverts()",MB_OK);
 			return NULL;
 			break;
 		}
@@ -471,7 +471,7 @@ LPDIRECT3DVERTEXBUFFER9 Object2D::FillCustomVertices(D3DXVECTOR2 LLPos,D3DXVECTO
 		switch(result)
 		{
 		case D3DERR_INVALIDCALL: 
-			MessageBox(handleWindow,"Error trying to lock","FillVertices()",MB_OK);
+			MessageBox(handleWindow,"Error trying to lock","Object2D fillverts()",MB_OK);
 			return NULL;
 			break;
 		}//we konden de vertexbuffer locken dus ga door
@@ -496,15 +496,15 @@ LPDIRECT3DVERTEXBUFFER9 Object2D::FillCustomVertices(D3DXVECTOR2 LLPos,D3DXVECTO
 		switch(result) //error checking of het gelukt is, zo niet, sluit af, want anders krijgen we dalijk andere soorten errors die niet opgevangen worden. (Access violation of nullpointer references vanwegen random pointers)
 		{
 		case D3DERR_INVALIDCALL: 
-			MessageBox(handleWindow,"Invalid Call while creating VertexBuffer","FillVertices()",MB_OK);
+			MessageBox(handleWindow,"Invalid Call while creating VertexBuffer","Object2D fillverts()",MB_OK);
 			return NULL;
 			break;
 		case D3DERR_OUTOFVIDEOMEMORY:
-			MessageBox(handleWindow,"Out of Video Memory while creating VertexBuffer","FillVertices()",MB_OK);
+			MessageBox(handleWindow,"Out of Video Memory while creating VertexBuffer","Object2D fillverts()",MB_OK);
 			return NULL;
 			break;
 		case E_OUTOFMEMORY:
-			MessageBox(handleWindow,"Out of Memory while creating VertexBuffer","FillVertices()",MB_OK);
+			MessageBox(handleWindow,"Out of Memory while creating VertexBuffer","Object2D fillverts()",MB_OK);
 			return NULL;
 			break;
 		}
@@ -513,7 +513,7 @@ LPDIRECT3DVERTEXBUFFER9 Object2D::FillCustomVertices(D3DXVECTOR2 LLPos,D3DXVECTO
 		switch(result)
 		{
 		case D3DERR_INVALIDCALL: 
-			MessageBox(handleWindow,"Error trying to lock","FillVertices()",MB_OK);
+			MessageBox(handleWindow,"Error trying to lock","Object2D fillverts()",MB_OK);
 			return NULL;
 			break;
 		}//we konden de vertexbuffer locken dus ga door
@@ -538,15 +538,15 @@ LPDIRECT3DINDEXBUFFER9 Object2D::FillIndices() //zelfde als FillVertices, zie ui
 	switch(result)
 	{
 	case D3DERR_INVALIDCALL: 
-		MessageBox(handleWindow,"Invalid Call while creating IndexBuffer","FillIndices()",MB_OK);
+		MessageBox(handleWindow,"Invalid Call while creating IndexBuffer","Object2D fill indices()",MB_OK);
 		return NULL;
 		break;
 	case D3DERR_OUTOFVIDEOMEMORY:
-		MessageBox(handleWindow,"Out of Video Memory while creating IndexBuffer","FillIndices()",MB_OK);
+		MessageBox(handleWindow,"Out of Video Memory while creating IndexBuffer","Object2D fill indices()",MB_OK);
 		return NULL;
 		break;
 	case E_OUTOFMEMORY:
-		MessageBox(handleWindow,"Out of Memory while creating IndexBuffer","FillIndices()",MB_OK);
+		MessageBox(handleWindow,"Out of Memory while creating IndexBuffer","Object2D fill indices()",MB_OK);
 		return NULL;
 		break;
 	}
@@ -557,7 +557,7 @@ LPDIRECT3DINDEXBUFFER9 Object2D::FillIndices() //zelfde als FillVertices, zie ui
 	switch(result)
 	{
 	case D3DERR_INVALIDCALL: 
-		MessageBox(handleWindow,"Error trying to lock","FillIndices()",MB_OK);
+		MessageBox(handleWindow,"Error trying to lock","Object2D fill indices()",MB_OK);
 		return NULL;
 		break;
 	}

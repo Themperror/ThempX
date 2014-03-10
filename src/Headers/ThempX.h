@@ -41,7 +41,9 @@ public:
 private:
 	//DirectX Init
 	void CreateLoadingScreen();
-	void SetDisplayMode(bool isWindowed,int sizeX, int sizeY, int renderSizeX = 800,int renderSizeY = 600);
+	void SetDisplayModeFullScreen(int devmodeIndex);
+	void SetDisplayModeWindowed(int sizeX, int sizeY, int renderSizeX,int renderSizeY);
+
 	LPDIRECT3DDEVICE9 InitializeDevice(HWND han_WindowToBindTo);
 	InputHandler* inputHandler;
 	SoundHandler* soundHandler;
@@ -52,6 +54,7 @@ private:
 	void Update(); // runs every frame (61fps max)
 	void FixedUpdate(); //runs every iterations of the main loop
 	void CheckDevice();
+	void GetListofDisplayModes();
 	Game* g;
 
 

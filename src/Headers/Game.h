@@ -50,6 +50,8 @@ public:
 		int windowSizeY;
 		int renderSizeX;
 		int renderSizeY;
+		int devmodeIndex;
+		D3DPRESENT_PARAMETERS d3dxpresentationparams;
 		bool applicationActive;
 	};
 	struct Object3DData
