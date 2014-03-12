@@ -77,7 +77,7 @@ public:
 		D3DXVECTOR2 LLVertexPos;
 		D3DXVECTOR3 position;
 		D3DXVECTOR3 scale;
-		float textureSizeX, textureSizeY, xRowsAnim,yRowsAnim;
+		int textureSizeX, textureSizeY, xRowsAnim,yRowsAnim;
 		void Nullify()
 		{
 			textureSizeX=0;textureSizeY =0;xRowsAnim=0;yRowsAnim = 0;

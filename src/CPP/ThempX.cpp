@@ -42,28 +42,14 @@ void ThempX::SetDisplayModeWindowed(int sizeX, int sizeY, int renderSizeX,int re
 	dx_PresParams.EnableAutoDepthStencil = TRUE;
 	dx_PresParams.AutoDepthStencilFormat = D3DFMT_D16;
 
-	p_Device->Reset(&dx_PresParams);
-
-	p_Device->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE); //double sided plane
-	//p_Device->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW); //single sided plane
-    p_Device->SetRenderState(D3DRS_LIGHTING,false);
-	p_Device->SetRenderState(D3DRS_ZENABLE, true);
-	p_Device->SetRenderState(D3DRS_FILLMODE,D3DFILL_SOLID);
-	//p_Device->SetRenderState(D3DRS_FILLMODE,D3DFILL_WIREFRAME);
-	p_Device->SetSamplerState(0,D3DSAMP_MAXANISOTROPY,1);
-	p_Device->SetSamplerState(0,D3DSAMP_MAGFILTER,D3DTEXF_POINT);
-	p_Device->SetSamplerState(0,D3DSAMP_MINFILTER,D3DTEXF_POINT);
-	p_Device->SetSamplerState(0,D3DSAMP_MIPFILTER,D3DTEXF_POINT);
-	p_Device->SetRenderState(D3DRS_ALPHAREF, (DWORD)0x0000008f);
-	p_Device->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE); 
-	p_Device->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL);
-	p_Device->SetRenderState(D3DRS_SRCBLEND,D3DBLEND_ONE);
-	p_Device->SetRenderState(D3DRS_DESTBLEND,D3DBLEND_ZERO);
-	
+	if(p_Device->Reset(&dx_PresParams) == D3D_OK)
+	{
+		SetDefaultRenderStateSettings();
+		g->ReloadGUI();
+	}
 
 	resources->SetScreenResolution(renderSizeX,renderSizeY);
 	data.d3dxpresentationparams = dx_PresParams;
-	g->ReloadGUI();
 }
 void ThempX::SetDisplayModeFullScreen(int devmodeIndex)
 {
@@ -86,13 +72,13 @@ void ThempX::SetDisplayModeFullScreen(int devmodeIndex)
 	
 	GetDesktopResolution(dHorizontal, dVertical);
 	//WS_EX_TOPMOST | WS_POPUPGetDesktopResolution(dHorizontal, dVertical);
-	/*if(ChangeDisplaySettings(&resources->GetDevMode(devmodeIndex),CDS_FULLSCREEN | CDS_TEST) != DISP_CHANGE_SUCCESSFUL)
+	if(ChangeDisplaySettings(&resources->GetDevMode(devmodeIndex),CDS_FULLSCREEN | CDS_TEST) != DISP_CHANGE_SUCCESSFUL)
 	{
 		std::cout << "Changing display mode failed" << std::endl;
 		return;
 	}
 	ChangeDisplaySettings(&resources->GetDevMode(devmodeIndex),CDS_FULLSCREEN);
-	*/
+
 	Sleep(200);
 	//SetWindowLong(handleWindow,0,WS_EX_TOPMOST | WS_POPUP);
 	SetWindowPos(handleWindow,HWND_TOPMOST,0,0, wSizeX,wSizeY, SWP_NOZORDER | SWP_SHOWWINDOW);
@@ -111,28 +97,14 @@ void ThempX::SetDisplayModeFullScreen(int devmodeIndex)
 	dx_PresParams.EnableAutoDepthStencil = TRUE;
 	dx_PresParams.AutoDepthStencilFormat = D3DFMT_D16;
 	
-	p_Device->Reset(&dx_PresParams);
-	p_Device->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE); //double sided plane
-	//p_Device->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW); //single sided plane
-    p_Device->SetRenderState(D3DRS_LIGHTING,false);
-	p_Device->SetRenderState(D3DRS_ZENABLE, true);
-	p_Device->SetRenderState(D3DRS_FILLMODE,D3DFILL_SOLID);
-	//p_Device->SetRenderState(D3DRS_FILLMODE,D3DFILL_WIREFRAME);
-	p_Device->SetSamplerState(0,D3DSAMP_MAXANISOTROPY,1);
-	p_Device->SetSamplerState(0,D3DSAMP_MAGFILTER,D3DTEXF_POINT);
-	p_Device->SetSamplerState(0,D3DSAMP_MINFILTER,D3DTEXF_POINT);
-	p_Device->SetSamplerState(0,D3DSAMP_MIPFILTER,D3DTEXF_POINT);
-	p_Device->SetRenderState(D3DRS_ALPHAREF, (DWORD)0x0000008f);
-	p_Device->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE); 
-	p_Device->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL);
-	p_Device->SetRenderState(D3DRS_SRCBLEND,D3DBLEND_ONE);
-	p_Device->SetRenderState(D3DRS_DESTBLEND,D3DBLEND_ZERO);
+	if(p_Device->Reset(&dx_PresParams) == D3D_OK)
+	{
+		SetDefaultRenderStateSettings();
+		g->ReloadGUI();
+	}
 	
-	Sleep(500);
 	data.d3dxpresentationparams = dx_PresParams;
 	resources->SetScreenResolution(wSizeX,wSizeY);	
-	
-	g->ReloadGUI();
 }
 void ThempX::GetListofDisplayModes()
 {
@@ -190,7 +162,7 @@ HWND ThempX::NewWindow(LPCTSTR windowName,int posX,int posY, int sizeX,int sizeY
 	
 	if(isWindowed)
 	{
-		return CreateWindowEx(WS_EX_CONTROLPARENT, "ThempX", windowName, WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_VISIBLE, posX, posY, sizeX, sizeY, NULL, NULL, GetModuleHandle(NULL), NULL);
+		return CreateWindowEx(WS_EX_CONTROLPARENT, "ThempX", windowName,  WS_EX_TOPMOST | WS_EX_WINDOWEDGE | WS_POPUP | WS_VISIBLE, posX, posY, sizeX, sizeY, NULL, NULL, GetModuleHandle(NULL), NULL);
 	}
 	else
 	{
@@ -224,7 +196,7 @@ void ThempX::PreCreateWindow()
 	wSizeX = 800;
 	wSizeY = 600;
 
-	handleWindow = NewWindow("ThempX Engine",dHorizontal/2-(wSizeX/2),dVertical/2-(wSizeY/2),wSizeX,wSizeY,true);
+	handleWindow = NewWindow("The Morph",dHorizontal/2-(wSizeX/2),dVertical/2-(wSizeY/2),wSizeX,wSizeY,true);
 
 
 	AllocConsole();
@@ -236,9 +208,9 @@ void ThempX::PreCreateWindow()
 ThempX::ThempX(HINSTANCE hInstance,LPSTR lpCmdLine)
 {
 	PreCreateWindow();
-	oldTicks = GetTickCount();
 	p_Device = InitializeDevice(handleWindow);
-	
+	SetDefaultRenderStateSettings();
+
 	//Render loading screen
 	CreateLoadingScreen();
 	//SetDisplayMode(false,800,600);
@@ -277,6 +249,11 @@ ThempX::ThempX(HINSTANCE hInstance,LPSTR lpCmdLine)
 	DWORD oTicks = 0;
 	while(data.loop)
     {
+		
+		QueryPerformanceFrequency(&currentFrequency);
+		QueryPerformanceCounter(&currentTicks);
+		currentTicks.QuadPart = currentTicks.QuadPart*10000 / currentFrequency.QuadPart;
+
 		while(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
         {
             TranslateMessage(&msg);
@@ -321,7 +298,6 @@ ThempX::ThempX(HINSTANCE hInstance,LPSTR lpCmdLine)
 		else
 		{
 			data.applicationActive = true;
-			data.lockCursor = true;
 		}
 		
 		if(data.applicationActive)
@@ -338,9 +314,11 @@ ThempX::ThempX(HINSTANCE hInstance,LPSTR lpCmdLine)
 			
 			FixedUpdate();
 			realframes++;
-			currentTicks = timeGetTime();
-			cTicks = currentTicks;
-			if(cTicks-oTicks > 1000 + ((cTicks-oTicks) % 1000))
+
+			
+
+			cTicks = currentTicks.QuadPart;
+			if(cTicks-oTicks > 10000+((cTicks-oTicks) % 10000))
 			{
 				std::cout << "FixedUpdate running at "<<realframes <<" times per second"<< std::endl;
 				std::cout << "FPS: " << frames << std::endl;
@@ -348,20 +326,27 @@ ThempX::ThempX(HINSTANCE hInstance,LPSTR lpCmdLine)
 				realframes = 0;
 				oTicks = cTicks;
 			}
-			if(currentTicks > oldTicks+16)
+			if(currentTicks.QuadPart > oldTicks.QuadPart + 166) 
+			//why does 166 result in 120 fps limit on fast machines and 60 fps limit on slower machines? 1/60 = 0.0166
+			//332 is 60 FPS and unlimited fixed update
+			//166 is 120 fps and unlimited fixed update
+			//83 = 120 FPS and limited fixed update to 120 times per second
 			{
+				//std::cout << currentTicks.QuadPart << " <-currentTicks   " << oldTicks.QuadPart <<" <- oldTicks" << std::endl; 
 				frames++;
-				if(p_Device->TestCooperativeLevel() == D3D_OK)
+				/*if(p_Device->TestCooperativeLevel() == D3D_OK)
 				{
 					Update();
 					DrawScene();
-				}
+				}*/ //guarded, due to the nature of alt-tabbing and switching screen modes, this was a security to ensure no errors would come from a lost d3ddevice
+				Update();
+				DrawScene();
 				oldTicks = currentTicks;
 			}
 		}
 		else
 		{
-			Sleep(50);
+			Sleep(100);
 		}
     }
 
@@ -396,23 +381,11 @@ void ThempX::CheckDevice()
 		while(result != D3D_OK)
 		{
 			result = p_Device->Reset(&data.d3dxpresentationparams);
-			
-			p_Device->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE); //double sided plane
-			//p_Device->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW); //single sided plane
-			p_Device->SetRenderState(D3DRS_LIGHTING,false);
-			p_Device->SetRenderState(D3DRS_ZENABLE, true);
-			p_Device->SetRenderState(D3DRS_FILLMODE,D3DFILL_SOLID);
-			//p_Device->SetRenderState(D3DRS_FILLMODE,D3DFILL_WIREFRAME);
-			p_Device->SetSamplerState(0,D3DSAMP_MAXANISOTROPY,1);
-			p_Device->SetSamplerState(0,D3DSAMP_MAGFILTER,D3DTEXF_POINT);
-			p_Device->SetSamplerState(0,D3DSAMP_MINFILTER,D3DTEXF_POINT);
-			p_Device->SetSamplerState(0,D3DSAMP_MIPFILTER,D3DTEXF_POINT);
-			p_Device->SetRenderState(D3DRS_ALPHAREF, (DWORD)0x0000008f);
-			p_Device->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE); 
-			p_Device->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL);
-			p_Device->SetRenderState(D3DRS_SRCBLEND,D3DBLEND_ONE);
-			p_Device->SetRenderState(D3DRS_DESTBLEND,D3DBLEND_ZERO);
-
+			if(result == D3D_OK)
+			{
+				SetDefaultRenderStateSettings();
+				g->ReloadGUI();
+			}
 			Sleep(200);
 		}
 	//	CheckDevice();
@@ -589,29 +562,29 @@ LPDIRECT3DDEVICE9 ThempX::InitializeDevice(HWND han_WindowToBindTo)
 		}
 	}
 	
-	//////////////////////////////////////////
-	p_dx_Device->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE); //double sided plane
-	//p_dx_Device->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW); //single sided plane
-    p_dx_Device->SetRenderState(D3DRS_LIGHTING,false);
-	p_dx_Device->SetRenderState(D3DRS_ZENABLE, true);
-	p_dx_Device->SetRenderState(D3DRS_FILLMODE,D3DFILL_SOLID);
-	//p_dx_Device->SetRenderState(D3DRS_FILLMODE,D3DFILL_WIREFRAME);
-	p_dx_Device->SetSamplerState(0,D3DSAMP_MAXANISOTROPY,1);
-	p_dx_Device->SetSamplerState(0,D3DSAMP_MAGFILTER,D3DTEXF_POINT);
-	p_dx_Device->SetSamplerState(0,D3DSAMP_MINFILTER,D3DTEXF_POINT);
-	p_dx_Device->SetSamplerState(0,D3DSAMP_MIPFILTER,D3DTEXF_POINT);
-	p_dx_Device->SetRenderState(D3DRS_ALPHAREF, (DWORD)0x0000008f);
-	p_dx_Device->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE); 
-	p_dx_Device->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL);
-	p_dx_Device->SetRenderState(D3DRS_SRCBLEND,D3DBLEND_ONE);
-	p_dx_Device->SetRenderState(D3DRS_DESTBLEND,D3DBLEND_ZERO);
 
 	//////////////////////////////////////////
 	//Everything worked correctly, now exiting function
 	return p_dx_Device;
 	//////////////////////////////////////////
 }
-
+void ThempX::SetDefaultRenderStateSettings()
+{
+	p_Device->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE); //double sided plane
+//p_dx_Device->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW); //single sided plane
+	p_Device->SetRenderState(D3DRS_LIGHTING,false);
+	p_Device->SetRenderState(D3DRS_ZENABLE, true);
+	p_Device->SetRenderState(D3DRS_FILLMODE,D3DFILL_SOLID);
+	p_Device->SetSamplerState(0,D3DSAMP_MAXANISOTROPY,1);
+	p_Device->SetSamplerState(0,D3DSAMP_MAGFILTER,D3DTEXF_POINT);
+	p_Device->SetSamplerState(0,D3DSAMP_MINFILTER,D3DTEXF_POINT);
+	p_Device->SetSamplerState(0,D3DSAMP_MIPFILTER,D3DTEXF_POINT);
+	p_Device->SetRenderState(D3DRS_ALPHAREF, (DWORD)0x0000008f);
+	p_Device->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE); 
+	p_Device->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL);
+	p_Device->SetRenderState(D3DRS_SRCBLEND,D3DBLEND_ONE);
+	p_Device->SetRenderState(D3DRS_DESTBLEND,D3DBLEND_ZERO);
+}
 
 
 /* 

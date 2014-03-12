@@ -61,17 +61,45 @@ PhysXEngine::PhysXEngine(ResourceManager* res)
 	//actor.attachShape(shape);
 	profiler = &physx::PxProfileZoneManager::createProfileZoneManager(mFoundation);
 	//if(!mProfileZoneManager)
-	//CreateCube();
+	CreateCube(PxVec3(0,10,0),PxVec3(0,45,0),PxVec3(1,1,1));
+	CreateCube(PxVec3(0,15,0),PxVec3(90,0,0),PxVec3(1,1,1));
+	CreateCube(PxVec3(0,20,0),PxVec3(45,0,45),PxVec3(1,1,1));
 	//CreateTriangleMesh()
 }
 void PhysXEngine::ReleaseAll()
 {
 	for(unsigned int i = 0; i < statics.size(); i++)
 	{
+		PxShape* ptr;
+		statics.at(i)->getShapes(&ptr,256);
+		PxShape* vPtr=(PxShape*) ptr;
+		while(vPtr <= ptr+sizeof(ptr))
+		{
+			if(vPtr != NULL && vPtr->getActor() != NULL)
+			{
+				PxRigidActor* actor = vPtr->getActor();
+				actor->detachShape(*vPtr);
+				//vPtr->release();
+			}
+			vPtr+=sizeof(PxShape);
+		}
 		statics.at(i)->release();
 	}
 	for(unsigned int i = 0; i < dynamics.size(); i++)
 	{
+		PxShape* ptr;
+		dynamics.at(i)->getShapes(&ptr,256);
+		PxShape* vPtr=(PxShape*) ptr;
+		while(vPtr < ptr)
+		{
+			if(vPtr != NULL && vPtr->getActor() != NULL)
+			{
+				PxRigidActor* actor = vPtr->getActor();
+				actor->detachShape(*vPtr);
+			//	vPtr->release();
+			}
+			vPtr+=sizeof(PxShape);
+		}
 		dynamics.at(i)->release();
 	}
 	for(unsigned int i = 0; i < visualCubes.size(); i++)
@@ -102,26 +130,34 @@ void PhysXEngine::DrawBoxes()
 		visualCubes.at(i)->Draw();
 	}
 }
-void PhysXEngine::CreateCube()
+void PhysXEngine::CreateCube(PxVec3 position, PxVec3 rotation, PxVec3 scaling, bool isStatic)
 {
-	for(int i = 0; i < 500 ; i++)
+	PxReal cubeDensity = 10.0f;
+	D3DXQUATERNION rotQuat;
+	D3DXQuaternionRotationYawPitchRoll(&rotQuat,rotation.x,rotation.y,rotation.z);
+
+	PxTransform cubeTransform(position);
+	PxBoxGeometry cubeGeometry(scaling);
+	cubeTransform.p = position;
+	cubeTransform.q = PxQuat(rotQuat.x,rotQuat.y,rotQuat.z,rotQuat.w);
+	if(!isStatic)
 	{
-		PxReal cubeDensity = 2.0f;
-		PxTransform cubeTransform(PxVec3(0.0f, 4.0, 0.0f));
-		PxVec3 cubeDims(0.5,0.5,0.5);
-		PxBoxGeometry cubeGeometry(cubeDims);
-		cubeTransform.p  = PxVec3(std::sin((float)i),9+ 3*i,std::sin((float)i));
-		
 		PxRigidDynamic *cubeActor = PxCreateDynamic(*gPhysicsSDK, cubeTransform, cubeGeometry, *defaultMaterial, cubeDensity);
 
-		cubeActor->setAngularDamping(0.2f);
-		cubeActor->setLinearDamping(0.01f);
-		cubeActor->setMass(10);
+		cubeActor->setAngularDamping(0.1f);
+		cubeActor->setLinearDamping(0.02f);
+		cubeActor->setMass(100);
 		gScene->addActor(*cubeActor);
 		dynamics.push_back(cubeActor);
-		DebugCube* vCube = new DebugCube(D3DXVECTOR3(0,10,0),D3DXVECTOR3(0,0,0),D3DXVECTOR3(-0.5f,-0.5f,-0.5f),D3DXVECTOR3(0.5f,0.5f,0.5f),resources);
-		visualCubes.push_back(vCube);
 	}
+	else
+	{
+		PxRigidStatic *cubeActor = PxCreateStatic(*gPhysicsSDK,cubeTransform,cubeGeometry,*defaultMaterial);
+		gScene->addActor(*cubeActor);
+		statics.push_back(cubeActor);
+	}
+	DebugCube* vCube = new DebugCube(D3DXVECTOR3(position.x,position.y,position.z),D3DXVECTOR3(rotation.x,rotation.y,rotation.z),D3DXVECTOR3(-scaling.x,-scaling.y,-scaling.z),D3DXVECTOR3(scaling.x,scaling.y,scaling.z),resources);
+	visualCubes.push_back(vCube);
 }
 /*
 SPEEngine::SPEEngine(ResourceManager* res)

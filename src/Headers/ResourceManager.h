@@ -179,9 +179,9 @@ public:
 	{
 		return devmodes.at(devmodes.size()-1);
 	}
-	inline int GetDevModeWithHeight(int height)
+	inline int GetDevMode(int width, int height)
 	{
-		for(int i =0; i < devmodes.size();i++)
+		for(unsigned int i =0; i < devmodes.size();i++)
 		{
 			if(devmodes.at(i).dmPelsHeight == height)
 			{

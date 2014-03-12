@@ -1,2 +1,2 @@
 ﻿path 						hasanim (animspriteonly)RowsToX (animspriteonly)RowsToY	(animspriteonly)TotalXRows 	(animspriteonly)TotalYRows
-Resources/AnimationPNG/DukeAnimAlien.png	1 			4				1					8			8
+Resources/AnimationPNG/ManimatieSheet2.png	1 			0				0					4			8

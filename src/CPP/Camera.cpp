@@ -7,7 +7,7 @@ Camera::Camera(ResourceManager* res, DWORD cameraModeFlag)
 	angleX = 0;
 	angleY = 0;
 	angleZ = 0;
-	sensitivity = 1;
+	sensitivity = 0.12;
 	SetUpCamera(cameraModeFlag);
 }
 

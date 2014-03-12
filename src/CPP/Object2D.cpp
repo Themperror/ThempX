@@ -62,7 +62,7 @@ Object2D::Object2D(ResourceManager* res, char* texturePath, D3DXMATRIX* camView,
 	quad.iBuffer = NULL;
 	quad.iBuffer = FillIndices();
 }
-Object2D::Object2D(ResourceManager* res,char* texturePath,D3DXMATRIX* camViewMatrix,float tSizeX,float tSizeY,float xRowsAnim,float yRowsAnim)
+Object2D::Object2D(ResourceManager* res,char* texturePath,D3DXMATRIX* camViewMatrix,int tSizeX,int tSizeY,int xRowsAnim,int yRowsAnim)
 {
 	resources = res;
 	p_Device = res->GetDevice();
@@ -70,72 +70,13 @@ Object2D::Object2D(ResourceManager* res,char* texturePath,D3DXMATRIX* camViewMat
 	quad.texture = NULL;
 	quad.textureName = texturePath;
 	quad.texture = resources->GetTexture(texturePath);
-	sizeX = tSizeX;
-	sizeY = tSizeY;
-	xRows = xRowsAnim;
-	yRows = yRowsAnim;
+	sizeX = (int)tSizeX;
+	sizeY = (int)tSizeY;
+	xRows = (int)xRowsAnim;
+	yRows = (int)yRowsAnim;
 	InitVars();
 	hasAnimation = true;
 	LoadAnimation();
-}
-void Object2D::LoadAnimation()
-{
-	std::string path2 = quad.textureName;
-	std::string T;
-	T = path2.substr(0,path2.size()-3);
-	T += "txt";
-
-	std::ifstream fin(T);
-	if (!fin.good())
-	{
-		MessageBox(handleWindow,"Couldn't find animation textfile, Animation won't play. LoadAnimation()",T.c_str(),MB_OK);
-		hasAnimation = false;
-	}
-	else
-	{
-		std::string str;
-		while(getline(fin, str))
-		{
-			Animation anim;
-			std::string name;
-			float startPosX,startPosY,endPosX,endPosY;
-
-			fin >> name >> startPosX >> endPosX >> startPosY >> endPosY;
-
-			anim.AnimationName = name;
-			anim.StartPosition.x = startPosX;
-			anim.StartPosition.y = startPosY;
-			anim.EndPosition.x = endPosX;
-			anim.EndPosition.y = endPosY;
-			animations.push_back(anim);
-		}
-	}
-	fin.close();
-	//PlayAnimation("Idle");
-}
-bool Object2D::PlayAnimation(std::string name)
-{
-	for(unsigned int i=0; i < animations.size();i++)
-	{
-		if(animations.at(i).AnimationName == name)
-		{
-			currentXAnimValue = animations.at(i).StartPosition.x;
-			currentYAnimValue = animations.at(i).StartPosition.y;
-			endXAnimValue = animations.at(i).EndPosition.x;
-			endYAnimValue = animations.at(i).EndPosition.y;
-			currentlyPlayingAnimation = name;
-			std::cout << "Animation found and playing: " << name << std::endl;
-			return true;			   
-		}
-	}
-	currentXAnimValue =	0;
-	currentYAnimValue =	0;
-	endXAnimValue = 0;
-	endYAnimValue = 0;
-	currentlyPlayingAnimation = "None";
-	std::cout << "No animation found with that name: " << name << std::endl;
-	MessageBox(handleWindow,"No animation found with that name",name.c_str(),MB_OK);
-	return false;
 }
 void Object2D::InitVars()
 {
@@ -229,98 +170,250 @@ void Object2D::Draw()
 			break;
 	}
 }
-void Object2D::Animate(float dTime)
-{		
-	//std::cout << "animate executed" << std::endl;
-	if(hasAnimation)
+void Object2D::Update(float deltaTime)
+{
+	if(currentAnim != -1)
 	{
-		timeSinceChange += dTime;
-		if( timeSinceChange > 0.25f)
+		if(currentAnim >= 0 && currentAnim < animations.size())
 		{
-			timeSinceChange = 0;
-			HRESULT result;
-			BYTE* ptr;
-			result = quad.vBuffer->Lock(0,sizeof(VertexPosNorTex)*4,(LPVOID*)&ptr,NULL);
-			if(result != D3D_OK)
-			{
-				MessageBox(handleWindow,"Failed to lock vertexBuffer of quad","Animate()",MB_OK);
-			}
-			// loop through the vertices
+			Animation* a = &animations.at(currentAnim);
 			
-			float toAdd = 0;
-			float stepSizeX = 0;
-			float stepSizeY = 0;
-			D3DXVECTOR2 UVs;
-			D3DXVECTOR2 UVs1;
-			D3DXVECTOR2 UVs2;
-			D3DXVECTOR2 UVs3;
-			stepSizeX = (1.0f / xRows);
-			stepSizeY = (1.0f / yRows);
-			for (DWORD i=0;i<4;i++) // hardcoded 4 omdat 4 vertices
+			if(hasAnimation && !a->isFinished)
 			{
-				// get pointer to location
-				VertexPosNorTex *vPtr=(VertexPosNorTex*) ptr;
-				switch(i)
-				{
-				case 0:
-					vPtr->texC.x = stepSizeX * currentXAnimValue;
-
-					vPtr->texC.y = stepSizeY * currentYAnimValue;
- 
-					if(vPtr->texC.x	> 1 - stepSizeX*(xRows-sizeX))
-					{
-						vPtr->texC.x = 0;
-					}
-					if(vPtr->texC.y	> 1 - stepSizeY*(yRows-sizeY))
-					{
-						vPtr->texC.y = 0;
-					}
-					UVs.x = vPtr->texC.x;
-					UVs.y = vPtr->texC.y;
-				break;
-				case 1:
-					vPtr->texC.x = UVs.x+stepSizeX;
-					vPtr->texC.y = UVs.y;
-					UVs1.x = vPtr->texC.x;
-					UVs1.y = vPtr->texC.y;
-				break;
-				case 2:
-					vPtr->texC.x = UVs.x;
-					vPtr->texC.y = UVs.y + stepSizeY;
-					UVs2.x = vPtr->texC.x;
-					UVs2.y = vPtr->texC.y;
-				break;
-				case 3:
-					vPtr->texC.x = UVs.x + stepSizeX;
-					vPtr->texC.y = UVs.y + stepSizeY;
-					UVs3.x = vPtr->texC.x;
-					UVs3.y = vPtr->texC.y;
-				break;
-				}
-
-			
-				// increment pointer to next vertex
-				ptr+=sizeof(VertexPosNorTex);
+				Animate(deltaTime,animationSpeed);
 			}
-			currentXAnimValue++;
-			if(currentXAnimValue > endXAnimValue)
+			if(hasAnimation && a->isFinished && a->loop)
 			{
-				currentYAnimValue++;
-				currentXAnimValue = 0;
-			}
-			if(currentYAnimValue > endYAnimValue)
-			{
-				currentYAnimValue = 0;
-			}
-			// unlock the vertex buffer
-			result = quad.vBuffer->Unlock();
-			if (result != D3D_OK)
-			{
-				MessageBox(handleWindow,"Failed to unlock vertexBuffer of quad","Animate()",MB_OK);
+				a->isFinished = false;
 			}
 		}
 	}
 }
+void Object2D::SetUVValues()
+{
+	HRESULT result;
+	BYTE* ptr;
+	result = quad.vBuffer->Lock(0,sizeof(VertexPosNorTex)*4,(LPVOID*)&ptr,NULL);
+	if(result != D3D_OK)
+	{
+		MessageBox(resources->GetWindowHandle(),"Failed to lock vertexBuffer of quad","Animate()",MB_OK);
+	}
+	// loop through the vertices
+	float toAdd = 0;
+	float stepSizeX = 0;
+	float stepSizeY = 0;
+	D3DXVECTOR2 UVs;
+	D3DXVECTOR2 UVs1;
+	D3DXVECTOR2 UVs2;
+	D3DXVECTOR2 UVs3;
+	stepSizeX = (1.0f / xRows);
+	stepSizeY = (1.0f / yRows);
+		
+	for (DWORD i=0;i<4;i++) // hardcoded 4 because 4 vertices
+	{
+		// get pointer to location
+		VertexPosNorTex* vPtr=(VertexPosNorTex*) ptr;
+		switch(i)
+		{
+		case 0:
+			vPtr->texC.x = stepSizeX * currentXAnimValue;
+			vPtr->texC.y = stepSizeY * currentYAnimValue;
+			UVs.x = vPtr->texC.x;
+			UVs.y = vPtr->texC.y;
+		break;
+		case 1:
+			vPtr->texC.x = UVs.x+stepSizeX;
+			vPtr->texC.y = UVs.y;
+			UVs1.x = vPtr->texC.x;
+			UVs1.y = vPtr->texC.y;
+		break;
+		case 2:
+			vPtr->texC.x = UVs.x;
+			vPtr->texC.y = UVs.y + stepSizeY;
+			UVs2.x = vPtr->texC.x;
+			UVs2.y = vPtr->texC.y;
+		break;
+		case 3:
+			vPtr->texC.x = UVs.x + stepSizeX;
+			vPtr->texC.y = UVs.y + stepSizeY;
+			UVs3.x = vPtr->texC.x;
+			UVs3.y = vPtr->texC.y;
+		break;
+		}
+		// increment pointer to next vertex
+		ptr+=sizeof(VertexPosNorTex);
+	}
+
+	// unlock the vertex buffer
+	result = quad.vBuffer->Unlock();
+	if (result != D3D_OK)
+	{
+		MessageBox(resources->GetWindowHandle(),"Failed to unlock vertexBuffer of quad","Animate()",MB_OK);
+	}
+}
+void Object2D::Animate(float dTime ,float animSpeed)
+{		
+	timeSinceChange += dTime;
+	
+	if(timeSinceChange > animations.at(currentAnim).AnimationSpeed)
+	{
+		Animation* cAnim = &animations.at(currentAnim);
+		timeSinceChange = 0;
+		HRESULT result;
+		BYTE* ptr;
+		result = quad.vBuffer->Lock(0,sizeof(VertexPosNorTex)*4,(LPVOID*)&ptr,NULL);
+		if(result != D3D_OK)
+		{
+			MessageBox(resources->GetWindowHandle(),"Failed to lock vertexBuffer of quad","Animate()",MB_OK);
+		}
+		// loop through the vertices
+		float toAdd = 0;
+		float stepSizeX = 0;
+		float stepSizeY = 0;
+		D3DXVECTOR2 UVs;
+		D3DXVECTOR2 UVs1;
+		D3DXVECTOR2 UVs2;
+		D3DXVECTOR2 UVs3;
+		stepSizeX = (1.0f / xRows);
+		stepSizeY = (1.0f / yRows);
+
+		
+		for (DWORD i=0;i<4;i++) // hardcoded 4 because 4 vertices
+		{
+			// get pointer to location
+			VertexPosNorTex* vPtr=(VertexPosNorTex*) ptr;
+			switch(i)
+			{
+			case 0:
+				vPtr->texC.x = stepSizeX * currentXAnimValue;
+				vPtr->texC.y = stepSizeY * currentYAnimValue;
+				UVs.x = vPtr->texC.x;
+				UVs.y = vPtr->texC.y;
+			break;
+			case 1:
+				vPtr->texC.x = UVs.x+stepSizeX;
+				vPtr->texC.y = UVs.y;
+				UVs1.x = vPtr->texC.x;
+				UVs1.y = vPtr->texC.y;
+			break;
+			case 2:
+				vPtr->texC.x = UVs.x;
+				vPtr->texC.y = UVs.y + stepSizeY;
+				UVs2.x = vPtr->texC.x;
+				UVs2.y = vPtr->texC.y;
+			break;
+			case 3:
+				vPtr->texC.x = UVs.x + stepSizeX;
+				vPtr->texC.y = UVs.y + stepSizeY;
+				UVs3.x = vPtr->texC.x;
+				UVs3.y = vPtr->texC.y;
+			break;
+			}
+			// increment pointer to next vertex
+			ptr+=sizeof(VertexPosNorTex);
+		}
+		
+		// unlock the vertex buffer
+		result = quad.vBuffer->Unlock();
+
+		currentXAnimValue++;
+		if(currentXAnimValue > cAnim->EndPosition.x)
+		{
+			currentYAnimValue++;
+			currentXAnimValue = (int)cAnim->StartPosition.x;
+			if(currentYAnimValue > cAnim->EndPosition.y)
+			{
+				if(cAnim->loop)
+				{
+					currentYAnimValue = (int)cAnim->StartPosition.y;
+				}
+				else
+				{
+					currentXAnimValue = (int)cAnim->EndPosition.x;
+					currentYAnimValue = (int)cAnim->EndPosition.y;
+				}
+				
+				cAnim->isFinished = true;
+			}
+		}
+		if (result != D3D_OK)
+		{
+			MessageBox(resources->GetWindowHandle(),"Failed to unlock vertexBuffer of quad","Animate()",MB_OK);
+		}
+	}
+}
+void Object2D::LoadAnimation()
+{
+	std::string path2 = quad.textureName;
+	std::string T;
+	T = path2.substr(0,path2.size()-3);
+	T += "txt";
+
+	std::ifstream fin(T);
+	if (!fin.good())
+	{
+		MessageBox(resources->GetWindowHandle(),"Couldn't find animation textfile, Animation won't play. LoadAnimation()",T.c_str(),MB_OK);
+		hasAnimation = false;
+	}
+	else
+	{
+		hasAnimation = true;
+		std::string str;
+		float startPosX = 0,startPosY = 0,endPosX = 0,endPosY = 0,animSpeed = 0;
+		int loop = 0;
+		while(getline(fin, str))
+		{
+			Animation anim;
+			anim.Nullify();
+			std::string name;
+
+
+			fin >> name >> startPosX >> endPosX >> startPosY >> endPosY >> animSpeed >> loop;
+			//std::cout << endPosX << " 1 "<< endPosY << std::endl;
+			anim.AnimationName = name;
+			anim.StartPosition = D3DXVECTOR2(0,0);
+			anim.EndPosition = D3DXVECTOR2(0,0);
+			anim.StartPosition.x = startPosX;
+			anim.StartPosition.y = startPosY;
+			anim.EndPosition.x = endPosX;
+			anim.EndPosition.y = endPosY;
+			anim.AnimationSpeed = animSpeed;
+			(loop == 1 ? anim.loop = true : anim.loop = false);
+			animations.push_back(anim);
+		}
+	}
+	fin.close();
+}
+bool Object2D::PlayAnimation(std::string name)
+{
+	for(unsigned int i=0; i < animations.size();i++)
+	{
+		if(animations.at(i).AnimationName == name)
+		{
+			std::cout << "Animation executed" << std::endl;
+			currentXAnimValue = (int)animations.at(i).StartPosition.x;
+			currentYAnimValue = (int)animations.at(i).StartPosition.y;
+			animationSpeed = animations.at(i).AnimationSpeed;
+			currentlyPlayingAnimation = name;
+			currentAnim = i;
+			animations.at(i).isFinished = false;
+			timeSinceChange = animationSpeed/2;
+			if(p_Device->TestCooperativeLevel() == D3D_OK)
+			{
+				SetUVValues();
+			}
+			return true;			   
+		}
+	}
+	currentXAnimValue = 0;
+	currentYAnimValue = 0;
+	currentlyPlayingAnimation = "None";
+	currentAnim = NULL;
+	std::cout << "No animation found with that name: " << name << std::endl;
+	MessageBox(resources->GetWindowHandle(),"No animation found with that name",name.c_str(),MB_OK);
+	return false;
+}
+
 void Object2D::ReleaseResources()
 {
 	if(quad.vBuffer != NULL)

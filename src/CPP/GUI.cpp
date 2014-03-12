@@ -21,9 +21,7 @@ void GUI::Release()
 void GUI::ReloadGUI()
 {
 	Release();
-	
-	if(p_Device->TestCooperativeLevel() == D3D_OK)
-		LoadGUI();
+	LoadGUI();
 }
 void GUI::LoadGUI()
 {
@@ -76,17 +74,26 @@ void GUI::LoadGUI()
 
 			if(hasAnimation)
 			{
-				CreateGUIObject(rect,_strdup(path.c_str()),xRows,yRows);
-				if(std::strcmp(_strdup(startAnimation.c_str()),"NULL") != 0)
+				if(CreateGUIObject(rect,_strdup(path.c_str()),xRows,yRows))
 				{
-					std::cout << "start animation was : " << startAnimation << std::endl;
-					PlayAnimation(&guiObjs.at(guiObjs.size()-1),startAnimation);
+					if(std::strcmp(_strdup(startAnimation.c_str()),"NULL") != 0)
+					{
+						std::cout << "start animation was : " << startAnimation << std::endl;
+						PlayAnimation(&guiObjs.at(guiObjs.size()-1),startAnimation);
+					}
+				}
+				else
+				{
+					fin.close();
 				}
 			}
 			else
 			{
-				std::cout << "should be made" << std::endl;
-				CreateGUIObject(rect,_strdup(path.c_str()));
+				//std::cout << "should be made" << std::endl;
+				if(!CreateGUIObject(rect,_strdup(path.c_str())))
+				{
+					fin.close();
+				}
 			}
 		}
 		fin.close();
@@ -101,7 +108,14 @@ bool GUI::CreateGUIObject(Rectangle rect,char* textureName)
 	GText.rect = rect;
 	GText.hasAnimation = false;
 	GText.vBuffer = CreateQuadVBuffer(&GText);
-	GText.iBuffer = CreateQuadIndices();
+	if(GText.vBuffer != NULL)
+	{
+		GText.iBuffer = CreateQuadIndices();
+	}
+	else
+	{
+		return false;
+	}
 	GText.animationSpeed = 0.25f;
 	guiObjs.push_back(GText);
 	return true;
@@ -115,7 +129,14 @@ bool GUI::CreateGUIObject(Rectangle rect,char* textureName, int xRows,int yRows)
 	GText.rect = rect;
 	GText.hasAnimation = true;
 	GText.vBuffer = CreateQuadVBuffer(&GText);
-	GText.iBuffer = CreateQuadIndices();
+	if(GText.vBuffer != NULL)
+	{
+		GText.iBuffer = CreateQuadIndices();
+	}
+	else
+	{
+		return false;
+	}
 	GText.animationSpeed = 0.25f;
 	GText.xRows = xRows;
 	GText.yRows = yRows;
@@ -124,60 +145,6 @@ bool GUI::CreateGUIObject(Rectangle rect,char* textureName, int xRows,int yRows)
 	LoadAnimation(&GText);
 	guiObjs.push_back(GText);
 	return true;
-}
-void GUI::Render()
-{
-	p_Device->SetTransform(D3DTS_PROJECTION, &matProj);
-	
-	for(unsigned int i = 0; i < guiObjs.size();i++)
-	{
-		HRESULT result;
-		D3DXMATRIX world;
-		
-		D3DXMatrixTranslation(&world,0,0,0);
-		
-		result = p_Device->SetFVF( D3DFVF_XYZRHW | D3DFVF_TEX1);
-		result = p_Device->SetStreamSource(0, guiObjs.at(i).vBuffer, 0, sizeof(Vertex2D));
-		result = p_Device->SetIndices(guiObjs.at(i).iBuffer);
-		result = p_Device->SetTransform(D3DTS_WORLD,&world);
-		result = p_Device->SetTexture(0,guiObjs.at(i).texture);
-
-		GUITexture* g =  &guiObjs.at(i);
-		
-		if(g->currentAnim >= 0 && g->currentAnim < g->animations.size())
-		{
-			Animation* anim = &g->animations.at(g->currentAnim);
-			if(g->hasAnimation && g->currentAnim != -1 && anim->isFinished == false)
-			{
-				result = p_Device->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP,0,0,4,0,2);
-			}
-			else if(g->hasAnimation && anim->loop == false && anim->isFinished)
-			{
-				result = p_Device->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP,0,0,4,0,2);
-				g->timeSinceChange += 0.016f;
-				if(g->timeSinceChange > anim->AnimationSpeed)
-				{
-					g->timeSinceChange = 0;
-					g->currentAnim = -1;
-				}
-			}
-		}
-		if(!g->hasAnimation)
-		{
-			result = p_Device->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP,0,0,4,0,2);
-		}
-		switch(result)
-		{
-			case D3DERR_INVALIDCALL: std::cout << "Invalid Call" << std::endl;
-				break;
-			case D3DERR_CONFLICTINGRENDERSTATE: std::cout << "Conflicting Renderstate" << std::endl;
-				break ;
-			case D3DERR_DRIVERINVALIDCALL: std::cout <<"Driver invalid call"<< std::endl;
-				break;
-			case D3DERR_TOOMANYOPERATIONS : std::cout << "too many operations" << std::endl; 
-				break;
-		}
-	}
 }
 void GUI::Update(float deltaTime)
 {
@@ -395,15 +362,15 @@ void GUI::LoadAnimation(GUITexture* obj)
 	}
 	fin.close();
 }
-bool GUI::PlayAnimation(GUITexture* obj,std::string name)
+bool GUI::PlayAnimation(GUITexture* obj, std::string name)
 {
 	for(unsigned int i=0; i < obj->animations.size();i++)
 	{
 		if(obj->animations.at(i).AnimationName == name)
 		{
 			std::cout << "Animation executed" << std::endl;
-			obj->currentXAnimValue = obj->animations.at(i).StartPosition.x;
-			obj->currentYAnimValue = obj->animations.at(i).StartPosition.y;
+			obj->currentXAnimValue = (int)obj->animations.at(i).StartPosition.x;
+			obj->currentYAnimValue = (int)obj->animations.at(i).StartPosition.y;
 			obj->animationSpeed = obj->animations.at(i).AnimationSpeed;
 			obj->currentlyPlayingAnimation = name;
 			obj->currentAnim = i;
@@ -424,6 +391,62 @@ bool GUI::PlayAnimation(GUITexture* obj,std::string name)
 	MessageBox(resources->GetWindowHandle(),"No animation found with that name",name.c_str(),MB_OK);
 	return false;
 }
+
+void GUI::Render()
+{
+	p_Device->SetTransform(D3DTS_PROJECTION, &matProj);
+	
+	for(unsigned int i = 0; i < guiObjs.size();i++)
+	{
+		HRESULT result;
+		D3DXMATRIX world;
+		
+		D3DXMatrixTranslation(&world,0,0,0);
+		
+		result = p_Device->SetFVF( D3DFVF_XYZRHW | D3DFVF_TEX1);
+		result = p_Device->SetStreamSource(0, guiObjs.at(i).vBuffer, 0, sizeof(Vertex2D));
+		result = p_Device->SetIndices(guiObjs.at(i).iBuffer);
+		result = p_Device->SetTransform(D3DTS_WORLD,&world);
+		result = p_Device->SetTexture(0,guiObjs.at(i).texture);
+
+		GUITexture* g =  &guiObjs.at(i);
+		
+		if(g->currentAnim >= 0 && g->currentAnim < g->animations.size())
+		{
+			Animation* anim = &g->animations.at(g->currentAnim);
+			if(g->hasAnimation && g->currentAnim != -1 && anim->isFinished == false)
+			{
+				result = p_Device->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP,0,0,4,0,2);
+			}
+			else if(g->hasAnimation && anim->loop == false && anim->isFinished)
+			{
+				result = p_Device->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP,0,0,4,0,2);
+				g->timeSinceChange += 0.016f;
+				if(g->timeSinceChange > anim->AnimationSpeed)
+				{
+					g->timeSinceChange = 0;
+					g->currentAnim = -1;
+				}
+			}
+		}
+		if(!g->hasAnimation)
+		{
+			result = p_Device->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP,0,0,4,0,2);
+		}
+		switch(result)
+		{
+			case D3DERR_INVALIDCALL: std::cout << "Invalid Call" << std::endl;
+				break;
+			case D3DERR_CONFLICTINGRENDERSTATE: std::cout << "Conflicting Renderstate" << std::endl;
+				break ;
+			case D3DERR_DRIVERINVALIDCALL: std::cout <<"Driver invalid call"<< std::endl;
+				break;
+			case D3DERR_TOOMANYOPERATIONS : std::cout << "too many operations" << std::endl; 
+				break;
+		}
+	}
+}
+
 LPDIRECT3DVERTEXBUFFER9 GUI::CreateQuadVBuffer(GUI::GUITexture* gui)
 {
 	if(!gui->hasAnimation)
@@ -438,10 +461,12 @@ LPDIRECT3DVERTEXBUFFER9 GUI::CreateQuadVBuffer(GUI::GUITexture* gui)
 		LPDIRECT3DVERTEXBUFFER9 p_dx_VertexBuffer = NULL; //altijd nieuwe variables op NULL zetten (0x000000) zodat we kunnen zien dat het een nullpointer reference is als we een error krijgen, anders krijgt ie random memory space en kunnen we niet checken op NULL
 
 		HRESULT result = p_Device->CreateVertexBuffer(4*sizeof(Vertex2D), 0, D3DFVF_XYZRHW | D3DFVF_TEX1, D3DPOOL_MANAGED, &p_dx_VertexBuffer, NULL);
-		switch(result) //error checking of het gelukt is, zo niet, sluit af, want anders krijgen we dalijk andere soorten errors die niet opgevangen worden. (Access violation of nullpointer references vanwegen random pointers)
+		switch(result) 
 		{
 		case D3DERR_INVALIDCALL: 
-			MessageBox(resources->GetWindowHandle(),"Invalid Call while creating VertexBuffer","GUI createQuad()",MB_OK);
+			//MessageBox(resources->GetWindowHandle(),"Invalid Call while creating VertexBuffer","GUI createQuad()",MB_OK);
+			//Not sure whether this is a smart move due to the possibility of an infinite loop;
+			ReloadGUI();
 			return NULL;
 			break;
 		case D3DERR_OUTOFVIDEOMEMORY:
@@ -461,7 +486,7 @@ LPDIRECT3DVERTEXBUFFER9 GUI::CreateQuadVBuffer(GUI::GUITexture* gui)
 			MessageBox(resources->GetWindowHandle(),"Error trying to lock","GUI FillVertices()",MB_OK);
 			return NULL;
 			break;
-		}//we konden de vertexbuffer locken dus ga door
+		}
 		memcpy(p_Vertices, triangleVerts, 4*sizeof(Vertex2D));
 		p_dx_VertexBuffer->Unlock();
 
@@ -483,7 +508,8 @@ LPDIRECT3DVERTEXBUFFER9 GUI::CreateQuadVBuffer(GUI::GUITexture* gui)
 		switch(result) //error checking of het gelukt is, zo niet, sluit af, want anders krijgen we dalijk andere soorten errors die niet opgevangen worden. (Access violation of nullpointer references vanwegen random pointers)
 		{
 		case D3DERR_INVALIDCALL: 
-			MessageBox(resources->GetWindowHandle(),"Invalid Call while creating VertexBuffer"," GUI FillVertices()",MB_OK);
+			//MessageBox(resources->GetWindowHandle(),"Invalid Call while creating VertexBuffer"," GUI FillVertices()",MB_OK);
+			ReloadGUI();
 			return NULL;
 			break;
 		case D3DERR_OUTOFVIDEOMEMORY:
@@ -524,7 +550,9 @@ LPDIRECT3DINDEXBUFFER9 GUI::CreateQuadIndices() //zelfde als FillVertices, zie u
 	switch(result)
 	{
 	case D3DERR_INVALIDCALL: 
-		MessageBox(resources->GetWindowHandle(),"Invalid Call while creating IndexBuffer","GUI FillIndices()",MB_OK);
+		
+		//MessageBox(resources->GetWindowHandle(),"Invalid Call while creating IndexBuffer","GUI FillIndices()",MB_OK);
+		std::cout << "Invalid Call while creating IndexBuffer in GUI FillIndices(), You can ignore this, It will be handled in the following FillVertices, This is only for notifying" << std::endl;
 		return NULL;
 		break;
 	case D3DERR_OUTOFVIDEOMEMORY:

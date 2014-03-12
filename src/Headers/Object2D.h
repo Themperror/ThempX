@@ -13,12 +13,6 @@
 #include <stdio.h>
 
 
-struct Animation
-{
-	D3DXVECTOR2 StartPosition;
-	D3DXVECTOR2 EndPosition;
-	std::string AnimationName;
-};
 struct Quad
 {
 	LPDIRECT3DVERTEXBUFFER9 vBuffer;
@@ -34,6 +28,27 @@ class Object2D
 {
 	
 public:	 
+
+	
+	struct Animation
+	{
+		D3DXVECTOR2 StartPosition;
+		D3DXVECTOR2 EndPosition;
+		std::string AnimationName;
+		float AnimationSpeed;
+		bool isFinished;
+		bool loop;
+		void Nullify()
+		{
+			StartPosition = D3DXVECTOR2(0,0);
+			EndPosition = D3DXVECTOR2(0,0);
+			AnimationName = "";
+			AnimationSpeed = 0;
+			isFinished = false;
+			loop = false;
+		}
+	};
+
 	struct VertexPosNorTex
 	{
 		D3DXVECTOR3 pos;
@@ -43,15 +58,17 @@ public:
   
 	Object2D(ResourceManager* res, char* texturePath, D3DXMATRIX* camView);
 	Object2D(ResourceManager* res, char* texturePath, D3DXMATRIX* camView, D3DXVECTOR2 LLPos, D3DXVECTOR2 URPos);
-	Object2D(ResourceManager* res, char* texturePath,D3DXMATRIX* camViewMatrix,float tSizeX,float tSizeY,float xRowsAnim,float yRowsAnim);
+	Object2D(ResourceManager* res, char* texturePath,D3DXMATRIX* camViewMatrix,int tSizeX,int tSizeY,int xRowsAnim,int yRowsAnim);
 	D3DXVECTOR3 rotation;
 	D3DXVECTOR3 position;
 	D3DXVECTOR3 scaling;	 
 	D3DXMATRIX* cameraView;
 
-	void Draw();
-	 
-	void Animate(float dTime);
+	void Update(float deltaTime);
+	void SetUVValues();
+	bool PlayAnimation(std::string name);
+
+	void Draw(); 
 	
 	bool hasAnimation;
 	void ReleaseResources();
@@ -63,34 +80,36 @@ public:
 	std::string objName;
 	std::string tag;
 	//linkedphysX obj
-	bool PlayAnimation(std::string name);
 	std::string currentlyPlayingAnimation;
 	
-	inline float GetXRows()
+	inline int GetXRows()
 	{
 		return xRows;
 	}
-	inline float GetYRows()
+	inline int GetYRows()
 	{
 		return yRows;
 	}
-	inline float GetXSize()
+	inline int GetXSize()
 	{
 		return sizeX;
 	}
-	inline float GetYSize()
+	inline int GetYSize()
 	{
 		return sizeY;
 	}
 private:
 	void InitVars(); 
-	void LoadAnimation();
 	std::vector<Animation> animations; 
-	float xRows, yRows, currentXAnimValue,currentYAnimValue,sizeX,sizeY,endXAnimValue,endYAnimValue;
-	float timeSinceChange;
+	int xRows, yRows, currentXAnimValue,currentYAnimValue,sizeX,sizeY,endXAnimValue,endYAnimValue,currentAnim;
+	float timeSinceChange,animationSpeed;
 	LPDIRECT3DVERTEXBUFFER9 FillCustomVertices(D3DXVECTOR2 LLPos,D3DXVECTOR2 URPos);
 	LPDIRECT3DVERTEXBUFFER9 FillVertices();
 	LPDIRECT3DINDEXBUFFER9 FillIndices();
+
+	
+	void Animate(float dTime ,float animSpeed);
+	void LoadAnimation();
 
 	LPDIRECT3DDEVICE9 p_Device;
 	ResourceManager* resources;

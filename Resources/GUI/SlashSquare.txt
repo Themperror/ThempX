@@ -1,2 +1,3 @@
 AnimationName		startposX	endposX		startposY	endposY  (animaties zijn zero based) 	AnimationSpeed loop
-Attack			0		1		0		1					0.05 	    	0
+Attack			0		1		0		1					0.03 	    	0
+ReversedAttack		2		3		0		1					0.03 	    	0

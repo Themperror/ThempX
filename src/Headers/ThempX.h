@@ -43,7 +43,7 @@ private:
 	void CreateLoadingScreen();
 	void SetDisplayModeFullScreen(int devmodeIndex);
 	void SetDisplayModeWindowed(int sizeX, int sizeY, int renderSizeX,int renderSizeY);
-
+	void SetDefaultRenderStateSettings();
 	LPDIRECT3DDEVICE9 InitializeDevice(HWND han_WindowToBindTo);
 	InputHandler* inputHandler;
 	SoundHandler* soundHandler;
@@ -61,8 +61,9 @@ private:
 	LARGE_INTEGER fixedFrequency;        // ticks per second
 	LARGE_INTEGER newFixedDelta, oldFixedDelta;           // ticks
 
-	DWORD currentTicks;
-	DWORD oldTicks;
+	LARGE_INTEGER currentTicks;
+	LARGE_INTEGER currentFrequency;
+	LARGE_INTEGER oldTicks;
 
 	LARGE_INTEGER frequency;
 	LARGE_INTEGER oldDelta,newDelta;

@@ -45,7 +45,7 @@ public:
 		Rectangle rect;
 		LPDIRECT3DTEXTURE9 texture;
 		std::string textureName;
-		bool hasAnimation;
+		bool hasAnimation, mirrored;
 		LPDIRECT3DVERTEXBUFFER9 vBuffer;
 		LPDIRECT3DINDEXBUFFER9 iBuffer;
 		float timeSinceChange;
@@ -58,6 +58,7 @@ public:
 		void Nullify()
 		{
 			rect.Nullify();
+			mirrored = 0;
 			texture = NULL;
 			textureName = "";
 			hasAnimation = 0;

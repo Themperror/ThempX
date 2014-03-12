@@ -61,7 +61,7 @@ void Game::Update(double deltaTime)
 	float deltaTimeF = (float)deltaTime;
 	for(unsigned int i =0 ;i<spriteObjs.size(); i++)
 	{
-		spriteObjs.at(i)->Animate(deltaTimeF);
+		spriteObjs.at(i)->Update(deltaTimeF);
 	}
 	for(unsigned int i = 0; i < particles.size(); i++)
 	{
@@ -131,20 +131,29 @@ void Game::Render()
 		{
 			p_Device->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_CLAMP);
 			p_Device->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP);
+			currentEditorObj->obj2D->position = cam->GetPosition()+cam->GetLookDir()*2;
+			currentEditorObj->obj2D->cameraView = &cam->GetView();
 			currentEditorObj->obj2D->Draw();
 		}
 		else IFOBJ3D
 		{
 			p_Device->SetSamplerState(0,D3DSAMP_ADDRESSU,D3DTADDRESS_WRAP);
 			p_Device->SetSamplerState(0,D3DSAMP_ADDRESSV,D3DTADDRESS_WRAP);
+			currentEditorObj->obj3D->position = cam->GetPosition()+cam->GetLookDir()*4;
 			currentEditorObj->obj3D->DrawModel();
 		}
 		else IFCOL
 		{
+			p_Device->SetSamplerState(0,D3DSAMP_ADDRESSU,D3DTADDRESS_WRAP);
+			p_Device->SetSamplerState(0,D3DSAMP_ADDRESSV,D3DTADDRESS_WRAP);
+			currentEditorObj->col->position = cam->GetPosition()+cam->GetLookDir()*4;
 			currentEditorObj->col->Draw();
 		}
 	}
 	physics->DrawBoxes();
+	
+	p_Device->SetSamplerState(0,D3DSAMP_ADDRESSU,D3DTADDRESS_WRAP);
+	p_Device->SetSamplerState(0,D3DSAMP_ADDRESSV,D3DTADDRESS_WRAP);
 	gui->Render();
 	cam->RenderCamera(THEMPX_CAM_PERSPECTIVE);
 	resources->DrawAllText();
@@ -183,133 +192,19 @@ void Game::DoInput(float dT)
 	if(KeyPressed(DIK_COMMA) == 2)
 	{
 		data->changeDisplay = true;
-		data->windowed = !data->windowed;
-		if(data->windowed)
-		{
-			data->windowSizeX = 800;
-			data->windowSizeY = 600;
-			data->renderSizeX = 800;
-			data->renderSizeY = 600;
-		}
-		else
-		{
-			data->devmodeIndex = resources->GetDevModeWithHeight(768);
-		}
-		//p_Device->EvictManagedResources();
-		//resources->LostDeviceAllText();
+		data->windowed = false;
+		data->devmodeIndex = resources->GetDevMode(1366,768);
 		return;
 	}
 	if(KeyPressed(DIK_M) == 2)
 	{
 		data->changeDisplay = true;
 		data->windowed = true;
-		if(data->windowed)
-		{
-			qualityLevel++;
-			if(qualityLevel == 1)
-			{
-				data->renderSizeX = 240;
-				data->renderSizeY = 180;
-			}
-			else if(qualityLevel == 2)
-			{
-				data->renderSizeX = 320;
-				data->renderSizeY = 240;
-			}
-			else if(qualityLevel == 3)
-			{
-				data->renderSizeX = 480;
-				data->renderSizeY = 360;
-			}
-			else if(qualityLevel == 4)
-			{
-				data->renderSizeX = 640;
-				data->renderSizeY = 480;
-			}
-			else if(qualityLevel == 5)
-			{
-				data->renderSizeX = 800;
-				data->renderSizeY = 600;
-			}
-			else if(qualityLevel == 6)
-			{
-				data->renderSizeX = 1024;
-				data->renderSizeY = 800;
-			}
-			else if(qualityLevel == 7)
-			{
-				data->renderSizeX = 4096;
-				data->renderSizeY = 3072;
-			}
-			else if(qualityLevel == 8)
-			{
-				qualityLevel = 1;
-				data->renderSizeX = 240;
-				data->renderSizeY = 180;
-			}
-
-		}
-		//p_Device->EvictManagedResources();
-		//resources->LostDeviceAllText();
+		data->renderSizeX = 800;
+		data->renderSizeY = 600;
 		return;
 	}
-	if(KeyPressed(DIK_N) == 2)
-	{
-		data->changeDisplay = true;
-		data->windowed = false;
-		data->renderSizeX = 1366;
-		data->renderSizeY = 768;
-		resources->GetDesktopResolution(data->windowSizeX,data->windowSizeY);
-		if(!data->windowed)
-		{
-			qualityLevel++;
-			if(qualityLevel == 1)
-			{
-				data->renderSizeX = 240;
-				data->renderSizeY = 180;
-			}
-			else if(qualityLevel == 2)
-			{
-				data->renderSizeX = 320;
-				data->renderSizeY = 240;
-			}
-			else if(qualityLevel == 3)
-			{
-				data->renderSizeX = 480;
-				data->renderSizeY = 360;
-			}
-			else if(qualityLevel == 4)
-			{
-				data->renderSizeX = 640;
-				data->renderSizeY = 480;
-			}
-			else if(qualityLevel == 5)
-			{
-				data->renderSizeX = 800;
-				data->renderSizeY = 600;
-			}
-			else if(qualityLevel == 6)
-			{
-				data->renderSizeX = 1024;
-				data->renderSizeY = 800;
-			}
-			else if(qualityLevel == 7)
-			{
-				data->renderSizeX = 1280;
-				data->renderSizeY = 1024;
-			}
-			else if(qualityLevel == 8)
-			{
-				qualityLevel = 1;
-				data->renderSizeX = 240;
-				data->renderSizeY = 180;
-			}
-
-		}
-		//p_Device->EvictManagedResources();
-		//resources->LostDeviceAllText();
-		return;
-	}
+	
 	int speed = 60;
 	if(KeyPressed(DIK_LSHIFT))
 	{
@@ -329,33 +224,33 @@ void Game::DoInput(float dT)
 	}
 	if(KeyPressed(DIK_S))
 	{
-		cam->AddPosition(-cam->GetLookDir().x *dT*speed,0,-cam->GetLookDir().z *dT*speed);
+		cam->AddPosition(-cam->GetLookDir().x *dT*speed,0,-cam->GetLookDir().z *dT* speed);
 	}
 	if(KeyPressed(DIK_D))
 	{
 		D3DXVECTOR3 temp = cam->ReturnDirection(cam->angleX-90,cam->angleY);
-		cam->AddPosition(temp.x *dT*speed,0,temp.z *dT*speed);
+		cam->AddPosition(temp.x *dT*(speed/1.5f),0,temp.z *dT*(speed/1.5f));
 	}
 	if(KeyPressed(DIK_A))
 	{
 		D3DXVECTOR3 temp = cam->ReturnDirection(cam->angleX+90,cam->angleY);
-		cam->AddPosition(temp.x *dT*speed,0,temp.z *dT*speed);
+		cam->AddPosition(temp.x *dT*(speed/1.5f),0,temp.z *dT*(speed/1.5f));
 	}
 	if(KeyPressed(DIK_NUMPADPLUS) == 2)
 	{
-		cam->sensitivity += 30;
+		cam->sensitivity += 0.05f;
 		std::cout << "Mouse Sensitivity set to: " <<cam->sensitivity << std::endl;
 	}
 	if(KeyPressed(DIK_NUMPADMINUS) == 2)
 	{
-		cam->sensitivity -= 30;
+		cam->sensitivity -= 0.05f;
 		std::cout << "Mouse Sensitivity set to: " <<cam->sensitivity << std::endl;
 	}
 
 
 	if(KeyPressed(DIK_0) == 2)
 	{
-		EditorMode = false;
+		EditorMode = !EditorMode;
 		if(EditorMode == true)
 		{
 			currentEditorObjIndex = 0;
@@ -376,9 +271,9 @@ void Game::DoInput(float dT)
 			p_Device->SetRenderState(D3DRS_FILLMODE,D3DFILL_SOLID);
 		}
 	}
-	if(KeyPressed(DIK_NUMPADMINUS) == 2)
+	if(KeyPressed(DIK_LCONTROL) == 2)
 	{
-		scaleMultiplier = -3;
+		scaleMultiplier = -scaleMultiplier;
 		cout << "Scale Adding has been set to false" << endl;
 	}
 	if(KeyPressed(DIK_NUMPAD4) || KeyPressed(DIK_NUMPAD6))
@@ -472,7 +367,7 @@ void Game::DoInput(float dT)
 		cout << currentEditorObjIndex << endl;
 		if(currentEditorObjIndex < 0)
 		{
-			currentEditorObjIndex = editorObjs.size()-1;
+			currentEditorObjIndex <= editorObjs.size()-1;
 		}
 		currentEditorObj = &editorObjs.at(currentEditorObjIndex);
 	}
@@ -481,14 +376,14 @@ void Game::DoInput(float dT)
 		currentEditorObjIndex++;
 		cout << currentEditorObjIndex << endl;
 		cout << "pressed 9 " << endl;
-		if(currentEditorObjIndex == editorObjs.size())
+		if(currentEditorObjIndex >= editorObjs.size())
 		{
 			currentEditorObjIndex = 0;
 		}
 		currentEditorObj = &editorObjs.at(currentEditorObjIndex);
 	}
 
-	if(KeyPressed(DIK_SPACE))
+	if(KeyPressed(DIK_SPACE) == 2)
 	{
 		DestroyLevel();	 //This will destroy the current level 
 		LoadLevel();	//load the level in level.txt (if edited, the changes will reflect on the world)
@@ -615,10 +510,6 @@ bool Game::CreateStatic2DObject(bool hasPhysics, Object2DData* data)
 //Left Mouse click function (to test things with), will be removed for engine use, as this is a gameplay feature
 void Game::LeftMouseClick()
 {
-	if(gui->guiObjs.size() > 0)
-	{
-		gui->PlayAnimation(&gui->guiObjs.at(1),"Attack");
-	}
 	if(EditorMode)
 	{
 		if(currentEditorObj->obj2D != NULL)
@@ -645,7 +536,7 @@ void Game::LeftMouseClick()
 			obj->SetPosition(currentEditorObj->obj3D->position.x,currentEditorObj->obj3D->position.y,currentEditorObj->obj3D->position.z);
 			modelObjs.push_back(obj);
 		}
-		else
+		else if(currentEditorObj->col != NULL)
 		{
 			DebugCube* src = currentEditorObj->col;
 			DebugCube* obj = new DebugCube(src->position,src->rotation,src->LLFPos,src->URBPos,resources);
@@ -653,6 +544,21 @@ void Game::LeftMouseClick()
 			debugCubes.push_back(obj);
 		}
 		CreateLevelFile();
+	}
+	else
+	{
+		if(gui->guiObjs.size() > 0)
+		{
+			gui->guiObjs.at(1).mirrored = !gui->guiObjs.at(1).mirrored;
+			if(!gui->guiObjs.at(1).mirrored)
+			{
+				gui->PlayAnimation(&gui->guiObjs.at(1),"Attack");
+			}
+			else
+			{
+				gui->PlayAnimation(&gui->guiObjs.at(1),"ReversedAttack");
+			}
+		}
 	}
 }
 void Game::ReleaseAll()
@@ -735,7 +641,7 @@ void Game::SetUpEditorMode()
 		{
 			delete editorObjs.at(i).obj3D;
 		}
-		else
+		else if(editorObjs.at(i).col != NULL)
 		{
 			editorObjs.at(i).col->Release();
 			delete editorObjs.at(i).col;
@@ -744,7 +650,7 @@ void Game::SetUpEditorMode()
 	editorObjs.clear();
 
 	string line;
-	ifstream myfile ("editorresources.txt");
+	ifstream myfile ("resources/editorresources.txt");
 	if (!myfile.good())
 	{
 		MessageBox(handleWindow,"Could Not Find editorresources.txt, EditorMode won't work", "ThempX()",MB_OK);
@@ -753,8 +659,10 @@ void Game::SetUpEditorMode()
 	}
 	if (myfile.is_open())
 	{
+		MessageBox(handleWindow,"Editor mode activated","SetUpEditorMode",MB_OK);
 		EditorObj obj;
 		obj.col = new DebugCube(D3DXVECTOR3(0,0,0),D3DXVECTOR3(0,0,0),D3DXVECTOR3(-1,-1,-1),D3DXVECTOR3(1,1,1),resources);
+		obj.col->doRender = true;
 		obj.col->scaling = D3DXVECTOR3(1,1,1);
 		obj.obj2D = NULL;
 		obj.obj3D = NULL;
@@ -818,6 +726,11 @@ void Game::SetUpEditorMode()
 			currentEditorObj = &editorObjs.at(0);
 		}
 	}
+	else
+	{
+		EditorMode = false;
+		MessageBox(handleWindow,"No EditorResources.txt found", "SetUpEditorMode",MB_OK);
+	}
 	currentEditorObjIndex = 0;
 	cout <<"array size is: "<< editorObjs.size() << endl;
 }
@@ -842,12 +755,11 @@ void Game::CreateLevelFile()
 			DebugCube* obj = debugCubes.at(i);
 			level << "Collision"  << "\t" << "Collision"<< "\t" << obj->position.x << "\t" << obj->position.y << "\t" << obj->position.z << "\t" << obj->scaling.x << "\t" << obj->scaling.y << "\t" << obj->scaling.z << "\t" << obj->rotation.x << "\t" << obj->rotation.y << "\t" << obj->rotation.z << "\t" << 0 << "\t" << 0 << "\t" << 0 << "\t" << 0 << obj->tag <<"\n";
 		}
-
 		level.close();
 	}
 	else
 	{
-		std::cout << "Unable to create/open file" << std::endl;
+		std::cout << "Unable to create the new level file" << std::endl;
 	}
 }
 //speaks for itself

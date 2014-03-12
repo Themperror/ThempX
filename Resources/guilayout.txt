@@ -1,3 +1,3 @@
-texturepath 				posX 	posY 	sizeX 	sizeY 	xRowsTotal 	yRowsTotal 	hasAnimation 	positionXFromEnd 	positionYFromEnd 
+texturepath 				posX 	posY 	sizeX 	sizeY 	xRowsTotal 	yRowsTotal 	hasAnimation 	positionXFromEnd 	positionYFromEnd  Startanimation
 Resources/GUI/ManimatieSheet2.png 	25	65	28	35 	8 		8 		1 		0 			1		Walk
-Resources/GUI/SlashSquare.png		0	0	100	100	2		2		1		0			0		NULL
+Resources/GUI/SlashSquare.png		0	0	100	100	4		2		1		0			0		NULL
