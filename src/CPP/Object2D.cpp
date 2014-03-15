@@ -62,7 +62,7 @@ Object2D::Object2D(ResourceManager* res, char* texturePath, D3DXMATRIX* camView,
 	quad.iBuffer = NULL;
 	quad.iBuffer = FillIndices();
 }
-Object2D::Object2D(ResourceManager* res,char* texturePath,D3DXMATRIX* camViewMatrix,int tSizeX,int tSizeY,int xRowsAnim,int yRowsAnim)
+Object2D::Object2D(ResourceManager* res,char* texturePath,D3DXMATRIX* camViewMatrix,int xRowsAnim,int yRowsAnim)
 {
 	resources = res;
 	p_Device = res->GetDevice();
@@ -70,8 +70,6 @@ Object2D::Object2D(ResourceManager* res,char* texturePath,D3DXMATRIX* camViewMat
 	quad.texture = NULL;
 	quad.textureName = texturePath;
 	quad.texture = resources->GetTexture(texturePath);
-	sizeX = (int)tSizeX;
-	sizeY = (int)tSizeY;
 	xRows = (int)xRowsAnim;
 	yRows = (int)yRowsAnim;
 	InitVars();

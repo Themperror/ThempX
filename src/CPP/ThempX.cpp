@@ -146,7 +146,7 @@ HWND ThempX::NewWindow(LPCTSTR windowName,int posX,int posY, int sizeX,int sizeY
 	WNDCLASSEX wc;
 
 	wc.cbSize = sizeof(WNDCLASSEX);
-	wc.style = CS_HREDRAW | CS_VREDRAW;
+	wc.style = CS_ENABLE;
 	wc.lpfnWndProc = WindowProc;
 	wc.cbClsExtra = 0;
 	wc.cbWndExtra = 0;
@@ -247,12 +247,13 @@ ThempX::ThempX(HINSTANCE hInstance,LPSTR lpCmdLine)
 	int realframes = 0;
     DWORD cTicks = 0;
 	DWORD oTicks = 0;
+	int deltaTimerPrecision = 10000;
 	while(data.loop)
     {
 		
 		QueryPerformanceFrequency(&currentFrequency);
 		QueryPerformanceCounter(&currentTicks);
-		currentTicks.QuadPart = currentTicks.QuadPart*10000 / currentFrequency.QuadPart;
+		currentTicks.QuadPart = currentTicks.QuadPart*deltaTimerPrecision / currentFrequency.QuadPart;
 
 		while(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
         {
@@ -314,26 +315,15 @@ ThempX::ThempX(HINSTANCE hInstance,LPSTR lpCmdLine)
 			
 			FixedUpdate();
 			realframes++;
-
 			
-
-			cTicks = currentTicks.QuadPart;
-			if(cTicks-oTicks > 10000+((cTicks-oTicks) % 10000))
-			{
-				std::cout << "FixedUpdate running at "<<realframes <<" times per second"<< std::endl;
-				std::cout << "FPS: " << frames << std::endl;
-				frames = 0;
-				realframes = 0;
-				oTicks = cTicks;
-			}
-			if(currentTicks.QuadPart > oldTicks.QuadPart + 166) 
+			if(currentTicks.QuadPart-oldTicks.QuadPart > (deltaTimerPrecision+((currentTicks.QuadPart-oldTicks.QuadPart) % deltaTimerPrecision))/60) 
 			//why does 166 result in 120 fps limit on fast machines and 60 fps limit on slower machines? 1/60 = 0.0166
 			//332 is 60 FPS and unlimited fixed update
 			//166 is 120 fps and unlimited fixed update
 			//83 = 120 FPS and limited fixed update to 120 times per second
 			{
-				//std::cout << currentTicks.QuadPart << " <-currentTicks   " << oldTicks.QuadPart <<" <- oldTicks" << std::endl; 
-				frames++;
+				//std::cout << currentTicks.QuadPart << "  <-CurrentTicks quadpart   " << oldTicks.QuadPart <<"  <- OldTicks" << std::endl;
+				
 				/*if(p_Device->TestCooperativeLevel() == D3D_OK)
 				{
 					Update();
@@ -341,7 +331,17 @@ ThempX::ThempX(HINSTANCE hInstance,LPSTR lpCmdLine)
 				}*/ //guarded, due to the nature of alt-tabbing and switching screen modes, this was a security to ensure no errors would come from a lost d3ddevice
 				Update();
 				DrawScene();
+				frames++;
 				oldTicks = currentTicks;
+			}
+			cTicks = currentTicks.QuadPart;
+			if(cTicks-oTicks > deltaTimerPrecision+((cTicks-oTicks) % deltaTimerPrecision))
+			{
+				std::cout << "FixedUpdate running at "<<realframes <<" times per second"<< std::endl;
+				std::cout << "FPS: " << frames/2 << std::endl;
+				frames = 0;
+				realframes = 0;
+				oTicks = cTicks;
 			}
 		}
 		else
@@ -423,6 +423,8 @@ void ThempX::Update()
 	delta = (double)(oldDelta.QuadPart - newDelta.QuadPart);
 	delta = abs(delta/10000);
 	//cout << delta << ".\n";
+
+
 	g->Update(delta);
 }
 //FixedUpdate, this will run every iteration of the main game loop
@@ -436,6 +438,9 @@ void ThempX::FixedUpdate()
 	fixedDelta = (double)(oldFixedDelta.QuadPart - newFixedDelta.QuadPart) ;
 	fixedDelta = abs(fixedDelta/10000);
 	//cout << fixedDelta << " ms.\n";
+
+
+
 	g->FixedUpdate(fixedDelta);
 }
 

@@ -183,12 +183,20 @@ public:
 	{
 		for(unsigned int i =0; i < devmodes.size();i++)
 		{
-			if(devmodes.at(i).dmPelsHeight == height)
+			if(devmodes.at(i).dmPanningWidth == width && devmodes.at(i).dmPelsHeight == height)
 			{
 				return i;
 			}
 		}
 		return devmodes.size()-1;
+	}
+	inline void SetCameraCircle(D3DXVECTOR3 circle)
+	{
+		cameraCircle = circle;
+	}
+	inline D3DXVECTOR3 GetCameraCircle()
+	{
+		return cameraCircle;
 	}
 	//inline void SetGUI(GUI* g)
 	//{
@@ -215,7 +223,7 @@ private:
 	bool CheckAvailableTexture(char* name);
 	bool CheckAvailableModel(char* name);
 	float screenWidth,screenHeight;
-
+	D3DXVECTOR3 cameraCircle;
 	//easy access classes and variables
 	HWND wHandle;
 	LPDIRECT3DDEVICE9 p_Device;

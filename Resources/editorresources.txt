@@ -1,2 +1,2 @@
-﻿path 						hasanim (animspriteonly)RowsToX (animspriteonly)RowsToY	(animspriteonly)TotalXRows 	(animspriteonly)TotalYRows
-Resources/AnimationPNG/ManimatieSheet2.png	1 			0				0					4			8
+﻿path 						hasanim (animspriteonly)TotalXRows 	(animspriteonly)TotalYRows
+Resources/AnimationPNG/ManimatieSheet2.png 	1 			8 				8

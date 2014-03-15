@@ -23,6 +23,13 @@ public:
 	{    
 		return D3DXVECTOR3((position.x + 1 * std::cos(anglesX * 3.141592f / 180)) - position.x,(position.y+1 * std::tan(anglesY * 3.141592f / 200))-position.y,(position.z+1 * std::sin(anglesX * 3.141592f / 180))-position.z);
 	}
+	inline D3DXVECTOR3 ReturnCameraCircle()
+	{
+		float x = 1 * std::cos(angleX * 3.141592f / 180);
+		float z = 1 * std::sin(angleX * 3.141592f / 180);
+		float y = 1 * std::tan(angleY * 3.141592f / 200);
+		return D3DXVECTOR3(x,y,z);
+	}
 	inline D3DXVECTOR3 GetPosition()
 	{
 		return position;

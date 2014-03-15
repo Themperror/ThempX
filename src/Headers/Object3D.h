@@ -30,7 +30,15 @@ public:
 	void DrawModel();
 	HWND handleWindow;
 	void SetPosition(float x,float y,float z);
+	inline void SetPosition(D3DXVECTOR3 pos)
+	{
+		position = pos;
+	}
 	void SetScale(float x,float y,float z);
+	inline void SetScale(D3DXVECTOR3 scale)
+	{
+		scaling = scale;
+	}
 	void SetRotation(float x,float y,float z);
 
 	bool LoadModel(LPSTR pathName, ResourceManager* res);

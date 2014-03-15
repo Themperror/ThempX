@@ -73,7 +73,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Include;C:\Windows\system\Nvidia PhysX\Include;C:\Windows\system\Nvidia PhysX\Include\cooking;C:\Windows\system\Nvidia PhysX\Samples\PxToolkit\include;$(IncludePath)</IncludePath>
+    <IncludePath>C:\Users\Syst3m\Documents\GitHub\ThempX\src\Headers;C:\Windows\system\nvidia physx\Source\foundation\include;C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Include;C:\Windows\system\Nvidia PhysX\Include;C:\Windows\system\Nvidia PhysX\Include\cooking;C:\Windows\system\Nvidia PhysX\Samples\PxToolkit\include;$(IncludePath)</IncludePath>
     <LibraryPath>C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib;C:\Windows\system\Nvidia PhysX\Lib\win32;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -93,7 +93,7 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x86;C:\Windows\system\Nvidia PhysX\Lib\win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>dinput8.lib;dsound.lib;dxguid.lib;winmm.lib;PhysX3CHECKED_x86.lib;PhysX3CommonCHECKED_x86.lib;PhysX3ExtensionsCHECKED.lib;PhysXProfileSDKCHECKED.lib;PhysXVisualDebuggerSDKCHECKED.lib;PxTaskCHECKED.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>dinput8.lib;dsound.lib;dxguid.lib;winmm.lib;PhysX3CHECKED_x86.lib;PxToolkitCHECKED.lib;PhysX3CookingCHECKED_x86.lib;PhysX3CommonCHECKED_x86.lib;PhysX3ExtensionsCHECKED.lib;PhysX3CharacterKinematicCHECKED_x86.lib;PhysXProfileSDKCHECKED.lib;PhysXVisualDebuggerSDKCHECKED.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <CustomBuildStep>
       <Command>-DDEBUG</Command>

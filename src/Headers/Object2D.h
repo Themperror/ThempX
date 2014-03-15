@@ -58,7 +58,7 @@ public:
   
 	Object2D(ResourceManager* res, char* texturePath, D3DXMATRIX* camView);
 	Object2D(ResourceManager* res, char* texturePath, D3DXMATRIX* camView, D3DXVECTOR2 LLPos, D3DXVECTOR2 URPos);
-	Object2D(ResourceManager* res, char* texturePath,D3DXMATRIX* camViewMatrix,int tSizeX,int tSizeY,int xRowsAnim,int yRowsAnim);
+	Object2D(ResourceManager* res, char* texturePath,D3DXMATRIX* camViewMatrix,int xRowsAnim,int yRowsAnim);
 	D3DXVECTOR3 rotation;
 	D3DXVECTOR3 position;
 	D3DXVECTOR3 scaling;	 
@@ -74,7 +74,15 @@ public:
 	void ReleaseResources();
 	HWND handleWindow;
 	void SetPosition(float x,float y,float z);
+	inline void SetPosition(D3DXVECTOR3 pos)
+	{
+		position = pos;
+	}
 	void SetScale(float x,float y,float z);
+	inline void SetScale(D3DXVECTOR3 scale)
+	{
+		scaling = scale;
+	}
 	Quad quad;
 	D3DXMATRIX worldMatrix;
 	std::string objName;
@@ -89,14 +97,6 @@ public:
 	inline int GetYRows()
 	{
 		return yRows;
-	}
-	inline int GetXSize()
-	{
-		return sizeX;
-	}
-	inline int GetYSize()
-	{
-		return sizeY;
 	}
 private:
 	void InitVars(); 

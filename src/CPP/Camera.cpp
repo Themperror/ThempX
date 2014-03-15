@@ -71,6 +71,7 @@ void Camera::SetCameraLook(float anglesX,float anglesY)
 	float x = 1 * std::cos(anglesX * 3.141592f / 180);
 	float z = 1 * std::sin(anglesX * 3.141592f / 180);
 	float y = 1 * std::tan(anglesY * 3.141592f / 200);
+
 	lookAt.x = position.x+x*5;
 	lookAt.y = position.y+y*5;
 	lookAt.z = position.z+z*5;

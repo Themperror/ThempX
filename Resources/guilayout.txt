@@ -1,3 +1,5 @@
 texturepath 				posX 	posY 	sizeX 	sizeY 	xRowsTotal 	yRowsTotal 	hasAnimation 	positionXFromEnd 	positionYFromEnd  Startanimation
-Resources/GUI/ManimatieSheet2.png 	25	65	28	35 	8 		8 		1 		0 			1		Walk
 Resources/GUI/SlashSquare.png		0	0	100	100	4		2		1		0			0		NULL
+Resources/GUI/HealthArmor.png		0	80	20	20	0		0		0		0			0		NULL
+Resources/GUI/WeaponAmmo.png		33	67	33	33	0		0		0		0			0		NULL
+Resources/GUI/CharacterState.png	80	80	20	20	0		0		0		0			0		NULL

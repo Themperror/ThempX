@@ -134,6 +134,13 @@ int ResourceManager::GetMeshData(char* name)
 			case D3DERR_INVALIDCALL: std::cout << "invalid call" << std::endl; break;
 			case E_OUTOFMEMORY: std::cout << "out of memory" << std::endl;break;
 		}
+		if(model.mesh == NULL)
+		{
+			std::string str = "Could not find mesh at path: ";
+			str.append(name);
+			MessageBox(GetWindowHandle(),str.c_str(),"GetMeshData()",MB_OK);
+			return 0;
+		}
 		model.d3dxMaterials = (D3DXMATERIAL*)model.materialBuffer->GetBufferPointer();
 		model.meshMaterials = new D3DMATERIAL9[model.numMaterials];
 		model.meshTextures  = new LPDIRECT3DTEXTURE9[model.numMaterials];   

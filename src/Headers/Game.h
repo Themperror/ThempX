@@ -101,7 +101,7 @@ public:
 	bool CreateAnimated2DObject(bool hasPhysics, Object2DData* data);
 	bool CreateStatic2DObject(bool hasPhysics, Object2DData* data);
 	//SPEEngine::RigidData CreatePhysicsData(bool draw,bool isStatic, float mass, float density, SPEVector pos,SPEVector scale, SPEVector vel, SPEVector aVel);
-	Object2DData CreateObject2DData(char* filePath,bool hasAnim, D3DXVECTOR3 pos,D3DXVECTOR3 scale,D3DXVECTOR2 tSize, D3DXVECTOR2 rows);
+	Object2DData CreateObject2DData(char* filePath,bool hasAnim, D3DXVECTOR3 pos,D3DXVECTOR3 scale, D3DXVECTOR2 rows);
 	Object3DData CreateObject3DData(char* filePath,D3DXVECTOR3 pos,D3DXVECTOR3 scale,D3DXVECTOR3 rot);
 	inline D3DXMATRIX* GetCameraView()
 	{
@@ -145,7 +145,8 @@ private:
 
 
 	//input stuff
-	void DoInput(float deltaTime);
+	PxVec3 DoInput(float deltaTime);
+	void HandlePlayerCollisions(PxVec3 moveDir);
 	void LeftMouseClick();
 	std::vector<unsigned int> keys;
 	int KeyPressed(int key);
@@ -153,6 +154,24 @@ private:
 	bool mouseRightJustDown;
 
 	//editor mode
+	void UndoEditorAction();
+	enum EditorAction{ThrowCube,Dynamic,Static,None};
+	std::vector<EditorAction> lastAction;
+	inline void RemoveLastAction()
+	{
+		if(lastAction.size() > 0)
+		{
+			lastAction.erase(lastAction.end()-1);
+		}
+	}
+	inline EditorAction GetLastAction()
+	{
+		if(lastAction.size() > 0)
+		{
+			return lastAction.at(lastAction.size()-1);
+		}	
+		else return None;
+	}
 	void CreateLevelFile();
 	void SetUpEditorMode();
 	struct EditorObj
@@ -163,13 +182,12 @@ private:
 	};
 	std::vector<EditorObj> editorObjs;
 	EditorObj* currentEditorObj;
-	unsigned int currentEditorObjIndex;
+	int currentEditorObjIndex;
 	bool EditorMode;
 	bool pressedEditorKey;
+	float editorObjectDistance;
 	float scaleMultiplier;
 
-	//CollisionThread
-	void CollisionThread();
 
 
 	//math functions

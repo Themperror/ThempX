@@ -3,8 +3,10 @@
 
 #include <PxPhysicsAPI.h>
 #include <pvd\PxVisualDebugger.h>
+#include <PxToolkit.h>
 #include "ResourceManager.h"
 #include "DebugCube.h"
+
 
 #ifdef DEBUG
 #pragma comment(lib, "PhysX3CHECKED_x86.lib")
@@ -28,14 +30,54 @@ public:
 
 	physx::PxFoundation* mFoundation;
 	physx::PxPhysics* gPhysicsSDK;
-	physx::PxCooking* mCooking;
+	physx::PxControllerManager* cManager;
+	physx::PxProfileZoneManager* profiler;
+	PxCooking* cooking;
 	physx::PxScene* gScene;
 	physx::PxShape* shape;
-	physx::PxProfileZoneManager* profiler;
-	
-	void CreateCube(PxVec3 position, PxVec3 rotation, PxVec3 scaling, bool isStatic = false);
+	physx::PxController* player;
+	void CreateCube(PxVec3 position, PxVec3 rotation, PxVec3 scaling,float mass, bool isStatic = false);
+	void ThrowCube(PxVec3 position,PxVec3 force);
+	void Update(float deltaTime);
+	bool BakeMesh(LPD3DXMESH mesh,PxVec3 scale);
 	//PxProfileZoneManager* profiler;
 	void DrawBoxes();
+	inline PxRigidStatic* GetLastStatic()
+	{
+		if(statics.size() > 0)
+		{
+			return statics.at(statics.size()-1);
+		}
+		else return 0;
+	}
+	inline PxRigidDynamic* GetLastDynamic()
+	{
+		if(statics.size() > 0)
+		{
+			return dynamics.at(dynamics.size()-1);
+		}
+		else return 0;
+	}
+	inline void DeleteLastDynamic()
+	{
+		if(dynamics.size() > 0)
+		{
+			dynamics.at(dynamics.size()-1)->release();
+			dynamics.erase(dynamics.end()-1);
+			dynamicVisualCubes.at(dynamicVisualCubes.size()-1)->Release();
+			dynamicVisualCubes.erase(dynamicVisualCubes.end()-1);
+		}
+	}
+	inline void DeleteLastStatic()
+	{
+		if(statics.size() > 0)
+		{
+			statics.at(statics.size()-1)->release();
+			statics.erase(statics.end()-1);
+			staticVisualCubes.at(staticVisualCubes.size()-1)->Release();
+			staticVisualCubes.erase(staticVisualCubes.end()-1);
+		}
+	}
 private:
 
 	physx::PxDefaultAllocator defaultAlloc;
@@ -43,7 +85,8 @@ private:
 	PxMaterial* defaultMaterial;
 	std::vector<PxRigidStatic*> statics;
 	std::vector<PxRigidDynamic*> dynamics;
-	std::vector<DebugCube*> visualCubes;
+	std::vector<DebugCube*> staticVisualCubes;
+	std::vector<DebugCube*> dynamicVisualCubes;
 
 	
 };
