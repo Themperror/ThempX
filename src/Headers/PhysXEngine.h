@@ -7,10 +7,20 @@
 #include "ResourceManager.h"
 #include "DebugCube.h"
 
+#define DEBUG   //remove line for release
+
 
 #ifdef DEBUG
 #pragma comment(lib, "PhysX3CHECKED_x86.lib")
 #pragma comment(lib, "PhysX3ExtensionsCHECKED.lib")
+#pragma comment(lib, "PhysX3CookingCHECKED_x86.lib")
+#pragma comment(lib, "PhysX3CommonCHECKED_x86.lib")
+#pragma comment(lib, "PhysX3CharacterKinematicCHECKED_x86.lib")
+
+#pragma comment(lib, "PhysXProfileSDKCHECKED.lib")
+
+#pragma comment(lib, "PhysXVisualDebuggerSDKCHECKED.lib")
+
 #endif
 #ifndef DEBUG
 #pragma comment(lib, "PhysX3_x86.lib")

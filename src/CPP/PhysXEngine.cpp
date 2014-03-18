@@ -27,39 +27,40 @@ PhysXEngine::PhysXEngine(ResourceManager* res)
 
 	gScene = gPhysicsSDK->createScene(sceneDesc);
 	cooking = PxCreateCooking(PX_PHYSICS_VERSION,gPhysicsSDK->getFoundation(),PxCookingParams(PxTolerancesScale()));
-
 	
 
+#ifdef DEBUG
 
 	if (!gPhysicsSDK->getPvdConnectionManager())
-{
-    std::cout << "Warning: PhysX Visual Debugger not found running!\n";
-    return;
-}
+	{
+		std::cout << "Warning: PhysX Visual Debugger not found running!\n";
+		return;
+	}
+
+	const char* pvdHostIP = "127.0.0.1";
+	int port = 5425;
+	unsigned int timeout = 100;
+	physx::PxVisualDebuggerConnectionFlags flags =
+		physx::PxVisualDebuggerConnectionFlag::eDEBUG
+		| physx::PxVisualDebuggerConnectionFlag::ePROFILE
+		| physx::PxVisualDebuggerConnectionFlag::eMEMORY;
  
-const char* pvdHostIP = "127.0.0.1";
-int port = 5425;
-unsigned int timeout = 100;
-physx::PxVisualDebuggerConnectionFlags flags =
-	physx::PxVisualDebuggerConnectionFlag::eDEBUG
-	| physx::PxVisualDebuggerConnectionFlag::ePROFILE
-	| physx::PxVisualDebuggerConnectionFlag::eMEMORY;
- 
-// Create connection with PhysX Visual Debugger
-physx::debugger::comm::PvdConnection* conn = physx::PxVisualDebuggerExt::createConnection(
-    gPhysicsSDK->getPvdConnectionManager(),
-    pvdHostIP,
-    port,
-    timeout,
-    flags);
+	// Create connection with PhysX Visual Debugger
+	physx::debugger::comm::PvdConnection* conn = physx::PxVisualDebuggerExt::createConnection(
+		gPhysicsSDK->getPvdConnectionManager(),
+		pvdHostIP,
+		port,
+		timeout,
+		flags);
   
-if (conn)
-{
-    std::cout << "Connected to PhysX Visual Debugger!\n";
+	if (conn)
+	{
+		std::cout << "Connected to PhysX Visual Debugger!\n";
  
-    gPhysicsSDK->getVisualDebugger()->setVisualizeConstraints(true);
-    gPhysicsSDK->getVisualDebugger()->setVisualDebuggerFlag(physx::PxVisualDebuggerFlag::eTRANSMIT_CONTACTS, true);
-}
+		gPhysicsSDK->getVisualDebugger()->setVisualizeConstraints(true);
+		gPhysicsSDK->getVisualDebugger()->setVisualDebuggerFlag(physx::PxVisualDebuggerFlag::eTRANSMIT_CONTACTS, true);
+	}
+#endif
 
 
 
@@ -75,7 +76,7 @@ if (conn)
 
 	defaultMaterial = gPhysicsSDK->createMaterial(0.5f,0.5f,0.5f);
 
-	LPD3DXMESH mesh = resources->GetMeshFromVector(resources->GetMeshData("resources/collision/testcollision.x"));
+	LPD3DXMESH mesh = resources->GetMeshFromVector(resources->GetMeshData("resources/collision/Level1CollisionMesh.x"));
 	BakeMesh(mesh,PxVec3(2,2,2));
 	//if bakemesh succeeds, the level should automatically get it's collision
 	//an check if it succeeds is currently in BakeMesh itself
@@ -122,8 +123,8 @@ if (conn)
 	
 	//actor aanmaken
 	//actor.attachShape(shape);
-	profiler = &physx::PxProfileZoneManager::createProfileZoneManager(mFoundation);
-	profiler->createProfileZone("Test",PxProfileNames());
+	//profiler = &physx::PxProfileZoneManager::createProfileZoneManager(mFoundation);
+	//profiler->createProfileZone("Test",PxProfileNames());
 	//if(!mProfileZoneManager)
 	for(unsigned int i = 0; i < 20 ; i++)
 	{
@@ -140,56 +141,60 @@ bool PhysXEngine::BakeMesh(LPD3DXMESH mesh,PxVec3 scale)
 	PxTriangleMeshDesc* description=new PxTriangleMeshDesc();
 	
 	description->setToDefault();
-	description->points.count= mesh->GetNumVertices();
-	description->triangles.count=mesh->GetNumFaces()*3;
 
-	PxVec3* vertices = new PxVec3[mesh->GetNumVertices()];
-
+	float* vertices = new float[mesh->GetNumVertices()*3];
+	ZeroMemory(vertices,sizeof(vertices));
 	BYTE* vPtr = NULL;
 	DWORD numVerts=mesh->GetNumVertices();
 	DWORD fvf=mesh->GetFVF();
-	DWORD vertSize=D3DXGetFVFVertexSize(fvf);
-	mesh->LockVertexBuffer(0,(LPVOID*)&vPtr);
-
+	UINT vertSize=D3DXGetFVFVertexSize(fvf);
+	mesh->LockVertexBuffer(D3DLOCK_READONLY,(LPVOID*)&vPtr);
+	std::vector<D3DXVECTOR3> vVertices;
 	for (DWORD i=0;i<numVerts;i++) 
-	{
-		D3DXVECTOR3 *ptr=(D3DXVECTOR3 *) vPtr;
-		vertices[i] =PxVec3(ptr->x*scale.x,ptr->y*scale.y,ptr->z*scale.z);
+	{	
+		D3DXVECTOR3 *ptr=(D3DXVECTOR3 *) vPtr;  //vertices are retrieved correctly
+		vVertices.push_back(*ptr);
+        vertices[i*3] =		ptr->x*scale.x;
+        vertices[i*3+1] =	ptr->y*scale.y;
+        vertices[i*3+2] =	 ptr->z*scale.z;
+
 		vPtr+=vertSize;
 	}
+/*	for(unsigned int i = 0 ; i < numVerts; i++)
+	{
+		std::cout<< "Vertex " <<i<<": "<<"  x: "<< vertices[i*3] << "  y: " <<vertices[i*3+1] << "  z: " << vertices[i*3+2] << std::endl;
+	}*/
 	mesh->UnlockVertexBuffer();
-
-	description->points.count = mesh->GetNumVertices();
-	description->points.stride = sizeof(PxVec3);
+	
 	description->points.data = vertices;
-	
-	LPDIRECT3DINDEXBUFFER9 pIndBuf;
-	mesh->GetIndexBuffer(&pIndBuf);
-
-	
+	description->points.count = numVerts;
+	description->points.stride = sizeof(D3DXVECTOR3);
+		
 	DWORD numFaces=mesh->GetNumFaces();
 	DWORD numIndices= numFaces*3;
+	BYTE* indexBufferData;
+	mesh->LockIndexBuffer(D3DLOCK_READONLY,(LPVOID*)&indexBufferData);
+
 	PxU16* indices = new PxU16[numIndices];
-	//void* indices;
-	void* pInd = NULL;
-	pIndBuf->Lock(0,numIndices*sizeof(PxU16),(void**) &pInd,D3DLOCK_READONLY);
-	PxU16* iptr=(PxU16*) pInd;
-	//indices= malloc(sizeof(pInd));
-	//memcpy(indices,pInd,sizeof(pInd));
-	for (int i=0;i<numIndices;i++)
+	ZeroMemory(indices,sizeof(indices));
+	std::vector<PxU16> vIndices;
+	for(unsigned int i=0; i < numIndices; i++)  
 	{
-		PxU16 INDEX = iptr[i];
-		std::cout << INDEX << std::endl;
-		indices[i] = iptr[i];
+		//((PxU16*)indexBufferData)[i]
+		indices[i] = *(PxU16*)indexBufferData; //raw float* data 
+		vIndices.push_back(*(PxU16*)indexBufferData);  //managed vector<float> data
+		indexBufferData+=sizeof(PxU16); //increment pointer to next address
+
+		//std::cout << indices[i] << std::endl;
 	}
-	pIndBuf->Unlock();
-	pIndBuf->Release();
-
-
-
+	mesh->UnlockIndexBuffer();
 	description->triangles.data = indices;
-	description->triangles.count = numIndices;
+	description->triangles.count = numFaces;
 	description->triangles.stride = 3*sizeof(PxU16);
+	description->flags = PxMeshFlag::e16_BIT_INDICES;
+
+	description->isValid();
+
 
 	PxDefaultMemoryOutputStream stream;
 	if(cooking->cookTriangleMesh(*description,stream))
@@ -204,7 +209,7 @@ bool PhysXEngine::BakeMesh(LPD3DXMESH mesh,PxVec3 scale)
 
 	
 	PxTransform pose;
-	pose.p = PxVec3(0,-20,0);
+	pose.p = PxVec3(0,-10,0);
 	pose.q= PxQuat(0,PxVec3(0,0,0));
 
 	PxDefaultMemoryInputData istream(stream.getData(),stream.getSize());
@@ -292,7 +297,7 @@ void PhysXEngine::DrawBoxes()
 	}
 	for(unsigned int i = 0; i < statics.size(); i++)
 	{
-		/*if(i>1)
+		if(i>0)
 		{
 			PxTransform t = statics.at(i)->getGlobalPose();
 			PxVec3 pos = t.p;
@@ -303,12 +308,16 @@ void PhysXEngine::DrawBoxes()
 			D3DXMatrixRotationQuaternion(&rotation,&D3DXQUATERNION(t.q.x,t.q.y,t.q.z,t.q.w));
 			D3DXMatrixTranslation(&position,t.p.x,t.p.y,t.p.z);
 			D3DXMatrixMultiply(&world,&rotation,&position);
-			staticVisualCubes.at(i)->hasExternalWorldMatrix = true;
-			staticVisualCubes.at(i)->eWorldMatrix = world;
-			staticVisualCubes.at(i)->position = D3DXVECTOR3(pos.x,pos.y,pos.z);
+			if(i < staticVisualCubes.size())
+			{
+				staticVisualCubes.at(i)->hasExternalWorldMatrix = true;
+				staticVisualCubes.at(i)->eWorldMatrix = world;
+				staticVisualCubes.at(i)->position = D3DXVECTOR3(pos.x,pos.y,pos.z);
+		
+				staticVisualCubes.at(i)->doRender =true;
+				staticVisualCubes.at(i)->Draw();	
+			}
 		}
-		staticVisualCubes.at(i)->doRender =true;
-		staticVisualCubes.at(i)->Draw();	*/
 	}
 }
 void PhysXEngine::CreateCube(PxVec3 position, PxVec3 rotation, PxVec3 scaling,float mass, bool isStatic)
