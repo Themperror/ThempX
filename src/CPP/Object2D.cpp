@@ -175,7 +175,7 @@ void Object2D::Update(float deltaTime)
 		if(currentAnim >= 0 && currentAnim < animations.size())
 		{
 			Animation* a = &animations.at(currentAnim);
-			
+			timeSinceChange+=deltaTime;
 			if(hasAnimation && !a->isFinished)
 			{
 				Animate(deltaTime,animationSpeed);
@@ -184,6 +184,18 @@ void Object2D::Update(float deltaTime)
 			{
 				a->isFinished = false;
 			}
+		}
+	}
+}
+void Object2D::CheckPlayingAnimation(std::string playAnimFinished)
+{
+	if(hasAnimation)
+	{
+		Animation* a = &animations.at(currentAnim);
+		if(a->isFinished && timeSinceChange > a->AnimationSpeed)
+		{
+			a->isFinished = false;
+			PlayAnimation(playAnimFinished);
 		}
 	}
 }
@@ -251,8 +263,6 @@ void Object2D::SetUVValues()
 }
 void Object2D::Animate(float dTime ,float animSpeed)
 {		
-	timeSinceChange += dTime;
-	
 	if(timeSinceChange > animations.at(currentAnim).AnimationSpeed)
 	{
 		Animation* cAnim = &animations.at(currentAnim);
@@ -365,9 +375,7 @@ void Object2D::LoadAnimation()
 			anim.Nullify();
 			std::string name;
 
-
 			fin >> name >> startPosX >> endPosX >> startPosY >> endPosY >> animSpeed >> loop;
-			//std::cout << endPosX << " 1 "<< endPosY << std::endl;
 			anim.AnimationName = name;
 			anim.StartPosition = D3DXVECTOR2(0,0);
 			anim.EndPosition = D3DXVECTOR2(0,0);
@@ -388,7 +396,6 @@ bool Object2D::PlayAnimation(std::string name)
 	{
 		if(animations.at(i).AnimationName == name)
 		{
-			std::cout << "Animation executed" << std::endl;
 			currentXAnimValue = (int)animations.at(i).StartPosition.x;
 			currentYAnimValue = (int)animations.at(i).StartPosition.y;
 			animationSpeed = animations.at(i).AnimationSpeed;
@@ -407,7 +414,6 @@ bool Object2D::PlayAnimation(std::string name)
 	currentYAnimValue = 0;
 	currentlyPlayingAnimation = "None";
 	currentAnim = NULL;
-	std::cout << "No animation found with that name: " << name << std::endl;
 	MessageBox(resources->GetWindowHandle(),"No animation found with that name",name.c_str(),MB_OK);
 	return false;
 }

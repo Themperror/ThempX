@@ -37,7 +37,7 @@ void Camera::CalculateCameraBounds(float deltaTime, float mouseInputX,float mous
 		angleX -= xMod;
 	}
 	angleY-= mouseInputY*sensitivity;
-	(angleY < -50 ? angleY = -50 : (angleY> 50 ? angleY = 50 : 0));
+	(angleY < -75 ? angleY = -75 : (angleY> 75 ? angleY = 75 : 0));
 
 	SetCameraLook(angleX,angleY);
 }
@@ -72,11 +72,12 @@ void Camera::SetCameraLook(float anglesX,float anglesY)
 	float z = 1 * std::sin(anglesX * 3.141592f / 180);
 	float y = 1 * std::tan(anglesY * 3.141592f / 200);
 
-	lookAt.x = position.x+x*5;
-	lookAt.y = position.y+y*5;
-	lookAt.z = position.z+z*5;
+	lookAt.x = position.x+x*1;
+	lookAt.y = position.y+y*1;
+	lookAt.z = position.z+z*1;
 
 	lookDir.x = position.x+x - position.x;
 	lookDir.y = position.y+y - position.y;
 	lookDir.z = position.z+z - position.z;
+	D3DXVec3Normalize(&lookDir,&lookDir);
 }

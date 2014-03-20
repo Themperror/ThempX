@@ -37,6 +37,10 @@ public:
 	PhysXEngine(ResourceManager* res);
 	void ReleaseAll();
 	ResourceManager* resources;
+	//player related
+	float playerGravity;
+
+//engine
 
 	physx::PxFoundation* mFoundation;
 	physx::PxPhysics* gPhysicsSDK;
@@ -46,12 +50,17 @@ public:
 	physx::PxScene* gScene;
 	physx::PxShape* shape;
 	physx::PxController* player;
-	void CreateCube(PxVec3 position, PxVec3 rotation, PxVec3 scaling,float mass, bool isStatic = false);
-	void ThrowCube(PxVec3 position,PxVec3 force);
+	PxRigidActor* CreateCube(PxVec3 position, PxVec3 rotation, PxVec3 scaling,float mass, bool isStatic = false);
+	PxRigidActor* CreateSphereCapsule(PxReal radius, PxReal capHeight,PxVec3 position,float mass, bool isStatic, bool isKinematic);
+	PxRigidActor* ThrowCube(PxVec3 position,PxVec3 force);
 	void Update(float deltaTime);
-	bool BakeMesh(LPD3DXMESH mesh,PxVec3 scale);
+	bool BakeMesh(LPD3DXMESH mesh,PxVec3 scale, bool flipNormals);
+	bool RaycastAny(PxVec3 origin, PxVec3 nDir, float distance);
+	PxRaycastBuffer RaycastSingle(PxVec3 origin, PxVec3 nDir, float distance);
 	//PxProfileZoneManager* profiler;
 	void DrawBoxes();
+	void RemoveActor(PxRigidDynamic* actor);
+	void RemoveActor(PxRigidStatic* actor);
 	inline PxRigidStatic* GetLastStatic()
 	{
 		if(statics.size() > 0)
@@ -72,6 +81,14 @@ public:
 	{
 		if(dynamics.size() > 0)
 		{
+			PxShape* ptr;
+			dynamics.at(dynamics.size()-1)->getShapes(&ptr,256);
+			PxShape* shapes;
+			dynamics.at(dynamics.size()-1)->getShapes(&shapes,sizeof(PxShape));
+			for(unsigned int i = 0; i < dynamics.at(i)->getNbShapes(); i++)
+			{
+				shapes[i].release();
+			}
 			dynamics.at(dynamics.size()-1)->release();
 			dynamics.erase(dynamics.end()-1);
 			dynamicVisualCubes.at(dynamicVisualCubes.size()-1)->Release();
@@ -82,6 +99,14 @@ public:
 	{
 		if(statics.size() > 0)
 		{
+			PxShape* ptr;
+			statics.at(statics.size()-1)->getShapes(&ptr,256);
+			PxShape* shapes;
+			statics.at(statics.size()-1)->getShapes(&shapes,sizeof(PxShape));
+			for(unsigned int i = 0; i < statics.at(i)->getNbShapes(); i++)
+			{
+				shapes[i].release();
+			}
 			statics.at(statics.size()-1)->release();
 			statics.erase(statics.end()-1);
 			staticVisualCubes.at(staticVisualCubes.size()-1)->Release();

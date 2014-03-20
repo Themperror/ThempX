@@ -216,7 +216,7 @@ ThempX::ThempX(HINSTANCE hInstance,LPSTR lpCmdLine)
 	//SetDisplayMode(false,800,600);
 	//instantiate all necessities
 	resources = new ResourceManager(p_Device,handleWindow);
-	resources->SetScreenResolution((float)wSizeX,(float)wSizeY);
+	resources->SetScreenResolution(wSizeX,wSizeY);
 	inputHandler = new InputHandler(handleWindow);
 	soundHandler = new SoundHandler(handleWindow,44100,16,2);
 	
@@ -316,11 +316,7 @@ ThempX::ThempX(HINSTANCE hInstance,LPSTR lpCmdLine)
 			FixedUpdate();
 			realframes++;
 			
-			if(currentTicks.QuadPart-oldTicks.QuadPart > (deltaTimerPrecision+((currentTicks.QuadPart-oldTicks.QuadPart) % deltaTimerPrecision))/60) 
-			//why does 166 result in 120 fps limit on fast machines and 60 fps limit on slower machines? 1/60 = 0.0166
-			//332 is 60 FPS and unlimited fixed update
-			//166 is 120 fps and unlimited fixed update
-			//83 = 120 FPS and limited fixed update to 120 times per second
+			if(currentTicks.QuadPart-oldTicks.QuadPart > (deltaTimerPrecision+((currentTicks.QuadPart-oldTicks.QuadPart) % deltaTimerPrecision))/60)
 			{
 				//std::cout << currentTicks.QuadPart << "  <-CurrentTicks quadpart   " << oldTicks.QuadPart <<"  <- OldTicks" << std::endl;
 				

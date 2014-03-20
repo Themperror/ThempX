@@ -78,9 +78,6 @@ void DebugCube::Draw()
 			result = p_Device->SetTexture(0,texture);
 		}
 		result = p_Device->SetMaterial(&meshMaterial);
-
-	
-
 		// draw the cube
 		result = p_Device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 24, 0, 12);
 		switch(result)

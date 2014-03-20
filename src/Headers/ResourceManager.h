@@ -98,16 +98,16 @@ public:
 	   x = desktop.right;
 	   y = desktop.bottom;
 	}
-	inline void SetScreenResolution(float x, float y)
+	inline void SetScreenResolution(int x, int y)
 	{
 		screenWidth = x;
 		screenHeight = y;
 	}
-	inline float GetScreenHeight()
+	inline int GetScreenHeight()
 	{
 		return screenHeight;
 	}
-	inline float GetScreenWidth()
+	inline int GetScreenWidth()
 	{
 		return screenWidth;
 	}
@@ -222,7 +222,7 @@ private:
 	bool LoadQuadTexture(char* path);
 	bool CheckAvailableTexture(char* name);
 	bool CheckAvailableModel(char* name);
-	float screenWidth,screenHeight;
+	int screenWidth,screenHeight;
 	D3DXVECTOR3 cameraCircle;
 	//easy access classes and variables
 	HWND wHandle;

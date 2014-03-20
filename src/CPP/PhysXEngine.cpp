@@ -4,7 +4,8 @@
 PhysXEngine::PhysXEngine(ResourceManager* res)
 {
 	resources = res;
-	
+	playerGravity = 0;
+
 	mFoundation = PxCreateFoundation(PX_PHYSICS_VERSION, defaultAlloc, defaultError);
 
 	gPhysicsSDK = PxCreatePhysics(PX_PHYSICS_VERSION, *mFoundation, PxTolerancesScale());
@@ -12,7 +13,7 @@ PhysXEngine::PhysXEngine(ResourceManager* res)
 
 	// Create the scene
 	PxSceneDesc sceneDesc(gPhysicsSDK->getTolerancesScale());
-	sceneDesc.gravity = PxVec3(0.0f, -9.8f, 0.0f);
+	sceneDesc.gravity = PxVec3(0.0f, -18.6f, 0.0f);
 
 	if(!sceneDesc.cpuDispatcher)
 	{
@@ -77,7 +78,7 @@ PhysXEngine::PhysXEngine(ResourceManager* res)
 	defaultMaterial = gPhysicsSDK->createMaterial(0.5f,0.5f,0.5f);
 
 	LPD3DXMESH mesh = resources->GetMeshFromVector(resources->GetMeshData("resources/collision/Level1CollisionMesh.x"));
-	BakeMesh(mesh,PxVec3(2,2,2));
+	BakeMesh(mesh,PxVec3(2,2,-2),true);
 	//if bakemesh succeeds, the level should automatically get it's collision
 	//an check if it succeeds is currently in BakeMesh itself
 
@@ -101,7 +102,7 @@ PhysXEngine::PhysXEngine(ResourceManager* res)
 	playerDesc.maxJumpHeight = 2;
 	playerDesc.nonWalkableMode = PxControllerNonWalkableMode::ePREVENT_CLIMBING_AND_FORCE_SLIDING;
 	playerDesc.position = PxExtendedVec3(10,20,0);
-	playerDesc.radius = 1;
+	playerDesc.radius = 1.5f;
 	playerDesc.scaleCoeff = 0.8f;
 	playerDesc.stepOffset = 0.4f;
 	playerDesc.upDirection = PxVec3(0,1,0);
@@ -128,16 +129,35 @@ PhysXEngine::PhysXEngine(ResourceManager* res)
 	//if(!mProfileZoneManager)
 	for(unsigned int i = 0; i < 20 ; i++)
 	{
-		CreateCube(PxVec3(std::sin((float)i),i*3,0),PxVec3(0,45,0),PxVec3(1,1,1),500);
+		CreateCube(PxVec3(std::sin((float)i),i*3,0),PxVec3(0,0,0),PxVec3(3,3,3),50000);
 	}
 	//CreateTriangleMesh()
+}
+bool PhysXEngine::RaycastAny(PxVec3 origin, PxVec3 nDir, float distance)
+{	// Raycast against all static & dynamic objects (no filtering)
+	// The main result from this call is the boolean 'status'
+	PxQueryFilterData fd; 
+	fd.flags |= PxQueryFlag::eANY_HIT;
+	PxRaycastBuffer hit;
+	return gScene->raycast(origin, nDir, distance, hit, PxHitFlags(PxHitFlag::eDEFAULT), fd);
+}
+PxRaycastBuffer PhysXEngine::RaycastSingle(PxVec3 origin, PxVec3 nDir, float distance)
+{	
+	PxRaycastBuffer hit;
+	// Raycast against all static & dynamic objects (no filtering)
+	// The main result from this call is the closest hit, stored in the 'hit.block' structure
+	bool status = gScene->raycast(origin, nDir, distance, hit);
+
+	return hit;
 }
 void PhysXEngine::Update(float deltaTime)
 {
 
 }
-bool PhysXEngine::BakeMesh(LPD3DXMESH mesh,PxVec3 scale)
+bool PhysXEngine::BakeMesh(LPD3DXMESH mesh,PxVec3 scale, bool flipNormals)
 {
+	mesh->Optimize(0,NULL,NULL,NULL,NULL,&mesh);
+	
 	PxTriangleMeshDesc* description=new PxTriangleMeshDesc();
 	
 	description->setToDefault();
@@ -149,14 +169,12 @@ bool PhysXEngine::BakeMesh(LPD3DXMESH mesh,PxVec3 scale)
 	DWORD fvf=mesh->GetFVF();
 	UINT vertSize=D3DXGetFVFVertexSize(fvf);
 	mesh->LockVertexBuffer(D3DLOCK_READONLY,(LPVOID*)&vPtr);
-	std::vector<D3DXVECTOR3> vVertices;
 	for (DWORD i=0;i<numVerts;i++) 
 	{	
 		D3DXVECTOR3 *ptr=(D3DXVECTOR3 *) vPtr;  //vertices are retrieved correctly
-		vVertices.push_back(*ptr);
-        vertices[i*3] =		ptr->x*scale.x;
-        vertices[i*3+1] =	ptr->y*scale.y;
-        vertices[i*3+2] =	 ptr->z*scale.z;
+        vertices[i*3] =		ptr->x * scale.x;
+        vertices[i*3+1] =	ptr->y * scale.y;
+        vertices[i*3+2] =	 ptr->z * scale.z;
 
 		vPtr+=vertSize;
 	}
@@ -177,24 +195,24 @@ bool PhysXEngine::BakeMesh(LPD3DXMESH mesh,PxVec3 scale)
 
 	PxU16* indices = new PxU16[numIndices];
 	ZeroMemory(indices,sizeof(indices));
-	std::vector<PxU16> vIndices;
 	for(unsigned int i=0; i < numIndices; i++)  
 	{
 		//((PxU16*)indexBufferData)[i]
 		indices[i] = *(PxU16*)indexBufferData; //raw float* data 
-		vIndices.push_back(*(PxU16*)indexBufferData);  //managed vector<float> data
 		indexBufferData+=sizeof(PxU16); //increment pointer to next address
-
-		//std::cout << indices[i] << std::endl;
 	}
 	mesh->UnlockIndexBuffer();
 	description->triangles.data = indices;
 	description->triangles.count = numFaces;
 	description->triangles.stride = 3*sizeof(PxU16);
-	description->flags = PxMeshFlag::e16_BIT_INDICES;
-
-	description->isValid();
-
+	if(flipNormals)
+	{
+		description->flags = PxMeshFlag::e16_BIT_INDICES | PxMeshFlag::eFLIPNORMALS;
+	}
+	else
+	{
+		description->flags = PxMeshFlag::e16_BIT_INDICES;
+	}
 
 	PxDefaultMemoryOutputStream stream;
 	if(cooking->cookTriangleMesh(*description,stream))
@@ -204,9 +222,10 @@ bool PhysXEngine::BakeMesh(LPD3DXMESH mesh,PxVec3 scale)
 	else
 	{
 		std::cout << "Mesh failed baking." << std::endl;
+		delete vertices;
+		delete indices;
 		return false;
 	}
-
 	
 	PxTransform pose;
 	pose.p = PxVec3(0,-10,0);
@@ -217,12 +236,16 @@ bool PhysXEngine::BakeMesh(LPD3DXMESH mesh,PxVec3 scale)
 
 	PxRigidStatic* triangleMeshActor = gPhysicsSDK->createRigidStatic(pose);
 
-	PxTriangleMeshGeometry geom = PxTriangleMeshGeometry(triangleMesh,PxMeshScale());
+	PxMeshScale meshScale(PxVec3(1,1,1), PxQuat(1.0f));
+	PxTriangleMeshGeometry geom = PxTriangleMeshGeometry(triangleMesh,meshScale);
 
-	PxShape *triangleMeshShape = triangleMeshActor->createShape(geom,*defaultMaterial,pose);
+	PxShape *triangleMeshShape = triangleMeshActor->createShape(geom,*defaultMaterial,pose); // mesh is NULL
 
 	gScene->addActor(*triangleMeshActor);
 	statics.push_back(triangleMeshActor);
+
+	delete vertices;
+	delete indices;
 	return true;
 }
 void PhysXEngine::ReleaseAll()
@@ -231,16 +254,11 @@ void PhysXEngine::ReleaseAll()
 	{
 		PxShape* ptr;
 		statics.at(i)->getShapes(&ptr,256);
-		PxShape* vPtr=(PxShape*) ptr;
-		while(vPtr <= ptr+sizeof(ptr))
+		PxShape* shapes;
+		statics.at(i)->getShapes(&shapes,sizeof(PxShape));
+		for(unsigned int x = 0; x < statics.at(i)->getNbShapes(); x++)
 		{
-			if(vPtr != NULL && vPtr->getActor() != NULL)
-			{
-				PxRigidActor* actor = vPtr->getActor();
-				actor->detachShape(*vPtr);
-				//vPtr->release();
-			}
-			vPtr+=sizeof(PxShape);
+			statics.at(i)->detachShape(shapes[x]);
 		}
 		statics.at(i)->release();
 	}
@@ -248,16 +266,11 @@ void PhysXEngine::ReleaseAll()
 	{
 		PxShape* ptr;
 		dynamics.at(i)->getShapes(&ptr,256);
-		PxShape* vPtr=(PxShape*) ptr;
-		while(vPtr < ptr)
+		PxShape* shapes;
+		dynamics.at(i)->getShapes(&shapes,sizeof(PxShape));
+		for(unsigned int x = 0; x < dynamics.at(i)->getNbShapes(); x++)
 		{
-			if(vPtr != NULL && vPtr->getActor() != NULL)
-			{
-				PxRigidActor* actor = vPtr->getActor();
-				actor->detachShape(*vPtr);
-			//	vPtr->release();
-			}
-			vPtr+=sizeof(PxShape);
+			dynamics.at(i)->detachShape(shapes[x]);
 		}
 		dynamics.at(i)->release();
 	}
@@ -276,25 +289,61 @@ void PhysXEngine::ReleaseAll()
 	cooking->release();
 	mFoundation->release();
 }
+void PhysXEngine::RemoveActor(PxRigidDynamic* actor)
+{
+	for(unsigned int i =0; i < dynamics.size(); i++)
+	{
+		if(actor == dynamics.at(i))
+		{
+			dynamics.erase(dynamics.begin()+i);
+		}
+	}
+}
+void PhysXEngine::RemoveActor(PxRigidStatic* actor)
+{
+	for(unsigned int i =0; i < statics.size(); i++)
+	{
+		if(actor == statics.at(i))
+		{
+			statics.erase(statics.begin()+i);
+		}
+	}
+}
 void PhysXEngine::DrawBoxes()
 {
+	std::vector<PxTransform> dynamicData;
 	for(unsigned int i = 0;i < dynamics.size(); i++)
 	{
-		PxTransform t = dynamics.at(i)->getGlobalPose();
-		PxVec3 pos = t.p;
-		PxQuat rot = t.q;
-		D3DXMATRIX rotation;
-		D3DXMATRIX position;
-		D3DXMATRIX world;
-		D3DXMatrixRotationQuaternion(&rotation,&D3DXQUATERNION(t.q.x,t.q.y,t.q.z,t.q.w));
-		D3DXMatrixTranslation(&position,t.p.x,t.p.y,t.p.z);
-		D3DXMatrixMultiply(&world,&rotation,&position);
-		dynamicVisualCubes.at(i)->hasExternalWorldMatrix = true;
-		dynamicVisualCubes.at(i)->eWorldMatrix = world;
-		dynamicVisualCubes.at(i)->position = D3DXVECTOR3(pos.x,pos.y,pos.z);
-		dynamicVisualCubes.at(i)->doRender =true;
-		dynamicVisualCubes.at(i)->Draw();
+		if(dynamics.at(i)->getName() != NULL)
+		{
+			if(std::strcmp(dynamics.at(i)->getName(),"Kinematic") != 0)
+			{
+				PxTransform t = dynamics.at(i)->getGlobalPose();
+				dynamicData.push_back(t);
+			}
+		}
 	}
+	for(unsigned int i = 0; i< dynamicData.size();i++)
+	{
+		if(i < dynamicVisualCubes.size())
+		{
+			PxTransform t = dynamicData.at(i);
+			PxVec3 pos = t.p;
+			PxQuat rot = t.q;
+			D3DXMATRIX rotation;
+			D3DXMATRIX position;
+			D3DXMATRIX world;
+			D3DXMatrixRotationQuaternion(&rotation,&D3DXQUATERNION(t.q.x,t.q.y,t.q.z,t.q.w));
+			D3DXMatrixTranslation(&position,t.p.x,t.p.y,t.p.z);
+			D3DXMatrixMultiply(&world,&rotation,&position);
+		
+			dynamicVisualCubes.at(i)->hasExternalWorldMatrix = true;
+			dynamicVisualCubes.at(i)->eWorldMatrix = world;
+			dynamicVisualCubes.at(i)->position = D3DXVECTOR3(pos.x,pos.y,pos.z);
+			dynamicVisualCubes.at(i)->doRender =true;
+			dynamicVisualCubes.at(i)->Draw();
+		}
+	}/*
 	for(unsigned int i = 0; i < statics.size(); i++)
 	{
 		if(i>0)
@@ -318,9 +367,9 @@ void PhysXEngine::DrawBoxes()
 				staticVisualCubes.at(i)->Draw();	
 			}
 		}
-	}
+	}*/
 }
-void PhysXEngine::CreateCube(PxVec3 position, PxVec3 rotation, PxVec3 scaling,float mass, bool isStatic)
+PxRigidActor* PhysXEngine::CreateCube(PxVec3 position, PxVec3 rotation, PxVec3 scaling,float mass, bool isStatic)
 {
 	PxReal cubeDensity = 100.0f;
 	D3DXQUATERNION rotQuat;
@@ -335,22 +384,75 @@ void PhysXEngine::CreateCube(PxVec3 position, PxVec3 rotation, PxVec3 scaling,fl
 	if(!isStatic)
 	{
 		PxRigidDynamic *cubeActor = PxCreateDynamic(*gPhysicsSDK, cubeTransform, cubeGeometry, *defaultMaterial, cubeDensity);
-		cubeActor->setAngularDamping(0.5f);
-		cubeActor->setLinearDamping(0.5f);
+		cubeActor->setName("Cube");
+		cubeActor->setAngularDamping(0.2f);
+		cubeActor->setLinearDamping(0.2f);
 		cubeActor->setMass(mass);
 		gScene->addActor(*cubeActor);
 		dynamics.push_back(cubeActor);
 		dynamicVisualCubes.push_back(vCube);
+		return cubeActor;
 	}
 	else
 	{
 		PxRigidStatic *cubeActor = PxCreateStatic(*gPhysicsSDK,cubeTransform,cubeGeometry,*defaultMaterial);
+		cubeActor->setName("StaticCube");
 		gScene->addActor(*cubeActor);
 		statics.push_back(cubeActor);
 		staticVisualCubes.push_back(vCube);
+		return cubeActor;
 	}
 }
-void PhysXEngine::ThrowCube(PxVec3 position,PxVec3 force)
+PxRigidActor* PhysXEngine::CreateSphereCapsule(PxReal radius, PxReal capHeight,PxVec3 position,float mass, bool isStatic, bool isKinematic)
+{
+	PxReal density = 100.0f;
+
+	PxTransform transform(position);
+	PxSphereGeometry geometry;
+	geometry.radius = radius;
+	PxCapsuleGeometry cGeometry;
+	cGeometry.halfHeight = capHeight/2;
+	cGeometry.radius = radius;
+	transform.p = position;
+		
+	if(!isStatic)
+	{
+		PxRigidDynamic *actor;
+		
+		if(capHeight == 0)
+		{
+			actor = PxCreateDynamic(*gPhysicsSDK, transform, geometry, *defaultMaterial, density);
+		}
+		else
+		{
+			actor = PxCreateDynamic(*gPhysicsSDK, transform, cGeometry, *defaultMaterial, density);
+		}
+		actor->setName("Kinematic");
+		actor->setRigidBodyFlag(PxRigidBodyFlag::eKINEMATIC, true);
+		actor->setAngularDamping(0.2f);
+		actor->setLinearDamping(0.2f);
+		actor->setMass(mass);
+		gScene->addActor(*actor);
+		dynamics.push_back(actor);
+		return actor;
+	}
+	else
+	{
+		PxRigidStatic *actor;
+		if(capHeight == 0)
+		{
+			actor = PxCreateStatic(*gPhysicsSDK, transform, geometry, *defaultMaterial);
+		}
+		else
+		{
+			actor = PxCreateStatic(*gPhysicsSDK, transform, cGeometry, *defaultMaterial);
+		}
+		gScene->addActor(*actor);
+		statics.push_back(actor);
+		return actor;
+	}
+}
+PxRigidActor* PhysXEngine::ThrowCube(PxVec3 position,PxVec3 force)
 {
 	PxReal cubeDensity = 10.0f;
 	D3DXQUATERNION rotQuat;
@@ -362,243 +464,15 @@ void PhysXEngine::ThrowCube(PxVec3 position,PxVec3 force)
 	cubeTransform.q = PxQuat(rotQuat.x,rotQuat.y,rotQuat.z,rotQuat.w);
 
 	PxRigidDynamic *cubeActor = PxCreateDynamic(*gPhysicsSDK, cubeTransform, cubeGeometry, *defaultMaterial, cubeDensity);
-
+	cubeActor->setName("ThrownCube");
 	cubeActor->setAngularDamping(0.1f);
 	cubeActor->setLinearDamping(0.02f);
 	cubeActor->setMass(100);
 	gScene->addActor(*cubeActor);
+
 	dynamics.push_back(cubeActor);
 	DebugCube* vCube = new DebugCube(D3DXVECTOR3(position.x,position.y,position.z),D3DXVECTOR3(0,0,0),-D3DXVECTOR3(0.5f,0.5f,0.5f),D3DXVECTOR3(0.5f,0.5f,0.5f),resources);
 	dynamicVisualCubes.push_back(vCube);
 	cubeActor->addForce(force,PxForceMode::eVELOCITY_CHANGE);
+	return cubeActor;
 }
-/*
-SPEEngine::SPEEngine(ResourceManager* res)
-{
-	resources = res;
-	InitApp();
-}
-void SPEEngine::InitShape(ISPEShape* pShape, LPD3DXMESH pMesh)
-{
-    BYTE *pVB;
-    void *pIB;
-    pMesh->LockVertexBuffer(D3DLOCK_NOSYSLOCK, (void**)&pVB);
-    pMesh->LockIndexBuffer (D3DLOCK_NOSYSLOCK, (void**)&pIB);
-    if(pMesh->GetOptions() & D3DXMESH_32BIT)  // 32BIT index
-    {
-        pShape->Initialize (pVB, pMesh->GetNumBytesPerVertex (),
-            (int*)pIB, pMesh->GetNumFaces ());
-    }
-    else  // 16BIT index
-    {
-        pShape->Initialize (pVB, pMesh->GetNumBytesPerVertex (),
-            (WORD*)pIB, pMesh->GetNumFaces ());
-    }
-    pMesh->UnlockVertexBuffer ();
-    pMesh->UnlockIndexBuffer ();
-}
-void SPEEngine::Create3DPhysicsObject(char* pathToMesh, SPEEngine::RigidData* data)
-{
-	RigidModel r;
-	r.doRender = data->doRender;
-	LPSPERIGIDBODY pBody;
-	LPSPESHAPE pShape = pWorld->CreateShape();
-	r.modelNr = resources->GetMeshData(pathToMesh);
-	r.model = resources->GetModelStructFromVector(r.modelNr);
-	ScaleMesh(r.model->mesh,data->scaleModel.x,data->scaleModel.y,data->scaleModel.z,NULL);
-
-	//D3DXLoadMeshFromX (pathToMesh,NULL,resources->GetDevice(),NULL,NULL,NULL,NULL, &mesh);
-	InitShape(pShape, r.model->mesh);  // initialize the shape
-	pBody = pWorld->AddRigidBody (pShape); // add a rigid body to SPEWorld with this shape
-	pBody->SetPosition(data->position); // set position of rigid body
-	pBody->SetVelocity(data->velocity); // set velocity
-	pBody->SetAngularVelocity(data->angularVelocity);
-
-	pBody->SetBeStatic(data->isStatic);
-	r.rigidbody = pBody;
-	if(data->isStatic)
-	{
-		staticbodies.push_back(r);
-	}
-	else
-	{
-		rigidbodies.push_back(r);
-	}
-	shapes.push_back(pShape);
-}
-void SPEEngine::Create2DPhysicsObject(SPEEngine::RigidData* data)
-{
-	RigidModel r;
-	r.doRender = data->doRender;
-	LPSPERIGIDBODY pBody;
-	LPSPESHAPE pShape = pWorld->CreateShape();
-	r.modelNr = resources->GetMeshData("resources/models/cube2d.x");
-	r.model = resources->GetModelStructFromVector(r.modelNr);
-	ScaleMesh(r.model->mesh,data->scaleModel.x,data->scaleModel.y,data->scaleModel.z,NULL);
-
-	InitShape(pShape, r.model->mesh);  // initialize the shape
-
-	pBody = pWorld->AddRigidBody(pShape); // add a rigid body to SPEWorld with this shape
-	pBody->SetPosition(data->position); // set position of rigid body
-	pBody->SetVelocity(data->velocity); // set velocity
-	pBody->SetAngularVelocity(data->angularVelocity);
-	
-	pBody->SetBeStatic(data->isStatic);
-	r.rigidbody = pBody;
-	if(data->isStatic)
-	{
-		staticbodies.push_back(r);
-	}
-	else
-	{
-		rigidbodies.push_back(r);
-	}
-	shapes.push_back(pShape);
-}
-HRESULT SPEEngine::ScaleMesh(ID3DXMesh *pMesh, float scaleX,float scaleY,float scaleZ, D3DXVECTOR3* offset)
-{
-	BYTE* ptr = NULL;
-	D3DXVECTOR3 vOff;
-	HRESULT result;
-
-	// return failure if no mesh pointer set
-	if (!pMesh)
-		return D3DERR_INVALIDCALL;
-
-	// select default or specified offset vector
-	if (offset)
-	{
-		vOff=*offset;
-	}
-	else
-	{
-		vOff=D3DXVECTOR3(0.0f,0.0f,0.0f);
-	}
-	// get the face count
-	DWORD numVerts=pMesh->GetNumVertices();
-
-	// get the FVF flags
-	DWORD fvf=pMesh->GetFVF();
-
-	// calculate vertex size
-	DWORD vertSize=D3DXGetFVFVertexSize(fvf);
-
-	// lock the vertex buffer
-	result = pMesh->LockVertexBuffer(0,(LPVOID*)&ptr);
-	if(result != D3D_OK)
-	{
-		return result;
-	}
-	// loop through the vertices
-	for (DWORD i=0;i<numVerts;i++) 
-	{
-		// get pointer to location
-		D3DXVECTOR3 *vPtr=(D3DXVECTOR3 *) ptr;
-
-		// scale the vertex
-		*vPtr+=vOff;
-		vPtr->x*=scaleX;
-		vPtr->y*=scaleY;
-		vPtr->z*=scaleZ;
-
-		// increment pointer to next vertex
-		ptr+=vertSize;
-	}
-	result = pMesh->UnlockVertexBuffer();
-	if (result != D3D_OK)
-	{
-		return result;
-	}
-	return S_OK;
-}
-void SPEEngine::Release()
-{
-	for(unsigned int i = 0; i < rigidbodies.size(); i++)
-	{
-		pWorld->ReleaseRigidBody(rigidbodies.at(i).rigidbody);
-	}
-	for(unsigned int i = 0; i < staticbodies.size(); i++)
-	{
-		pWorld->ReleaseRigidBody(staticbodies.at(i).rigidbody);
-	}
-	for(unsigned int i = 0; i < shapes.size(); i++)
-	{
-		pWorld->ReleaseShape(shapes.at(i));
-	}
-	ReleaseSPEWorld( pWorld ); 
-}
-void SPEEngine::InitApp()
-{
-	pWorld = CreateSPEWorld();  // create a instance of physics world
-    pWorld->SetGravity (SPEVector(0, -4.9f, 0)); // set the gravity
-	pWorld->SetStepTime(0.00833f);
-	pWorld->SetSolverPrecision(3);
-	pWorld->SetMaxStepPerUpdate(3);
-	pWorld->SetSolverCacheFactor(0.5f);
-} 
-void SPEEngine::OnFrameMove(float fElapsedTime )
-{
-    pWorld->Update(fElapsedTime);
-} 
-void SPEEngine::OnFrameRender( IDirect3DDevice9* m_pd3dDevice )
-{
-    D3DXMATRIX matWorld;
-	for(unsigned int i = 0; i < rigidbodies.size(); i++)
-	{
-		if(rigidbodies.at(i).doRender == true)
-		{
-			rigidbodies.at(i).rigidbody->GetTransformMesh (&matWorld); // get the world matrix of a rigid body
-			m_pd3dDevice->SetTransform (D3DTS_WORLD, &matWorld);
-
-			ResourceManager::Model* m = resources->GetModelStructFromVector(rigidbodies.at(i).modelNr);
-			if(m->mesh != NULL)
-			{
-				HRESULT result;
-				resources->GetDevice()->SetFVF(m->mesh->GetFVF());
-				for (DWORD x=0; x<m->numMaterials; x++)
-				{
-					if(m->meshTextures != NULL)
-					{
-						resources->GetDevice()->SetMaterial(&m->meshMaterials[x]);
-						resources->GetDevice()->SetTexture(0,m->meshTextures[x]);
-					}
-					result = m->mesh->DrawSubset(x);
-					if(result == D3DERR_INVALIDCALL)
-					{
-						std::cout << "Invalid Call (DrawSubset)" << std::endl;
-					}
-				}
-			}
-		}
-	}
-	for(unsigned int i = 0; i < staticbodies.size(); i++)
-	{
-		if(staticbodies.at(i).doRender == true)
-		{
-			staticbodies.at(i).rigidbody->GetTransformMesh (&matWorld); // get the world matrix of a rigid body
-			m_pd3dDevice->SetTransform (D3DTS_WORLD, &matWorld);
-
-			ResourceManager::Model* m = resources->GetModelStructFromVector(staticbodies.at(i).modelNr);
-			if(m->mesh != NULL)
-			{
-				HRESULT result;
-				resources->GetDevice()->SetFVF(m->mesh->GetFVF());
-				for (DWORD x=0; x<m->numMaterials; x++)
-				{
-					if(m->meshTextures != NULL)
-					{
-						resources->GetDevice()->SetMaterial(&m->meshMaterials[x]);
-						resources->GetDevice()->SetTexture(0,m->meshTextures[x]);
-					}
-					result = m->mesh->DrawSubset(x);
-					if(result == D3DERR_INVALIDCALL)
-					{
-						std::cout << "Invalid Call (DrawSubset)" << std::endl;
-					}
-				}
-			}
-		}
-	}
-} 
-
-*/

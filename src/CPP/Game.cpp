@@ -19,10 +19,11 @@ Game::Game(Game::DataStruct* b,HWND windowHandle,ResourceManager* resMan,InputHa
 	//particles.at(0)->SetMovement(D3DXVECTOR3(0,0,0),D3DXVECTOR3(0,3,0));
 	//particles.at(0)->Release();
 }
-Game::Object2DData Game::CreateObject2DData(char* filePath,bool hasAnim, D3DXVECTOR3 pos,D3DXVECTOR3 scale, D3DXVECTOR2 rows)
+Game::Object2DData Game::CreateObject2DData(char* filePath,bool hasAnim, D3DXVECTOR3 pos,D3DXVECTOR3 scale, D3DXVECTOR2 rows, PhysicsData pData)
 {
 	Game::Object2DData d;
 	d.Nullify();
+	d.physics = pData;
 	d.filePath = filePath;
 	d.hasAnimation = hasAnim;
 	d.position = pos;
@@ -31,7 +32,7 @@ Game::Object2DData Game::CreateObject2DData(char* filePath,bool hasAnim, D3DXVEC
 	d.yRowsAnim = rows.y;
 	return d;
 }
-Game::Object3DData Game::CreateObject3DData(char* filePath,D3DXVECTOR3 pos,D3DXVECTOR3 scale,D3DXVECTOR3 rot)
+Game::Object3DData Game::CreateObject3DData(char* filePath,D3DXVECTOR3 pos,D3DXVECTOR3 scale,D3DXVECTOR3 rot, PhysicsData pData)
 {
 	Game::Object3DData d;
 	d.Nullify();
@@ -54,12 +55,33 @@ void Game::Initialize()
 	keys.resize(256,0);
 	resources->CreateTextObject("Arial","\n    THIS IS TESTING TEXT",12, 0, 0, 30, 20, 0xFFFF0000);
 }
+void Game::ReleaseEnemy(Enemy* enemy)
+{
+	physics->RemoveActor(enemy->actor->isRigidDynamic());
+	physics->RemoveActor(enemy->actor->isRigidStatic());
+	PxShape* shapes;
+	enemy->actor->getShapes(&shapes,sizeof(PxShape));
+	for(unsigned int x = 0; x < enemy->actor->getNbShapes(); x++)
+	{
+		enemy->actor->detachShape(shapes[x]);
+	}
+	enemy->actor->release();
+	enemy->obj->ReleaseResources();
+}
 void Game::Update(double deltaTime)
 {
 	float deltaTimeF = (float)deltaTime;
 	for(unsigned int i =0 ;i<spriteObjs.size(); i++)
 	{
-		spriteObjs.at(i)->Update(deltaTimeF);
+		spriteObjs.at(i)->obj->Update(deltaTimeF);
+		if(spriteObjs.at(i)->obj->hasAnimation)
+		{
+			if(spriteObjs.at(i)->IsDead && spriteObjs.at(i)->obj->GetCurrentAnim()->isFinished)
+			{
+				ReleaseEnemy(spriteObjs.at(i));
+				spriteObjs.erase(spriteObjs.begin()+i);
+			}
+		}
 	}
 	for(unsigned int i = 0; i < particles.size(); i++)
 	{
@@ -85,8 +107,6 @@ void Game::Update(double deltaTime)
 	{
 		return;
 	}
-	
-	//resources->SetCameraCircle(cam->ReturnCameraCircle());
 	HandlePlayerCollisions(DoInput(deltaTimeF));
 	PxExtendedVec3 PxPlayerPos = physics->player->getPosition()+PxExtendedVec3(0,2,0);
 	cam->SetPosition(PxPlayerPos.x,PxPlayerPos.y,PxPlayerPos.z);
@@ -109,8 +129,8 @@ void Game::HandlePlayerCollisions(PxVec3 moveDir)
 		rigidBody = state.touchedShape->getActor()->isRigidDynamic();
 		if(rigidBody != NULL)
 		{
-			rigidBody->addForce(moveDir*100,PxForceMode::eIMPULSE);
-			std::cout << "Rigidbody hit" << std::endl;
+			//rigidBody->addForce(moveDir*100,PxForceMode::eIMPULSE);
+			//std::cout << "Rigidbody hit" << std::endl;
 		}
 	}
 }
@@ -135,8 +155,12 @@ void Game::Render()
 	p_Device->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP);
 	for(unsigned int i = 0; i < spriteObjs.size();i++)
 	{
-		spriteObjs.at(i)->cameraView = &cam->GetView();
-		spriteObjs.at(i)->Draw();
+		spriteObjs.at(i)->obj->cameraView = &cam->GetView();
+		spriteObjs.at(i)->obj->Draw();
+		if(spriteObjs.at(i)->PlayAnimAfterCurrent)
+		{
+			spriteObjs.at(i)->obj->CheckPlayingAnimation("Test");
+		}
 	}
 	for(unsigned int i = 0; i < particles.size(); i++)
 	{
@@ -198,34 +222,34 @@ void Game::UndoEditorAction()
 }
 PxVec3 Game::DoInput(float dT)
 {
-	PxVec3 moveDir = PxVec3(0,-9.8f,0);
+	PxVec3 moveDir = PxVec3(0,physics->playerGravity,0);
+	PxControllerState state;
+	physics->player->getState(state);
+	if(state.standOnObstacle)
+	{
+		physics->playerGravity = 0;
+	}
+	else
+	{
+		physics->playerGravity -= dT;
+		if(physics->playerGravity < -0.98f)
+		{
+			physics->playerGravity = -0.98f;
+		}
+	}
+	if(KeyPressed(DIK_SPACE) == 2)
+	{
+		physics->playerGravity = 0.4f;
+	}
+	//std::cout << "   x: "<<physics->player->getFootPosition().x <<"   y: " <<physics->player->getFootPosition().y << "   z: "<<physics->player->getFootPosition().z << std::endl;
 	if(KeyPressed(DIK_LCONTROL) && KeyPressed(DIK_Z) == 2)
 	{
 		UndoEditorAction();
 	}
-	if(inputHandler->MouseButtonDown(0))
+	
+	if(KeyPressed(DIK_CAPSLOCK) == 2)
 	{
-		if(mouseLeftJustDown == false)
-		{
-			LeftMouseClick();
-			mouseLeftJustDown = true;
-		}
-	}
-	else
-	{
-		mouseLeftJustDown = false;
-	}
-	if(inputHandler->MouseButtonDown(1))
-	{
-		if(mouseRightJustDown == false)
-		{
-			data->lockCursor = !data->lockCursor;
-			mouseRightJustDown = true;
-		}
-	}
-	else
-	{
-		mouseRightJustDown = false;
+		data->lockCursor = !data->lockCursor;
 	}
 	if(KeyPressed(DIK_COMMA) == 2)
 	{
@@ -311,128 +335,165 @@ PxVec3 Game::DoInput(float dT)
 			p_Device->SetRenderState(D3DRS_FILLMODE,D3DFILL_SOLID);
 		}
 	}
-	if(KeyPressed(DIK_RCONTROL) == 2)
+	if(EditorMode)
 	{
-		scaleMultiplier = -scaleMultiplier;
-		cout << "Scale Adding has been set to false" << endl;
-	}
-	if(KeyPressed(DIK_NUMPAD4) || KeyPressed(DIK_NUMPAD6))
-	{
-		IFCOL
+		if(KeyPressed(DIK_RCONTROL) == 2)
 		{
-			currentEditorObj->col->scaling.x += scaleMultiplier*dT;
+			scaleMultiplier = -scaleMultiplier;
+			cout << "Scale Adding has been set to false" << endl;
 		}
-		else IFOBJ3D
+		if(KeyPressed(DIK_NUMPAD4) || KeyPressed(DIK_NUMPAD6))
 		{
-			currentEditorObj->obj3D->scaling.x += scaleMultiplier*dT;
+			IFCOL
+			{
+				currentEditorObj->col->scaling.x += scaleMultiplier*dT;
+			}
+			else IFOBJ3D
+			{
+				currentEditorObj->obj3D->scaling.x += scaleMultiplier*dT;
+			}
+			else IFOBJ2D
+			{
+				currentEditorObj->obj2D->scaling.x += scaleMultiplier*dT;
+			}
 		}
-		else IFOBJ2D
+		if(KeyPressed(DIK_NUMPAD2) || KeyPressed(DIK_NUMPAD8))
 		{
-			currentEditorObj->obj2D->scaling.x += scaleMultiplier*dT;
+			IFCOL
+			{
+				currentEditorObj->col->scaling.y += scaleMultiplier*dT;
+			}
+			else IFOBJ3D
+			{
+				currentEditorObj->obj3D->scaling.y += scaleMultiplier*dT;
+			}
+			else IFOBJ2D
+			{
+				currentEditorObj->obj2D->scaling.y += scaleMultiplier*dT;
+			}
 		}
-	}
-	if(KeyPressed(DIK_NUMPAD2) || KeyPressed(DIK_NUMPAD8))
-	{
-		IFCOL
+		if(KeyPressed(DIK_NUMPAD5) || KeyPressed(DIK_NUMPAD0))
 		{
-			currentEditorObj->col->scaling.y += scaleMultiplier*dT;
+			IFCOL
+			{
+				currentEditorObj->col->scaling.z += scaleMultiplier*dT;
+			}
+			else IFOBJ3D
+			{
+				currentEditorObj->obj3D->scaling.z += scaleMultiplier*dT;
+			}
 		}
-		else IFOBJ3D
+		if(KeyPressed(DIK_I))
 		{
-			currentEditorObj->obj3D->scaling.y += scaleMultiplier*dT;
+			IFCOL
+			{
+				currentEditorObj->col->rotation.x += 5*dT*5;
+			}
+			else IFOBJ3D
+			{
+				currentEditorObj->obj3D->rotation.x += dT*5;
+			}
 		}
-		else IFOBJ2D
+		if(KeyPressed(DIK_K))
 		{
-			currentEditorObj->obj2D->scaling.y += scaleMultiplier*dT;
+			IFCOL
+			{
+				currentEditorObj->col->rotation.x -= 5*dT*5;
+			}
+			else IFOBJ3D
+			{
+				currentEditorObj->obj3D->rotation.x -=dT*5;
+			}
 		}
-	}
-	if(KeyPressed(DIK_NUMPAD5) || KeyPressed(DIK_NUMPAD0))
-	{
-		IFCOL
+		if(KeyPressed(DIK_J))
 		{
-			currentEditorObj->col->scaling.z += scaleMultiplier*dT;
+			IFCOL
+			{
+				currentEditorObj->col->rotation.y += 5*dT*5;
+			}
+			else IFOBJ3D
+			{
+				currentEditorObj->obj3D->rotation.y += dT*5;
+			}
 		}
-		else IFOBJ3D
+		if(KeyPressed(DIK_L))
 		{
-			currentEditorObj->obj3D->scaling.z += scaleMultiplier*dT;
+			IFCOL
+			{
+				currentEditorObj->col->rotation.y -= 5*dT*5;
+			}
+			else IFOBJ3D
+			{
+				currentEditorObj->obj3D->rotation.y -= dT*5;
+			}
 		}
-	}
-	if(KeyPressed(DIK_I))
-	{
-		IFCOL
+		if(KeyPressed(DIK_8) == 2)
 		{
-			currentEditorObj->col->rotation.x += 5*dT*5;
+			currentEditorObjIndex--;
+			cout << currentEditorObjIndex << endl;
+			if(currentEditorObjIndex < 0)
+			{
+				currentEditorObjIndex = editorObjs.size()-1;
+			}
+			currentEditorObj = &editorObjs.at(currentEditorObjIndex);
+			if(currentEditorObj->obj2D != NULL)
+			{
+				currentEditorObj->obj2D->PlayAnimation("Test");
+			}
 		}
-		else IFOBJ3D
+		if(KeyPressed(DIK_9) == 2)
 		{
-			currentEditorObj->obj3D->rotation.x += dT*5;
-		}
-	}
-	if(KeyPressed(DIK_K))
-	{
-		IFCOL
-		{
-			currentEditorObj->col->rotation.x -= 5*dT*5;
-		}
-		else IFOBJ3D
-		{
-			currentEditorObj->obj3D->rotation.x -=dT*5;
-		}
-	}
-	if(KeyPressed(DIK_J))
-	{
-		IFCOL
-		{
-			currentEditorObj->col->rotation.y += 5*dT*5;
-		}
-		else IFOBJ3D
-		{
-			currentEditorObj->obj3D->rotation.y += dT*5;
-		}
-	}
-	if(KeyPressed(DIK_L))
-	{
-		IFCOL
-		{
-			currentEditorObj->col->rotation.y -= 5*dT*5;
-		}
-		else IFOBJ3D
-		{
-			currentEditorObj->obj3D->rotation.y -= dT*5;
-		}
-	}
-	if(KeyPressed(DIK_8) == 2)
-	{
-		currentEditorObjIndex--;
-		cout << currentEditorObjIndex << endl;
-		if(currentEditorObjIndex < 0)
-		{
-			currentEditorObjIndex = editorObjs.size()-1;
-		}
-		currentEditorObj = &editorObjs.at(currentEditorObjIndex);
-		if(currentEditorObj->obj2D != NULL)
-		{
-			currentEditorObj->obj2D->PlayAnimation("Test");
-		}
-	}
-	if(KeyPressed(DIK_9) == 2)
-	{
-		currentEditorObjIndex++;
-		cout << currentEditorObjIndex << endl;
-		cout << "pressed 9 " << endl;
-		if(currentEditorObjIndex >= editorObjs.size())
-		{
-			currentEditorObjIndex = 0;
-		}
-		currentEditorObj = &editorObjs.at(currentEditorObjIndex);
+			currentEditorObjIndex++;
+			cout << currentEditorObjIndex << endl;
+			cout << "pressed 9 " << endl;
+			if(currentEditorObjIndex >= editorObjs.size())
+			{
+				currentEditorObjIndex = 0;
+			}
+			currentEditorObj = &editorObjs.at(currentEditorObjIndex);
 		
-		if(currentEditorObj->obj2D != NULL && currentEditorObj->obj2D->hasAnimation)
+			if(currentEditorObj->obj2D != NULL && currentEditorObj->obj2D->hasAnimation)
+			{
+				currentEditorObj->obj2D->PlayAnimation("Test");
+			}
+		}
+		editorObjectDistance+=inputHandler->GetMouseScroll()*dT;
+	}
+	if(KeyPressed(DIK_F))
+	{
+		D3DXVECTOR3 camPos = cam->GetPosition()+cam->GetLookDir()*2;
+		physics->ThrowCube(PxVec3(camPos.x,camPos.y,camPos.z),PxVec3(cam->GetLookDir().x*80,cam->GetLookDir().y*80,cam->GetLookDir().z*80));
+		lastAction.push_back(ThrowCube);
+	}
+	if(inputHandler->MouseButtonDown(0))
+	{
+		//LeftMouseClick();
+		if(mouseLeftJustDown == false)
 		{
-			currentEditorObj->obj2D->PlayAnimation("Test");
+			LeftMouseClick();
+			mouseLeftJustDown = true;
 		}
 	}
-	if(EditorMode) editorObjectDistance+=inputHandler->GetMouseScroll()*dT;
-
+	else
+	{
+		mouseLeftJustDown = false;
+	}
+	if(inputHandler->MouseButtonDown(1))
+	{
+		RightMouseClick();
+		if(mouseRightJustDown == false)
+		{
+			mouseRightJustDown = true;
+		}
+	}
+	else
+	{
+		mouseRightJustDown = false;
+	}
+	if(KeyPressed(DIK_G) == 2)
+	{
+		RightMouseClick();
+	}
 	if(KeyPressed(DIK_R) == 2)
 	{
 		DestroyLevel();	 //This will destroy the current level 
@@ -442,7 +503,7 @@ PxVec3 Game::DoInput(float dT)
 	{
 		data->loop = false;
 	}
-	physics->player->move(moveDir,0.2f,dT,NULL,NULL);
+	physics->player->move(moveDir,0.001f,dT,NULL,NULL);
 	return moveDir;
 }
 bool Game::Create3DObject(bool hasPhysics, Object3DData* data)
@@ -451,7 +512,22 @@ bool Game::Create3DObject(bool hasPhysics, Object3DData* data)
 	{
 		if(hasPhysics)
 		{
-			//pData->scaleModel = SPEVector(data->scale.x,data->scale.y,data->scale.z);
+			Object3D* obj = new Object3D(resources,data->filePath);
+			if(data->physics.cType == PhysicsData::PhysicsType::Mesh)
+			{
+				physics->BakeMesh(obj->model.mesh,PxVec3(obj->scaling.x,obj->scaling.y,obj->scaling.z),true); //3e arg "true" moet flipnormals worden, die gelinkt is aan de data uit lvl.txt
+			}
+			else
+			{
+				//box collision toevoegen.
+			}
+			obj->position = data->position;
+			obj->scaling = data->scale;
+			obj->rotation = data->rotation;
+			PhysicsUserData uData;
+			uData.Nullify();
+			uData.related3D= obj;
+			modelObjs.push_back(obj);
 			std::cout << hasPhysics << "<- has PhysX" << endl;
 			//physics->Create3DPhysicsObject(data->filePath,pData);
 		}
@@ -470,6 +546,9 @@ bool Game::Create3DObject(bool hasPhysics, Object3DData* data)
 bool Game::CreateAnimated2DObject(bool hasPhysics, Object2DData* data)
 {
 	Object2D* obj;
+	Enemy* enemy = new Enemy();
+	enemy->Health = 20;
+	enemy->Damage = 10;
 	if(hasPhysics)
 	{
 		if(data->hasAnimation)
@@ -478,6 +557,13 @@ bool Game::CreateAnimated2DObject(bool hasPhysics, Object2DData* data)
 			obj->position = data->position;
 			obj->hasAnimation = true;
 			obj->scaling = data->scale;
+			PxRigidActor* actor = physics->CreateSphereCapsule(data->physics.radius, data->physics.capsuleHeight ,PxVec3(data->position.x,data->position.y,data->position.z), 10, false, true);
+			enemy->actor = actor;
+			PhysicsUserData* uData = new PhysicsUserData();
+			uData->Nullify();
+			uData->related2D = obj;
+			uData->enemy = enemy;
+			actor->userData = uData;
 			obj->PlayAnimation("Test");
 			//physics->Create2DPhysicsObject(pData);
 			//if(pData->isStatic != false)
@@ -517,7 +603,8 @@ bool Game::CreateAnimated2DObject(bool hasPhysics, Object2DData* data)
 			return false;
 		}
 	}
-	spriteObjs.push_back(obj);
+	enemy->obj = obj;
+	spriteObjs.push_back(enemy);
 	return true;
 }
 bool Game::CreateStatic2DObject(bool hasPhysics, Object2DData* data)
@@ -525,36 +612,32 @@ bool Game::CreateStatic2DObject(bool hasPhysics, Object2DData* data)
 	if(data != NULL)
 	{
 		Object2D* obj;
+		Enemy* enemy = new Enemy();
+		enemy->Health = 20;
+		enemy->Damage = 10;
+
 		if(hasPhysics)
 		{
 			obj = new Object2D(resources,data->filePath,GetCameraView());
 			obj->position = data->position;
 			obj->scaling = data->scale;
-			//physics->Create2DPhysicsObject(pData);
-			//if(pData->isStatic != false)
-			//{
-			//	obj->linkedPhysicsObj = physics->GetLastStaticBody();
-			//}
-			//else
-			//{
-			//	obj->linkedPhysicsObj = physics->GetLastRigidBody();
-			//}
+			PxRigidActor* actor = physics->CreateSphereCapsule(data->physics.radius, data->physics.capsuleHeight ,PxVec3(data->position.x,data->position.y,data->position.z), 10, false, true);
+			enemy->actor = actor;
+			PhysicsUserData* uData = new PhysicsUserData();
+			uData->Nullify();
+			uData->related2D= obj;
+			uData->enemy = enemy;
+			actor->userData = uData;
 		}
 		else
 		{
 			obj = new Object2D(resources,data->filePath,GetCameraView());
 			obj->position = data->position;
 			obj->scaling = data->scale;
-			//if(pData->isStatic != false)
-			//{
-			//	obj->linkedPhysicsObj = physics->GetLastStaticBody();
-			//}
-			//else
-			//{
-			//	obj->linkedPhysicsObj = physics->GetLastRigidBody();
-			//}
+			//physics->CreateSphereCapsule(data->physics.radius, data->physics.capsuleHeight ,PxVec3(data->position.x,data->position.y,data->position.z), 10, false, true);
 		}
-		spriteObjs.push_back(obj);
+		enemy->obj = obj;
+		spriteObjs.push_back(enemy);
 		return true;
 	}
 	return false;
@@ -568,20 +651,16 @@ void Game::LeftMouseClick()
 		{
 			if(!currentEditorObj->obj2D->hasAnimation)
 			{
-				Object2D* obj = new Object2D(resources,currentEditorObj->obj2D->quad.textureName,GetCameraView());
-				obj->SetPosition(cam->GetPosition()+cam->GetLookDir()*editorObjectDistance);
-				obj->SetScale(currentEditorObj->obj2D->scaling);
+				CreateStatic2DObject(true,&CreateObject2DData(currentEditorObj->obj2D->quad.textureName,true,cam->GetPosition()+cam->GetLookDir()*editorObjectDistance,currentEditorObj->obj2D->scaling,D3DXVECTOR2(0,0),CreatePhysicsData(1,5)));
+				Object2D* obj = spriteObjs.at(spriteObjs.size()-1)->obj;
 				obj->objName = currentEditorObj->obj2D->objName;
-				spriteObjs.push_back(obj);
 			}
 			else
 			{
-				Object2D* obj = new Object2D(resources,currentEditorObj->obj2D->quad.textureName,GetCameraView(),currentEditorObj->obj2D->GetXRows(),currentEditorObj->obj2D->GetYRows());
-				obj->SetPosition(cam->GetPosition()+cam->GetLookDir()*editorObjectDistance);
+				CreateAnimated2DObject(true,&CreateObject2DData(currentEditorObj->obj2D->quad.textureName,true,cam->GetPosition()+cam->GetLookDir()*editorObjectDistance,currentEditorObj->obj2D->scaling,D3DXVECTOR2(currentEditorObj->obj2D->GetXRows(),currentEditorObj->obj2D->GetYRows()),CreatePhysicsData(1,5)));
+				Object2D* obj = spriteObjs.at(spriteObjs.size()-1)->obj;
 				obj->objName = currentEditorObj->obj2D->objName;
-				obj->SetScale(currentEditorObj->obj2D->scaling);
 				obj->PlayAnimation("Test");
-				spriteObjs.push_back(obj);
 			}
 		}
 		else if(currentEditorObj->obj3D != NULL)
@@ -614,10 +693,71 @@ void Game::LeftMouseClick()
 				gui->PlayAnimation(&gui->guiObjs.at(0),"ReversedAttack");
 			}
 		}
-		D3DXVECTOR3 camPos = cam->GetPosition()+cam->GetLookDir()*2;
-		physics->ThrowCube(PxVec3(camPos.x,camPos.y,camPos.z),PxVec3(cam->GetLookDir().x*40,cam->GetLookDir().y*40,cam->GetLookDir().z*40));
-		lastAction.push_back(ThrowCube);
+		PxRaycastBuffer* hit = RayFromPlayer();
+		if(hit->block.actor != NULL)
+		{
+			//std::cout << "Raycast Single hit" << std::endl;
+			PxRigidDynamic* p = hit->block.actor->isRigidDynamic();
+			if(p != NULL && !p->getRigidDynamicFlags().isSet(PxRigidBodyFlag::eKINEMATIC))
+			{
+				//p->addForce(PxVec3(0,50,0),PxForceMode::eVELOCITY_CHANGE);
+			}
+			if(p != NULL && p->userData != NULL)
+			{
+				PhysicsUserData* data = (PhysicsUserData*)p->userData;
+				if(data != NULL)
+				{
+					if(data->related2D != NULL && !data->enemy->IsDead)
+					{
+						std::cout << data->related2D->quad.textureName << std::endl;
+						data->enemy->Health -= 10;
+						data->related2D->PlayAnimation("Damage");
+						data->enemy->PlayAnimAfterCurrent = true;
+						if(data->enemy->Health <= 0)
+						{
+							data->enemy->obj->PlayAnimation("Death");
+							data->enemy->PlayAnimAfterCurrent = false;
+							data->enemy->IsDead = true;
+						}
+					}
+				}
+
+				//std::cout << "Number of the model =" << (unsigned int)p->userData << std::endl;
+			}
+		}
 	}
+}
+PxRaycastBuffer* Game::RayFromPlayer()
+{
+	D3DXVECTOR3 camPos = cam->GetPosition();
+	D3DXVECTOR3 camAt = cam->GetLookAt();
+	D3DXVECTOR3 camDir =  cam->GetLookDir();
+	PxVec3 pCamAt = PxVec3(camAt.x,camAt.y,camAt.z);
+	PxVec3 pCamDir = PxVec3(camDir.x,camDir.y,camDir.z);
+	PxVec3 pCamPos = PxVec3(camPos.x,camPos.y,camPos.z)+pCamDir*2;
+	PxRaycastBuffer hit= physics->RaycastSingle(pCamPos,pCamDir,50);
+	return &hit;
+	
+}
+void Game::RightMouseClick()
+{
+	D3DXVECTOR3 camPos = cam->GetPosition();
+	D3DXVECTOR3 camAt = cam->GetLookAt();
+	D3DXVECTOR3 camDir =  cam->GetLookDir();
+	PxVec3 pCamAt = PxVec3(camAt.x,camAt.y,camAt.z);
+	PxVec3 pCamDir = PxVec3(camDir.x,camDir.y,camDir.z);
+	PxVec3 pCamPos = PxVec3(camPos.x,camPos.y,camPos.z)+pCamDir*2;
+	PxRaycastBuffer hit= physics->RaycastSingle(pCamPos,pCamDir,50);
+	if(hit.block.actor != NULL)
+	{
+		PxRigidDynamic* p = hit.block.actor->isRigidDynamic();
+		if(p != NULL && !p->getRigidDynamicFlags().isSet(PxRigidBodyFlag::eKINEMATIC))
+		{
+			p->addForce(PxVec3(0,50,0),PxForceMode::eVELOCITY_CHANGE);
+		}
+	}
+
+
 }
 void Game::ReleaseAll()
 {
@@ -628,8 +768,8 @@ void Game::ReleaseAll()
 	}
 	for(unsigned int i=0;i<spriteObjs.size();i++)
 	{
-		spriteObjs.at(i)->ReleaseResources();  
-		delete spriteObjs.at(i);
+		spriteObjs.at(i)->obj->ReleaseResources();  
+		delete spriteObjs.at(i)->obj;
 	}
 	for(unsigned int i=0;i<debugCubes.size();i++)
 	{
@@ -669,8 +809,8 @@ void Game::DestroyLevel()
 	modelObjs.clear(); 
 	for(unsigned int i=0;i<spriteObjs.size();i++)
 	{
-		spriteObjs.at(i)->ReleaseResources();
-		delete spriteObjs.at(i);
+		spriteObjs.at(i)->obj->ReleaseResources();
+		delete spriteObjs.at(i)->obj;
 	}
 	spriteObjs.clear();
 	for(unsigned int i=0;i<debugCubes.size();i++)
@@ -805,7 +945,7 @@ void Game::CreateLevelFile()
 		}
 		for(unsigned int i = 0; i < spriteObjs.size();i++)
 		{
-			Object2D* obj = spriteObjs.at(i);
+			Object2D* obj = spriteObjs.at(i)->obj;
 			level << obj->quad.textureName << "\t" << obj->objName << "\t" << obj->position.x << "\t" << obj->position.y << "\t" << obj->position.z << "\t" << obj->scaling.x << "\t" << obj->scaling.y << "\t" << obj->scaling.z << "\t" << obj->rotation.x << "\t" << obj->rotation.y << "\t" << obj->rotation.z << "\t" << obj->GetXRows() << "\t" << obj->GetYRows() <<obj->tag << "\n";
 		}
 		for(unsigned int i = 0; i < debugCubes.size();i++)
@@ -836,47 +976,62 @@ void Game::LoadLevel()
 		{
 			string name,tag;
 			string check = "x";
-			string colCheck = "Collision";
 			string objName;
 			float XAnimRows;
 			float YAnimRows;
-			float posx,posy,posz,scalex,scaley,scalez,rotx,roty,rotz,hitBoxX,hitBoxY,hitBoxZ;
-			bool hasPhysics,isStatic,doDraw;
-			fin >> name >> objName >>posx >> posy >> posz >> scalex >> scaley >> scalez >> rotx >> roty >> rotz >> XAnimRows >> YAnimRows >> tag >> hasPhysics >> isStatic >> doDraw >>hitBoxX >> hitBoxY >> hitBoxZ;
+			float posx,posy,posz,scalex,scaley,scalez,rotx,roty,rotz,hitBoxX,hitBoxY,hitBoxZ,radius,capHeight;
+			bool hasPhysics,isStatic,doDraw,meshCollision;
+			fin >> name >> objName >>posx >> posy >> posz >> scalex >> scaley >> scalez >> rotx >> roty >> rotz >> XAnimRows >> YAnimRows >> tag >> hasPhysics >> isStatic >> meshCollision >> doDraw >>hitBoxX >> hitBoxY >> hitBoxZ >> radius >> capHeight;
 
 			if(name.at(name.size()-1) == check[0])
 			{
 				char* mName = _strdup(name.c_str());
-				Object3DData data = CreateObject3DData(mName,D3DXVECTOR3(posx,posy,posz),D3DXVECTOR3(scalex,scaley,scalez),D3DXVECTOR3(rotx,roty,rotz));
+				PhysicsData pData;
+				pData.Nullify();
+				Object3DData data = CreateObject3DData(mName,D3DXVECTOR3(posx,posy,posz),D3DXVECTOR3(scalex,scaley,scalez),D3DXVECTOR3(rotx,roty,rotz),pData);
 				//SPEEngine::RigidData pData = CreatePhysicsData(doDraw,isStatic,1,1,SPEVector(posx,posy,posz),SPEVector(scalex,scaley,scalez),SPEVector(0,0,0),SPEVector(0,0,0));
-				Create3DObject(hasPhysics,&data);
 				if(!hasPhysics)
 				{
+					Create3DObject(hasPhysics,&data);
 					Object3D* obj = modelObjs.at(modelObjs.size()-1);
 					obj->objName = objName;
 					obj->tag = tag;
 				}
-			}
-			else if(name.compare(colCheck) == 0) //if they are the same (0=They compare equal		<0=Either the value of the first character that does not match is lower in the compared string, or all compared characters match but the compared string is shorter.  >0  = Either the value of the first character that does not match is greater in the compared string, or all compared characters match but the compared string is longer.
-			{
-				physics->CreateCube(PxVec3(posx,posy,posz),PxVec3(rotx,roty,rotz),PxVec3(scalex,scaley,scalez),1,true);
-				//std::cout << "Created Collision cube" << std::endl;
+				else
+				{
+					if(meshCollision)
+					{
+						data.physics.cType = PhysicsData::PhysicsType::Mesh;
+					}
+					else if (radius != 0)
+					{
+						data.physics = CreatePhysicsData(radius,capHeight);
+					}
+					else
+					{
+						data.physics = CreatePhysicsData(PxVec3(hitBoxX,hitBoxY,hitBoxZ));
+					}
+					Create3DObject(hasPhysics,&data);
+					Object3D* obj = modelObjs.at(modelObjs.size()-1);
+					obj->objName = objName;
+					obj->tag = tag;
+				}
 			}
 			else
 			{
 				Object2D* obj;
 				if(XAnimRows == 0 && YAnimRows == 0)
 				{
-					CreateStatic2DObject(hasPhysics,&CreateObject2DData(_strdup(name.c_str()),false,D3DXVECTOR3(posx,posy,posz),D3DXVECTOR3(scalex,scaley,1),D3DXVECTOR2(0,0)));//,&CreatePhysicsData(doDraw,isStatic,1,1,SPEVector(posx,posy,posz),SPEVector(hitBoxX,hitBoxY,hitBoxZ),SPEVector(0,0,0),SPEVector(0,0,0)));
-					obj = spriteObjs.at(spriteObjs.size()-1);
+					CreateStatic2DObject(hasPhysics,&CreateObject2DData(_strdup(name.c_str()),false,D3DXVECTOR3(posx,posy,posz),D3DXVECTOR3(scalex,scaley,1),D3DXVECTOR2(0,0),CreatePhysicsData(radius,capHeight)));//,&CreatePhysicsData(doDraw,isStatic,1,1,SPEVector(posx,posy,posz),SPEVector(hitBoxX,hitBoxY,hitBoxZ),SPEVector(0,0,0),SPEVector(0,0,0)));
+					obj = spriteObjs.at(spriteObjs.size()-1)->obj;
 					obj->handleWindow = handleWindow;
 					obj->objName = objName;
 					obj->tag = tag;
 				}
 				else
 				{
-					CreateAnimated2DObject(hasPhysics,&CreateObject2DData(_strdup(name.c_str()),true,D3DXVECTOR3(posx,posy,posz),D3DXVECTOR3(scalex,scaley,1),D3DXVECTOR2(XAnimRows,YAnimRows)));//,&CreatePhysicsData(doDraw,isStatic,1,1,SPEVector(posx,posy,posz),SPEVector(hitBoxX,hitBoxY,hitBoxZ),SPEVector(0,0,0),SPEVector(0,0,0)));
-					obj = spriteObjs.at(spriteObjs.size()-1);
+					CreateAnimated2DObject(hasPhysics,&CreateObject2DData(_strdup(name.c_str()),true,D3DXVECTOR3(posx,posy,posz),D3DXVECTOR3(scalex,scaley,1),D3DXVECTOR2(XAnimRows,YAnimRows),CreatePhysicsData(radius,capHeight)));//,&CreatePhysicsData(doDraw,isStatic,1,1,SPEVector(posx,posy,posz),SPEVector(hitBoxX,hitBoxY,hitBoxZ),SPEVector(0,0,0),SPEVector(0,0,0)));
+					obj = spriteObjs.at(spriteObjs.size()-1)->obj;
 					obj->handleWindow = handleWindow;
 					obj->objName = objName;
 					obj->tag = tag;	

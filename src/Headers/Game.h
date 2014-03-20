@@ -54,12 +54,76 @@ public:
 		D3DPRESENT_PARAMETERS d3dxpresentationparams;
 		bool applicationActive;
 	};
+	
+	struct Enemy
+	{
+		Enemy()
+		{
+			obj = NULL;
+			actor = NULL;
+			Health = 0;
+			Damage = 0;
+			IsDead = false;
+			PlayAnimAfterCurrent = true;
+		}
+		Object2D* obj;
+		PxRigidActor* actor;
+		float Health;
+		float Damage;
+		bool IsDead;
+		bool PlayAnimAfterCurrent;
+		void Nullify()
+		{
+			Health = 0;
+			Damage = 0;
+			obj = NULL;
+			actor = NULL;
+			IsDead = false;
+			PlayAnimAfterCurrent = false;
+		}
+	};
+	struct PhysicsUserData
+	{
+		PhysicsUserData()
+		{
+			related2D = NULL;
+			related3D = NULL;
+		}
+		Object3D* related3D; //backwards compatibility
+		Object2D* related2D; //backwards compatibility
+		//WorldModelObject* worldObj;
+		Enemy* enemy;
+		void Nullify()
+		{
+			related3D = NULL;
+			related2D = NULL;
+			enemy = NULL;
+		}
+	};
+	struct PhysicsData
+	{
+		enum PhysicsType{Box,Capsule,Sphere,Mesh,Uninitialized};
+		PhysicsType cType;
+		DWORD flags; //unused
+		PxVec3 boxHalfWidth;
+		PxReal radius;
+		PxReal capsuleHeight;
+		void Nullify()
+		{
+			flags = NULL;
+			cType = PhysicsType::Uninitialized;
+			boxHalfWidth = PxVec3(0,0,0);
+			radius = 0;
+			capsuleHeight = 0;
+		}
+	};
 	struct Object3DData
 	{
 		char* filePath;
 		D3DXVECTOR3 position;
 		D3DXVECTOR3 rotation;
 		D3DXVECTOR3 scale;
+		PhysicsData physics;
 		void Nullify()
 		{
 			filePath = "";
@@ -77,6 +141,7 @@ public:
 		D3DXVECTOR2 LLVertexPos;
 		D3DXVECTOR3 position;
 		D3DXVECTOR3 scale;
+		PhysicsData physics;
 		int textureSizeX, textureSizeY, xRowsAnim,yRowsAnim;
 		void Nullify()
 		{
@@ -87,7 +152,9 @@ public:
 			LLVertexPos = D3DXVECTOR2(0,0);
 			position = VECTOR3ZERO;
 			scale = VECTOR3ONE;
+			physics.Nullify();
 		}
+
 	};
 	Game(DataStruct* b,HWND windowHandle,ResourceManager* resMan,InputHandler* inputHand,SoundHandler* soundHand, LPDIRECT3DDEVICE9 d3dDev);
 	void Update(double deltaTime);
@@ -96,13 +163,14 @@ public:
 	void Initialize();
 	void ReleaseAll();
 	void ReloadGUI();
-
+	void ReleaseEnemy(Enemy* enemy);
 	bool Create3DObject(bool hasPhysics,Object3DData* data);
 	bool CreateAnimated2DObject(bool hasPhysics, Object2DData* data);
 	bool CreateStatic2DObject(bool hasPhysics, Object2DData* data);
 	//SPEEngine::RigidData CreatePhysicsData(bool draw,bool isStatic, float mass, float density, SPEVector pos,SPEVector scale, SPEVector vel, SPEVector aVel);
-	Object2DData CreateObject2DData(char* filePath,bool hasAnim, D3DXVECTOR3 pos,D3DXVECTOR3 scale, D3DXVECTOR2 rows);
-	Object3DData CreateObject3DData(char* filePath,D3DXVECTOR3 pos,D3DXVECTOR3 scale,D3DXVECTOR3 rot);
+	Object2DData CreateObject2DData(char* filePath,bool hasAnim, D3DXVECTOR3 pos,D3DXVECTOR3 scale, D3DXVECTOR2 rows, PhysicsData pData);
+	Object3DData CreateObject3DData(char* filePath,D3DXVECTOR3 pos,D3DXVECTOR3 scale,D3DXVECTOR3 rot, PhysicsData pData);
+	PxRaycastBuffer* RayFromPlayer();
 	inline D3DXMATRIX* GetCameraView()
 	{
 		if(cam != NULL)
@@ -114,12 +182,43 @@ public:
 			return NULL;
 		}
 	}
+	inline PhysicsData CreatePhysicsData(PxVec3 boxHalf , DWORD flags = 0)
+	{
+		PhysicsData data;
+		data.Nullify();
+		data.cType = PhysicsData::PhysicsType::Box;
+		data.boxHalfWidth = boxHalf;
+		return data;
+	}
+	inline PhysicsData CreatePhysicsData(PxReal radius, PxReal capHeight = 0, DWORD flags = 0)
+	{
+		PhysicsData data;
+		data.Nullify();
+		if(capHeight = 0)
+		{
+			data.cType = PhysicsData::PhysicsType::Sphere;
+		}
+		else
+		{
+			data.cType = PhysicsData::PhysicsType::Capsule;
+		}
+		data.radius = radius;
+		data.capsuleHeight = capHeight;
+		return data;
+	}
+	inline PhysicsData CreatePhysicsDataNull()
+	{
+		PhysicsData data;
+		data.Nullify();
+		return data;
+	}
+
 private:
 	//object holders
 	DataStruct* data;
 	int qualityLevel;
 	std::vector<Object3D*> modelObjs;
-	std::vector<Object2D*> spriteObjs;
+	std::vector<Enemy*> spriteObjs;
 	std::vector<DebugCube*> debugCubes;
 	std::vector<Particle*> particles;
 	std::vector<D3DLIGHT9*> lights;
@@ -148,6 +247,7 @@ private:
 	PxVec3 DoInput(float deltaTime);
 	void HandlePlayerCollisions(PxVec3 moveDir);
 	void LeftMouseClick();
+	void RightMouseClick();
 	std::vector<unsigned int> keys;
 	int KeyPressed(int key);
 	bool mouseLeftJustDown;

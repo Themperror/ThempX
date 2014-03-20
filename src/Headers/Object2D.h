@@ -67,7 +67,7 @@ public:
 	void Update(float deltaTime);
 	void SetUVValues();
 	bool PlayAnimation(std::string name);
-
+	void CheckPlayingAnimation(std::string playAnimFinished);
 	void Draw(); 
 	
 	bool hasAnimation;
@@ -82,6 +82,13 @@ public:
 	inline void SetScale(D3DXVECTOR3 scale)
 	{
 		scaling = scale;
+	}
+	inline Animation* GetCurrentAnim()
+	{
+		if(hasAnimation)
+			return &animations.at(currentAnim);
+		else
+			return NULL;
 	}
 	Quad quad;
 	D3DXMATRIX worldMatrix;
