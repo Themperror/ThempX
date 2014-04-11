@@ -349,7 +349,7 @@ ThempX::ThempX(HINSTANCE hInstance,LPSTR lpCmdLine)
 	//t.join();
 	//release everything
 	resources->ReleaseResources();
-	soundHandler->Shutdown();
+	soundHandler->ShutdownDirectSound();
 	g->ReleaseAll();
 	delete inputHandler;
 	delete resources;

@@ -23,10 +23,10 @@
     <ClInclude Include="src\Headers\Particle.h" />
     <ClInclude Include="src\Headers\Particle2D.h" />
     <ClInclude Include="src\Headers\ResourceManager.h" />
-    <ClInclude Include="src\Headers\SceneManager.h" />
     <ClInclude Include="src\Headers\SoundHandler.h" />
     <ClInclude Include="src\Headers\PhysXEngine.h" />
     <ClInclude Include="src\Headers\ThempX.h" />
+    <ClInclude Include="src\Headers\Triggerbox.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\CPP\Camera.cpp" />
@@ -41,10 +41,10 @@
     <ClCompile Include="src\CPP\Particle.cpp" />
     <ClCompile Include="src\CPP\Particle2D.cpp" />
     <ClCompile Include="src\CPP\ResourceManager.cpp" />
-    <ClCompile Include="src\CPP\SceneManager.cpp" />
     <ClCompile Include="src\CPP\SoundHandler.cpp" />
     <ClCompile Include="src\CPP\PhysXEngine.cpp" />
     <ClCompile Include="src\CPP\ThempX.cpp" />
+    <ClCompile Include="src\CPP\Triggerbox.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{468A34F8-DC49-45B5-9F55-6F96F1C885C5}</ProjectGuid>

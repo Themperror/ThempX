@@ -16,6 +16,8 @@ public:
 	float angleZ; //unused/unimplemented , value is mostly used in shooters for leaning sideways
 	float sensitivity;
 	
+	float FoV;
+	float AspectRatio;
 	void Update(float deltaTime, float mouseInputX,float mouseInputY);
 	
 	//inline 

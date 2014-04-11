@@ -52,17 +52,15 @@ public:
 			gameFont->OnResetDevice();
 			hasLostDone = false;
 		}
-		void ReleaseFont()
-		{
-			gameFont->Release();
-			gameFont = NULL;
-		}
 		void DrawFont()
 		{
-			gameFont->DrawTextA(NULL,text,-1,&textRect,DT_LEFT | DT_TOP,color);
+			if(gameFont != NULL)
+			{
+				gameFont->DrawTextA(NULL,text,-1,&textRect,DT_LEFT | DT_TOP,color);
+			}
 		}
 	};
-
+	
 	ResourceManager(LPDIRECT3DDEVICE9 d3d_Device, HWND handle);
 	void ReleaseResources();
 	int GetMeshData(char* name);
@@ -135,13 +133,17 @@ public:
 	int CreateTextObject(char* font,char* text,int fontsize, int posX, int posY, int width, int height, D3DXCOLOR color);
 	inline TextData* GetText(int i)
 	{
-		return &texts.at(i);
+		return texts.at(i);
 	}
 	inline void ReleaseAllText()
 	{
-		for(unsigned int i =0;i<texts.size();i++)
+		for(unsigned int i = 0; i < fonts.size(); i++)
 		{
-			texts.at(i).ReleaseFont();
+			if(fonts.at(i) != NULL)
+			{
+				fonts.at(i)->Release();
+				fonts.at(i) = NULL;
+			}
 		}
 	}
 	inline void LostDeviceAllText()
@@ -149,7 +151,7 @@ public:
 		std::cout << "Text device lost" << std::endl;
 		for(unsigned int i =0;i<texts.size();i++)
 		{
-			texts.at(i).LostDevice();
+			texts.at(i)->LostDevice();
 		}
 	}
 	inline void ResetDeviceAllText()
@@ -157,14 +159,14 @@ public:
 		std::cout << "Text device reset" << std::endl;
 		for(unsigned int i =0;i<texts.size();i++)
 		{
-			texts.at(i).ResetDevice();
+			texts.at(i)->ResetDevice();
 		}
 	}
 	inline void DrawAllText()
 	{
 		for(unsigned int i =0;i<texts.size();i++)
 		{
-			texts.at(i).DrawFont();
+			texts.at(i)->DrawFont();
 		}
 	}
 	inline void PushDevmode(DEVMODE dev)
@@ -215,10 +217,11 @@ private:
 		LPDIRECT3DTEXTURE9 texture;
 		char* textureName;
 	};
-	std::vector<TextData> texts;
+	std::vector<TextData*> texts;
 	std::vector<Model> models;
 	std::vector<Quad> quads;
 	std::vector<DEVMODE> devmodes;
+	std::vector<LPD3DXFONT> fonts;
 	bool LoadQuadTexture(char* path);
 	bool CheckAvailableTexture(char* name);
 	bool CheckAvailableModel(char* name);

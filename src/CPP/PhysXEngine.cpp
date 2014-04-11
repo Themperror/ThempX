@@ -83,15 +83,20 @@ PhysXEngine::PhysXEngine(ResourceManager* res)
 	//an check if it succeeds is currently in BakeMesh itself
 
 	PxReal d = 0.0f;  
-	PxTransform pose = PxTransform(PxVec3(0.0f, -13.6f, 0.0f),PxQuat(PxHalfPi, PxVec3(0.0f, 0.0f, 1.0f)));
-	PxRigidStatic* plane = gPhysicsSDK->createRigidStatic(pose);
-	PxShape* shape = plane->createShape(PxPlaneGeometry(), *defaultMaterial);
-	gScene->addActor(*plane);
-	statics.push_back(plane);
-	DebugCube* vCube = new DebugCube(D3DXVECTOR3(0.0f, -14, 0.0f),D3DXVECTOR3(0,0,0),-D3DXVECTOR3(500,0.1f,500),D3DXVECTOR3(500,0.1f,500),resources);
-	vCube->ChangeTexture("Resources/Particles/Grid.png");
-	staticVisualCubes.push_back(vCube);
+	PxTransform p1 = PxTransform(PxVec3(0.0f, -13.6f, 0.0f),PxQuat(PxHalfPi, PxVec3(0.0f, 0.0f, 1.0f)));
+	PxRigidStatic* plane1 = gPhysicsSDK->createRigidStatic(p1);
+	PxShape* shape = plane1->createShape(PxPlaneGeometry(), *defaultMaterial);
+	gScene->addActor(*plane1);
+	statics.push_back(plane1);
+	/*
+	
+	PxTransform p2 = PxTransform(PxVec3(0.0f, -2.5f, 0.0f),PxQuat(PxHalfPi, PxVec3(0.0f, 0.0f, -1.0f)));
+	PxRigidStatic* plane2 = gPhysicsSDK->createRigidStatic(p2);
+	PxShape* shape2 = plane2->createShape(PxPlaneGeometry(), *defaultMaterial);
+	gScene->addActor(*plane2);
+	statics.push_back(plane2);
 
+	*/
 	cManager = PxCreateControllerManager(*gScene);
 	PxCapsuleControllerDesc playerDesc;
 	playerDesc.setToDefault();
@@ -108,7 +113,7 @@ PhysXEngine::PhysXEngine(ResourceManager* res)
 	playerDesc.upDirection = PxVec3(0,1,0);
 	playerDesc.material = defaultMaterial;
 	player = cManager->createController(playerDesc);
-
+	player->setUserData("Player");
 	/*physx::PxMaterial* mat;
 	mat = gPhysicsSDK->createMaterial(1.0f,1.0f,1.0f);
 
@@ -127,10 +132,11 @@ PhysXEngine::PhysXEngine(ResourceManager* res)
 	//profiler = &physx::PxProfileZoneManager::createProfileZoneManager(mFoundation);
 	//profiler->createProfileZone("Test",PxProfileNames());
 	//if(!mProfileZoneManager)
-	for(unsigned int i = 0; i < 20 ; i++)
+	dCube = new DebugCube(D3DXVECTOR3(0,0,0),D3DXVECTOR3(0,0,0),-D3DXVECTOR3(1,1,1),D3DXVECTOR3(1,1,1),resources);
+	/*for(unsigned int i = 0; i < 20 ; i++)
 	{
 		CreateCube(PxVec3(std::sin((float)i),i*3,0),PxVec3(0,0,0),PxVec3(3,3,3),50000);
-	}
+	}*/
 	//CreateTriangleMesh()
 }
 bool PhysXEngine::RaycastAny(PxVec3 origin, PxVec3 nDir, float distance)
@@ -178,10 +184,6 @@ bool PhysXEngine::BakeMesh(LPD3DXMESH mesh,PxVec3 scale, bool flipNormals)
 
 		vPtr+=vertSize;
 	}
-/*	for(unsigned int i = 0 ; i < numVerts; i++)
-	{
-		std::cout<< "Vertex " <<i<<": "<<"  x: "<< vertices[i*3] << "  y: " <<vertices[i*3+1] << "  z: " << vertices[i*3+2] << std::endl;
-	}*/
 	mesh->UnlockVertexBuffer();
 	
 	description->points.data = vertices;
@@ -274,14 +276,7 @@ void PhysXEngine::ReleaseAll()
 		}
 		dynamics.at(i)->release();
 	}
-	for(unsigned int i = 0; i < dynamicVisualCubes.size(); i++)
-	{
-		dynamicVisualCubes.at(i)->Release();
-	}
-	for(unsigned int i = 0; i < staticVisualCubes.size(); i++)
-	{
-		staticVisualCubes.at(i)->Release();
-	}
+	dCube->Release();
 	//profiler->release();
 	player->release();
 	cManager->release();
@@ -291,85 +286,83 @@ void PhysXEngine::ReleaseAll()
 }
 void PhysXEngine::RemoveActor(PxRigidDynamic* actor)
 {
-	for(unsigned int i =0; i < dynamics.size(); i++)
+	if(actor != NULL)
 	{
-		if(actor == dynamics.at(i))
+		for(unsigned int i =0; i < dynamics.size(); i++)
 		{
-			dynamics.erase(dynamics.begin()+i);
+			if(actor == dynamics.at(i))
+			{
+				PxShape* ptr;
+				dynamics.at(i)->getShapes(&ptr,256);
+				PxShape* shapes;
+				dynamics.at(i)->getShapes(&shapes,sizeof(PxShape));
+				for(unsigned int x = 0; x < dynamics.at(i)->getNbShapes(); x++)
+				{
+					dynamics.at(i)->detachShape(shapes[x]);
+				}
+				dynamics.at(i)->release();
+				dynamics.erase(dynamics.begin()+i);
+			}
 		}
 	}
 }
 void PhysXEngine::RemoveActor(PxRigidStatic* actor)
 {
-	for(unsigned int i =0; i < statics.size(); i++)
+	if(actor != NULL)
 	{
-		if(actor == statics.at(i))
+		for(unsigned int i =0; i < statics.size(); i++)
 		{
-			statics.erase(statics.begin()+i);
+			if(actor == statics.at(i))
+			{
+				PxShape* ptr;
+				statics.at(i)->getShapes(&ptr,256);
+				PxShape* shapes;
+				statics.at(i)->getShapes(&shapes,sizeof(PxShape));
+				for(unsigned int x = 0; x < statics.at(i)->getNbShapes(); x++)
+				{
+					statics.at(i)->detachShape(shapes[x]);
+				}
+			statics.at(i)->release();
+				statics.erase(statics.begin()+i);
+			}
 		}
 	}
 }
 void PhysXEngine::DrawBoxes()
 {
-	std::vector<PxTransform> dynamicData;
+	PxShape* tempShapes;
+	D3DXMATRIX rotation;
+	D3DXMATRIX position;
+	D3DXMATRIX mScale;
+	D3DXMATRIX rotScale;
+	D3DXMATRIX world;
+
 	for(unsigned int i = 0;i < dynamics.size(); i++)
 	{
-		if(dynamics.at(i)->getName() != NULL)
+		if(!dynamics.at(i)->getRigidBodyFlags().isSet(PxRigidBodyFlag::eKINEMATIC))
 		{
-			if(std::strcmp(dynamics.at(i)->getName(),"Kinematic") != 0)
-			{
-				PxTransform t = dynamics.at(i)->getGlobalPose();
-				dynamicData.push_back(t);
-			}
+			PxTransform t = dynamics.at(i)->getGlobalPose();
+			dynamics.at(i)->getShapes(&tempShapes,64,0);
+			PxBoxGeometry box;
+			tempShapes[0].getBoxGeometry(box);
+			PxVec3 scale = box.halfExtents;
+			PxVec3 pos = t.p;
+			PxQuat rot = t.q;
+			D3DXMatrixRotationQuaternion(&rotation,&D3DXQUATERNION(t.q.x,t.q.y,t.q.z,t.q.w));
+			D3DXMatrixScaling(&mScale,scale.x,scale.y,scale.z);
+			D3DXMatrixTranslation(&position,t.p.x,t.p.y,t.p.z);
+			D3DXMatrixMultiply(&rotScale,&rotation,&mScale);
+			D3DXMatrixMultiply(&world,&rotScale,&position);
+		
+			dCube->hasExternalWorldMatrix = true;
+			dCube->eWorldMatrix = world;
+			dCube->position = D3DXVECTOR3(pos.x,pos.y,pos.z);
+			dCube->doRender =true;
+			dCube->Draw();
 		}
 	}
-	for(unsigned int i = 0; i< dynamicData.size();i++)
-	{
-		if(i < dynamicVisualCubes.size())
-		{
-			PxTransform t = dynamicData.at(i);
-			PxVec3 pos = t.p;
-			PxQuat rot = t.q;
-			D3DXMATRIX rotation;
-			D3DXMATRIX position;
-			D3DXMATRIX world;
-			D3DXMatrixRotationQuaternion(&rotation,&D3DXQUATERNION(t.q.x,t.q.y,t.q.z,t.q.w));
-			D3DXMatrixTranslation(&position,t.p.x,t.p.y,t.p.z);
-			D3DXMatrixMultiply(&world,&rotation,&position);
-		
-			dynamicVisualCubes.at(i)->hasExternalWorldMatrix = true;
-			dynamicVisualCubes.at(i)->eWorldMatrix = world;
-			dynamicVisualCubes.at(i)->position = D3DXVECTOR3(pos.x,pos.y,pos.z);
-			dynamicVisualCubes.at(i)->doRender =true;
-			dynamicVisualCubes.at(i)->Draw();
-		}
-	}/*
-	for(unsigned int i = 0; i < statics.size(); i++)
-	{
-		if(i>0)
-		{
-			PxTransform t = statics.at(i)->getGlobalPose();
-			PxVec3 pos = t.p;
-			PxQuat rot = t.q;
-			D3DXMATRIX rotation;
-			D3DXMATRIX position;
-			D3DXMATRIX world;
-			D3DXMatrixRotationQuaternion(&rotation,&D3DXQUATERNION(t.q.x,t.q.y,t.q.z,t.q.w));
-			D3DXMatrixTranslation(&position,t.p.x,t.p.y,t.p.z);
-			D3DXMatrixMultiply(&world,&rotation,&position);
-			if(i < staticVisualCubes.size())
-			{
-				staticVisualCubes.at(i)->hasExternalWorldMatrix = true;
-				staticVisualCubes.at(i)->eWorldMatrix = world;
-				staticVisualCubes.at(i)->position = D3DXVECTOR3(pos.x,pos.y,pos.z);
-		
-				staticVisualCubes.at(i)->doRender =true;
-				staticVisualCubes.at(i)->Draw();	
-			}
-		}
-	}*/
 }
-PxRigidActor* PhysXEngine::CreateCube(PxVec3 position, PxVec3 rotation, PxVec3 scaling,float mass, bool isStatic)
+PxRigidActor* PhysXEngine::CreateCube(PxVec3 position, PxVec3 rotation, PxVec3 scaling,float mass, bool isStatic, bool isKinematic)
 {
 	PxReal cubeDensity = 100.0f;
 	D3DXQUATERNION rotQuat;
@@ -379,27 +372,24 @@ PxRigidActor* PhysXEngine::CreateCube(PxVec3 position, PxVec3 rotation, PxVec3 s
 	PxBoxGeometry cubeGeometry(PxVec3(abs((float)scaling.x),abs((float)scaling.y),abs((float)scaling.z)));
 	cubeTransform.p = position;
 	cubeTransform.q = PxQuat(rotQuat.x,rotQuat.y,rotQuat.z,rotQuat.w);
-	DebugCube* vCube = new DebugCube(D3DXVECTOR3(position.x,position.y,position.z),D3DXVECTOR3(rotation.x,rotation.y,rotation.z),D3DXVECTOR3(-scaling.x,-scaling.y,-scaling.z),D3DXVECTOR3(scaling.x,scaling.y,scaling.z),resources);
+	
 		
 	if(!isStatic)
 	{
 		PxRigidDynamic *cubeActor = PxCreateDynamic(*gPhysicsSDK, cubeTransform, cubeGeometry, *defaultMaterial, cubeDensity);
-		cubeActor->setName("Cube");
+		cubeActor->setRigidBodyFlag(PxRigidBodyFlag::eKINEMATIC,isKinematic);
 		cubeActor->setAngularDamping(0.2f);
 		cubeActor->setLinearDamping(0.2f);
 		cubeActor->setMass(mass);
 		gScene->addActor(*cubeActor);
 		dynamics.push_back(cubeActor);
-		dynamicVisualCubes.push_back(vCube);
 		return cubeActor;
 	}
 	else
 	{
 		PxRigidStatic *cubeActor = PxCreateStatic(*gPhysicsSDK,cubeTransform,cubeGeometry,*defaultMaterial);
-		cubeActor->setName("StaticCube");
 		gScene->addActor(*cubeActor);
 		statics.push_back(cubeActor);
-		staticVisualCubes.push_back(vCube);
 		return cubeActor;
 	}
 }
@@ -413,7 +403,11 @@ PxRigidActor* PhysXEngine::CreateSphereCapsule(PxReal radius, PxReal capHeight,P
 	PxCapsuleGeometry cGeometry;
 	cGeometry.halfHeight = capHeight/2;
 	cGeometry.radius = radius;
+	
+	D3DXQUATERNION rotQuat;
+	D3DXQuaternionRotationYawPitchRoll(&rotQuat,0,0,90*0.0174532925f);
 	transform.p = position;
+	transform.q = PxQuat(rotQuat.x,rotQuat.y,rotQuat.z,rotQuat.w);
 		
 	if(!isStatic)
 	{
@@ -466,8 +460,8 @@ PxRigidActor* PhysXEngine::ThrowCube(PxVec3 position,PxVec3 force)
 	PxRigidDynamic *cubeActor = PxCreateDynamic(*gPhysicsSDK, cubeTransform, cubeGeometry, *defaultMaterial, cubeDensity);
 	cubeActor->setName("ThrownCube");
 	cubeActor->setAngularDamping(0.1f);
-	cubeActor->setLinearDamping(0.02f);
-	cubeActor->setMass(100);
+	cubeActor->setLinearDamping(0.1f);
+	cubeActor->setMass(1);
 	gScene->addActor(*cubeActor);
 
 	dynamics.push_back(cubeActor);

@@ -7,10 +7,10 @@
 class Particle
 {
 public:
-	Particle(ResourceManager* res,LPDIRECT3DDEVICE9 device,char* textureP,D3DXMATRIXA16* camView, D3DXVECTOR3 pos,int minParticles,int maxParticles, float minLife, float maxLife);
+	Particle(ResourceManager* res,LPDIRECT3DDEVICE9 device,char* textureP,D3DXMATRIX* camView, D3DXVECTOR3 pos,int minParticles,int maxParticles, float minLife, float maxLife);
 	
 	void Update(float deltaTime);
-	void Draw();
+	void Draw(D3DXMATRIX* camView);
 	void Release();
 
 	inline void SetEllipsoid(D3DXVECTOR3 ellipse)
@@ -64,11 +64,11 @@ private:
 	LPDIRECT3DTEXTURE9 texture;
 	std::vector<Particle2D*> particles;
 	LPDIRECT3DDEVICE9 p_Device;
-	D3DXMATRIXA16* cameraView;
+	D3DXMATRIX* cameraView;
 
 	LPDIRECT3DVERTEXBUFFER9 FillCustomVertices(D3DXVECTOR2 LLPos,D3DXVECTOR2 URPos);
 	LPDIRECT3DINDEXBUFFER9 FillIndices();
-	void RenderParticle();
+	void RenderParticle(D3DXMATRIX* camView);
 	void CreateParticle();
 	void DestroyParticle(int index);
 	void MoveParticle(D3DXVECTOR3 min, D3DXVECTOR3 max,float deltaTime);

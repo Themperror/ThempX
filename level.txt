@@ -1,3 +1,11 @@
 name	objName	posx	posy	posz	scalex	scaley	scalez	rotx	roty	rotz	XAnimRows	YAnimRowsTag
 resources/models/level1.x	Level	0	-20	0	2	2	-2	0	0	0	0	0LevelModel
-resources/AnimationPNG/ManimatieSheet2.png	Enemy	0	-9	0	1	1	1	0	0	0	8	8Enemy
+Resources/Models/DeurStandaard.x	Model1	26.6564	-7.9335	2.4329	1	5.91101	5.96201	0	0	0	0	0
+Resources/Models/DeurStandaard.x	Model1	-34.9563	7.17007	-46.4315	1	5.91101	5.96201	0	0	0	0	0
+Resources/Models/DeurStandaard.x	Model1	-93.7924	5.37654	-26.2746	1	8.00801	7.90541	0	0	0	0	0
+Resources/Models/DeurStandaard.x	Model1	-82.5712	6.01351	-25.8545	1	8.00801	7.90541	0	0	0	0	0
+Resources/Models/DeurStandaard.x	Model1	-104.058	6.45707	-25.5625	1	8.00801	7.90541	0	0	0	0	0
+Resources/Models/DeurStandaard.x	Model1	40.0786	-7.79171	44.5204	7.11131	3.4252	3.2212	0	0	0	0	0
+Resources/Models/DeurStandaard.x	Model1	40.1017	-8.69814	21.8696	7.11131	3.4252	3.2212	0	0	0	0	0
+Resources/Models/DeurStandaard.x	Model1	40.3521	-8.69814	-17.9678	7.11131	3.4252	3.2212	0	0	0	0	0
+resources/AnimationPNG/ManimatieSheet2.png	Enemy	5.7299	-9.1	5.4343	1	1	1	0	0	0	8	8

@@ -29,11 +29,12 @@ class Object2D
 	
 public:	 
 
-	
 	struct Animation
 	{
 		D3DXVECTOR2 StartPosition;
 		D3DXVECTOR2 EndPosition;
+		D3DXVECTOR2 ActionFrame;
+		bool doAction;
 		std::string AnimationName;
 		float AnimationSpeed;
 		bool isFinished;
@@ -42,10 +43,12 @@ public:
 		{
 			StartPosition = D3DXVECTOR2(0,0);
 			EndPosition = D3DXVECTOR2(0,0);
+			ActionFrame = D3DXVECTOR2(0,0);
 			AnimationName = "";
 			AnimationSpeed = 0;
 			isFinished = false;
 			loop = false;
+			doAction = false;
 		}
 	};
 
@@ -115,7 +118,7 @@ private:
 	LPDIRECT3DINDEXBUFFER9 FillIndices();
 
 	
-	void Animate(float dTime ,float animSpeed);
+	void Animate();
 	void LoadAnimation();
 
 	LPDIRECT3DDEVICE9 p_Device;

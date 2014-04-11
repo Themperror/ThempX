@@ -1,6 +1,6 @@
 #include "../Headers/Particle2D.h"
 
-Particle2D::Particle2D(LPDIRECT3DDEVICE9 device, D3DXMATRIXA16* camView, LPDIRECT3DVERTEXBUFFER9 vertexBuffer,LPDIRECT3DINDEXBUFFER9 indexBuffer)
+Particle2D::Particle2D(LPDIRECT3DDEVICE9 device, D3DXMATRIX* camView, LPDIRECT3DVERTEXBUFFER9 vertexBuffer,LPDIRECT3DINDEXBUFFER9 indexBuffer)
 {
 	position = D3DXVECTOR3(0,0,0);
 	scaling = D3DXVECTOR3(1,1,1);
@@ -10,9 +10,9 @@ Particle2D::Particle2D(LPDIRECT3DDEVICE9 device, D3DXMATRIXA16* camView, LPDIREC
 	vBuffer = vertexBuffer;
 	iBuffer = indexBuffer;
 }
-void Particle2D::Draw(D3DXMATRIX m_ViewScale,D3DXMATRIX m_ViewWorld, D3DXMATRIX worldMatrix,D3DXMATRIX m_Scale,D3DXMATRIX m_Translation)
+void Particle2D::Draw(D3DXMATRIX m_ViewScale,D3DXMATRIX m_ViewWorld, D3DXMATRIX worldMatrix,D3DXMATRIX m_Scale,D3DXMATRIX m_Translation, D3DXMATRIX* camView)
 {
-	D3DXMatrixInverse(&m_ViewWorld, 0, cameraView); //Turn towards camera
+	D3DXMatrixInverse(&m_ViewWorld, 0, camView); //Turn towards camera
 	D3DXMatrixScaling(&m_Scale,scaling.x,scaling.y,scaling.z); //scaling
 	D3DXMatrixTranslation(&m_Translation,position.x,position.y,position.z); //positioning
 

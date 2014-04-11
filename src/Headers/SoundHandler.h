@@ -16,13 +16,13 @@ class SoundHandler
 {
 public:
 	SoundHandler(HWND handle,DWORD samplesPerSec,WORD bitsPerSample, WORD channels);
-	~SoundHandler();
-
+	
+	void ShutdownDirectSound();
 	bool Initialize(HWND);
-	void Shutdown();
 	
 	bool LoadWaveFile(char* path, char* name, DWORD samplesPerSec,WORD bitsPerSample, WORD channels);
-	bool PlayWaveFile(char* name);
+	bool PlayWaveFile(char* name, DWORD volume = 50);
+	bool PlayRandom(std::vector<std::string> names, DWORD volume);
 
 private:
 	struct WaveHeaderType
@@ -43,6 +43,15 @@ private:
 	};
 	struct SoundData
 	{
+		SoundData()
+		{
+			samplesPerSec = 0;
+			bitsPerSample = 0;
+			channels = 0;
+			soundBuffer= NULL;
+			name = "NULL";
+			tag = "NULL";
+		}
 		DWORD samplesPerSec;
 		WORD bitsPerSample;
 		WORD channels;
@@ -53,18 +62,16 @@ private:
 		DSBUFFERDESC bufferDesc;
 	};
 
-
+	std::vector<SoundData*> currentlyPlayingSounds;
 	bool InitializeDirectSound(HWND);
-	void ShutdownDirectSound();
-	void ShutdownWaveFile(IDirectSoundBuffer8**);
-	IDirectSoundBuffer8* CreateCopySoundBuffer(char* name);
-	DWORD samplesSecond;
-	WORD bitsSample;
-	WORD nChannels;
+	//IDirectSoundBuffer8* CreateCopySoundBuffer(char* name);
+	//DWORD samplesSecond;
+	//WORD bitsSample;
+	//WORD nChannels;
 	bool initialized;
-	std::vector<SoundData> sounds;
+	std::vector<SoundData*> sounds;
 	IDirectSound8* m_DirectSound;
-	IDirectSoundBuffer* m_primaryBuffer;
-	IDirectSoundBuffer8* m_secondaryBuffer1;
+	//IDirectSoundBuffer* m_primaryBuffer;
+	//IDirectSoundBuffer8* m_secondaryBuffer1;
 };
 #endif

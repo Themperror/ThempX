@@ -1,6 +1,6 @@
 #include "../Headers/Particle.h"
 
-Particle::Particle(ResourceManager* res,LPDIRECT3DDEVICE9 device,char* textureP,D3DXMATRIXA16* camView, D3DXVECTOR3 pos,int minParticles,int maxParticles, float minLife, float maxLife)
+Particle::Particle(ResourceManager* res,LPDIRECT3DDEVICE9 device,char* textureP,D3DXMATRIX* camView, D3DXVECTOR3 pos,int minParticles,int maxParticles, float minLife, float maxLife)
 {
 	resources = res;
 	p_Device = device;
@@ -141,11 +141,11 @@ void Particle::Update(float deltaTime)
 	CheckLifeTime();
 }
 
-void Particle::Draw()
+void Particle::Draw(D3DXMATRIX* camView)
 {
-	RenderParticle(); //Render memory can be reduced by making 1 MATRIX for each necessary and pointing em to each particle for re-use
+	RenderParticle(camView); //Render memory can be reduced by making 1 MATRIX for each necessary and pointing em to each particle for re-use
 }
-void Particle::RenderParticle()
+void Particle::RenderParticle(D3DXMATRIX* camView)
 {
 	D3DXMATRIX m_ViewScale;
 	D3DXMATRIX m_ViewWorld;
@@ -154,7 +154,7 @@ void Particle::RenderParticle()
 	D3DXMATRIX m_Translation;
 	for(unsigned int i = 0; i < GetSize();i++)
 	{
-		particles.at(i)->Draw(m_ViewScale,m_ViewWorld,worldMatrix,m_Scale,m_Translation);
+		particles.at(i)->Draw(m_ViewScale,m_ViewWorld,worldMatrix,m_Scale,m_Translation,camView);
 	}
 }
 void Particle::CreateParticle()

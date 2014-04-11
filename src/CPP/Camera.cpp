@@ -7,8 +7,11 @@ Camera::Camera(ResourceManager* res, DWORD cameraModeFlag)
 	angleX = 0;
 	angleY = 0;
 	angleZ = 0;
-	sensitivity = 0.12;
+	sensitivity = 0.12f;
 	SetUpCamera(cameraModeFlag);
+	FoV =  D3DX_PI/4;
+	AspectRatio = 800/600;
+
 }
 
 void Camera::Update(float deltaTime, float mouseInputX,float mouseInputY)
@@ -49,7 +52,7 @@ void Camera::SetUpCamera(DWORD mode)
 		D3DXVECTOR3 m_UpVector = D3DXVECTOR3(0, 1, 0);
 		D3DXMatrixLookAtLH(&m_View, &position, &lookAt, &m_UpVector);
 		resources->GetDevice()->SetTransform(D3DTS_VIEW, &m_View);
-		D3DXMatrixPerspectiveFovLH(&m_Projection, D3DX_PI/4, 500/500, 1, 2000);
+		D3DXMatrixPerspectiveFovLH(&m_Projection, FoV, AspectRatio, 1, 2000);
 		resources->GetDevice()->SetTransform(D3DTS_PROJECTION, &m_Projection);
 	}
 	else if(mode == 0x000001)

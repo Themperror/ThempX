@@ -1,5 +1,7 @@
-texturepath 				posX 	posY 	sizeX 	sizeY 	xRowsTotal 	yRowsTotal 	hasAnimation 	positionXFromEnd 	positionYFromEnd  Startanimation
-Resources/GUI/SlashSquare.png		0	0	100	100	4		2		1		0			0		NULL
-Resources/GUI/HealthArmor.png		0	80	20	20	0		0		0		0			0		NULL
-Resources/GUI/WeaponAmmo.png		33	67	33	33	0		0		0		0			0		NULL
-Resources/GUI/CharacterState.png	80	80	20	20	0		0		0		0			0		NULL
+texturepath 				posX 	posY 	sizeX 	sizeY 	xRowsTotal 	yRowsTotal 	hasAnimation 	positionXFromEnd 	positionYFromEnd  Startanimation render
+Resources/GUI/Slash.png			0	0	100	100	4		2		1		0			0		NULL 1
+Resources/GUI/HealthArmor.png		0	80	20	20	0		0		0		0			0		NULL 1
+Resources/GUI/WeaponAmmo.png		33	67	33	33	0		0		0		0			0		NULL 1
+Resources/GUI/CharacterState.png	80	80	20	20	0		0		0		0			0		NULL 1
+Resources/Sprites/Redkey.png		2	72	5	7	0		0		0		0			0		NULL 0
+Resources/Sprites/Greenkey.png		8	72	5	7	0		0		0		0			0		NULL 0

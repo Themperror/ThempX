@@ -130,8 +130,6 @@ HRESULT Object3D::CalcBounds(ID3DXMesh *pMesh, D3DXVECTOR3 *vCenter, float *radi
 	delete ptr;
 	return S_OK;
 }
-
-
 void Object3D::SetPosition(float x,float y,float z)
 {
 	position.x = x;

@@ -117,22 +117,12 @@ void Object2D::Draw()
 	D3DXMATRIX m_ViewWorld;
 
 	
-	D3DXMatrixInverse(&m_ViewWorld, 0, cameraView); //turns toward camera  //CAMERA VIEW CHANGES MEMORY ADDRESS, POINTER WILL BE INVALID AND HAS TO KEEP UPDATING
+	D3DXMatrixInverse(&m_ViewWorld, 0, cameraView); //turns toward camera 
 
 	D3DXMATRIX m_Scale;
 	D3DXMatrixScaling(&m_Scale,scaling.x,scaling.y,scaling.z); //scaling
 
 	D3DXMATRIX m_Translation;
-	/*
-	if(linkedPhysicsObj != NULL)
-	{
-		SPEVector pos = linkedPhysicsObj->GetPosition();
-		//std::cout << "Got 2d location" << std::endl;
-		D3DXMatrixTranslation(&m_Translation,pos.x,pos.y,pos.z);
-		position.x = pos.x;
-		position.y = pos.y;
-		position.z = pos.z;
-	}*/
 	D3DXMatrixTranslation(&m_Translation,position.x,position.y,position.z); //positioning
 	
 
@@ -176,13 +166,65 @@ void Object2D::Update(float deltaTime)
 		{
 			Animation* a = &animations.at(currentAnim);
 			timeSinceChange+=deltaTime;
-			if(hasAnimation && !a->isFinished)
+			if(hasAnimation && timeSinceChange > a->AnimationSpeed)
 			{
-				Animate(deltaTime,animationSpeed);
-			}
-			if(hasAnimation && a->isFinished && a->loop)
-			{
-				a->isFinished = false;
+				Animation* cAnim = &animations.at(currentAnim);
+				int cX = 0, cY = 0, aX = 0, aY = 0,eX=0,eY=0;
+
+				currentXAnimValue++;
+				cX = (int)ceil(currentXAnimValue-0.5f);
+				eX = (int)ceil(cAnim->EndPosition.x-0.5f);
+				
+				if((int)ceil(currentXAnimValue-0.5f) > eX)
+				{
+					currentYAnimValue++;
+					cY = (int)ceil(currentYAnimValue-0.5f);
+					eY = (int)ceil(cAnim->EndPosition.y-0.5f);
+					
+					currentXAnimValue = (int)cAnim->StartPosition.x;
+
+					
+					if((int)ceil(currentYAnimValue-0.5f) > eY)
+					{
+						currentYAnimValue = (int)cAnim->StartPosition.y;
+					}
+				}
+
+				cY = (int)ceil(currentYAnimValue-0.5f);
+				eY = (int)ceil(cAnim->EndPosition.y-0.5f);
+				aX = (int)ceil(cAnim->ActionFrame.x-0.5f);
+				aY = (int)ceil(cAnim->ActionFrame.y-0.5f);
+				if((int)ceil(currentXAnimValue-0.5f) == aX &&  (int)ceil(currentYAnimValue-0.5f) == aY)
+				{
+					cAnim->doAction = true;
+				}
+				else
+				{
+					cAnim->doAction = false;
+				}
+				if((int)ceil(currentXAnimValue-0.5f) > eX && (int)ceil(currentYAnimValue-0.5f) > eY)
+				{
+					currentXAnimValue = cAnim->EndPosition.x;
+					currentYAnimValue = cAnim->EndPosition.y;
+				}
+				if(!cAnim->isFinished)
+				{
+					Animate();
+				}
+				if((int)ceil(currentXAnimValue-0.5f) >= eX && (int)ceil(currentYAnimValue-0.5f) >= eY)
+				{
+					if(cAnim->loop)
+					{
+						currentYAnimValue = cAnim->StartPosition.y;
+					}
+					else
+					{
+						currentXAnimValue = cAnim->EndPosition.x;
+						currentYAnimValue = cAnim->EndPosition.y;
+						cAnim->isFinished = true;
+					}
+				}
+				timeSinceChange = 0;
 			}
 		}
 	}
@@ -261,93 +303,72 @@ void Object2D::SetUVValues()
 		MessageBox(resources->GetWindowHandle(),"Failed to unlock vertexBuffer of quad","Animate()",MB_OK);
 	}
 }
-void Object2D::Animate(float dTime ,float animSpeed)
+void Object2D::Animate()
 {		
-	if(timeSinceChange > animations.at(currentAnim).AnimationSpeed)
+	Animation* cAnim = &animations.at(currentAnim);
+
+	HRESULT result;
+	BYTE* ptr;
+	
+	result = quad.vBuffer->Lock(0,sizeof(VertexPosNorTex)*4,(LPVOID*)&ptr,NULL);
+	if(result != D3D_OK)
 	{
-		Animation* cAnim = &animations.at(currentAnim);
-		timeSinceChange = 0;
-		HRESULT result;
-		BYTE* ptr;
-		result = quad.vBuffer->Lock(0,sizeof(VertexPosNorTex)*4,(LPVOID*)&ptr,NULL);
-		if(result != D3D_OK)
-		{
-			MessageBox(resources->GetWindowHandle(),"Failed to lock vertexBuffer of quad","Animate()",MB_OK);
-		}
-		// loop through the vertices
-		float toAdd = 0;
-		float stepSizeX = 0;
-		float stepSizeY = 0;
-		D3DXVECTOR2 UVs;
-		D3DXVECTOR2 UVs1;
-		D3DXVECTOR2 UVs2;
-		D3DXVECTOR2 UVs3;
-		stepSizeX = (1.0f / xRows);
-		stepSizeY = (1.0f / yRows);
+		MessageBox(resources->GetWindowHandle(),"Failed to lock vertexBuffer of quad","Animate()",MB_OK);
+	}
+	// loop through the vertices
+	float toAdd = 0;
+	float stepSizeX = 0;
+	float stepSizeY = 0;
+	D3DXVECTOR2 UVs;
+	D3DXVECTOR2 UVs1;
+	D3DXVECTOR2 UVs2;
+	D3DXVECTOR2 UVs3;
+	stepSizeX = (1.0f / xRows);
+	stepSizeY = (1.0f / yRows);
 
 		
-		for (DWORD i=0;i<4;i++) // hardcoded 4 because 4 vertices
+	for (DWORD i=0;i<4;i++) // hardcoded 4 because 4 vertices
+	{
+		// get pointer to location
+		VertexPosNorTex* vPtr=(VertexPosNorTex*) ptr;
+		switch(i)
 		{
-			// get pointer to location
-			VertexPosNorTex* vPtr=(VertexPosNorTex*) ptr;
-			switch(i)
-			{
-			case 0:
-				vPtr->texC.x = stepSizeX * currentXAnimValue;
-				vPtr->texC.y = stepSizeY * currentYAnimValue;
-				UVs.x = vPtr->texC.x;
-				UVs.y = vPtr->texC.y;
-			break;
-			case 1:
-				vPtr->texC.x = UVs.x+stepSizeX;
-				vPtr->texC.y = UVs.y;
-				UVs1.x = vPtr->texC.x;
-				UVs1.y = vPtr->texC.y;
-			break;
-			case 2:
-				vPtr->texC.x = UVs.x;
-				vPtr->texC.y = UVs.y + stepSizeY;
-				UVs2.x = vPtr->texC.x;
-				UVs2.y = vPtr->texC.y;
-			break;
-			case 3:
-				vPtr->texC.x = UVs.x + stepSizeX;
-				vPtr->texC.y = UVs.y + stepSizeY;
-				UVs3.x = vPtr->texC.x;
-				UVs3.y = vPtr->texC.y;
-			break;
-			}
-			// increment pointer to next vertex
-			ptr+=sizeof(VertexPosNorTex);
+		case 0:
+			vPtr->texC.x = stepSizeX * currentXAnimValue;
+			vPtr->texC.y = stepSizeY * currentYAnimValue;
+			UVs.x = vPtr->texC.x;
+			UVs.y = vPtr->texC.y;
+		break;
+		case 1:
+			vPtr->texC.x = UVs.x+stepSizeX;
+			vPtr->texC.y = UVs.y;
+			UVs1.x = vPtr->texC.x;
+			UVs1.y = vPtr->texC.y;
+		break;
+		case 2:
+			vPtr->texC.x = UVs.x;
+			vPtr->texC.y = UVs.y + stepSizeY;
+			UVs2.x = vPtr->texC.x;
+			UVs2.y = vPtr->texC.y;
+		break;
+		case 3:
+			vPtr->texC.x = UVs.x + stepSizeX;
+			vPtr->texC.y = UVs.y + stepSizeY;
+			UVs3.x = vPtr->texC.x;
+			UVs3.y = vPtr->texC.y;
+		break;
 		}
+		// increment pointer to next vertex
+		ptr+=sizeof(VertexPosNorTex);
+	}
 		
-		// unlock the vertex buffer
-		result = quad.vBuffer->Unlock();
-
-		currentXAnimValue++;
-		if(currentXAnimValue > cAnim->EndPosition.x)
-		{
-			currentYAnimValue++;
-			currentXAnimValue = (int)cAnim->StartPosition.x;
-			if(currentYAnimValue > cAnim->EndPosition.y)
-			{
-				if(cAnim->loop)
-				{
-					currentYAnimValue = (int)cAnim->StartPosition.y;
-				}
-				else
-				{
-					currentXAnimValue = (int)cAnim->EndPosition.x;
-					currentYAnimValue = (int)cAnim->EndPosition.y;
-				}
-				
-				cAnim->isFinished = true;
-			}
-		}
-		if (result != D3D_OK)
-		{
-			MessageBox(resources->GetWindowHandle(),"Failed to unlock vertexBuffer of quad","Animate()",MB_OK);
-		}
+	// unlock the vertex buffer
+	result = quad.vBuffer->Unlock();
+	
+	
+	if (result != D3D_OK)
+	{
+		MessageBox(resources->GetWindowHandle(),"Failed to unlock vertexBuffer of quad","Animate()",MB_OK);
 	}
 }
 void Object2D::LoadAnimation()
@@ -367,7 +388,7 @@ void Object2D::LoadAnimation()
 	{
 		hasAnimation = true;
 		std::string str;
-		float startPosX = 0,startPosY = 0,endPosX = 0,endPosY = 0,animSpeed = 0;
+		float startPosX = 0,startPosY = 0,endPosX = 0,endPosY = 0,animSpeed = 0, actionPosX = 0, actionPosY = 0;
 		int loop = 0;
 		while(getline(fin, str))
 		{
@@ -375,12 +396,18 @@ void Object2D::LoadAnimation()
 			anim.Nullify();
 			std::string name;
 
-			fin >> name >> startPosX >> endPosX >> startPosY >> endPosY >> animSpeed >> loop;
+			fin >> name >> startPosX >> endPosX >> startPosY >> endPosY >> animSpeed >> loop >> actionPosX >> actionPosY;
 			anim.AnimationName = name;
-			anim.StartPosition = D3DXVECTOR2(0,0);
-			anim.EndPosition = D3DXVECTOR2(0,0);
 			anim.StartPosition.x = startPosX;
 			anim.StartPosition.y = startPosY;
+			if(actionPosX == 0 && actionPosY == 0)
+			{
+				anim.ActionFrame = D3DXVECTOR2(9999,9999);
+			}
+			else
+			{
+				anim.ActionFrame = D3DXVECTOR2(actionPosX,actionPosY);
+			}
 			anim.EndPosition.x = endPosX;
 			anim.EndPosition.y = endPosY;
 			anim.AnimationSpeed = animSpeed;

@@ -2,7 +2,7 @@
 #define _GUI_H_
 
 #include "ResourceManager.h"
-
+#include <sstream>
 class GUI
 {
 public:
@@ -45,7 +45,7 @@ public:
 		Rectangle rect;
 		LPDIRECT3DTEXTURE9 texture;
 		std::string textureName;
-		bool hasAnimation, mirrored;
+		bool hasAnimation, mirrored,render;
 		LPDIRECT3DVERTEXBUFFER9 vBuffer;
 		LPDIRECT3DINDEXBUFFER9 iBuffer;
 		float timeSinceChange;
@@ -59,6 +59,7 @@ public:
 		{
 			rect.Nullify();
 			mirrored = 0;
+			render = true;
 			texture = NULL;
 			textureName = "";
 			hasAnimation = 0;
@@ -73,13 +74,31 @@ public:
 	GUI(LPDIRECT3DDEVICE9 d3dDev, ResourceManager* res);
 	void Release();
 	void Render();
+	void DrawAllText();
 	void Update(float deltaTime);
+	
 	bool CreateGUIObject(Rectangle rect,char* textureName);
 	bool CreateGUIObject(Rectangle rect,char* textureName, int xRows,int yRows);
 	std::vector<GUITexture> guiObjs;
 	bool PlayAnimation(GUITexture* obj,std::string name);
 	void LoadAnimation(GUITexture* obj);
 	void ReloadGUI();
+
+	//player variables
+	int health;
+	int armour;
+	GUITexture* attackGUI;
+	inline GUITexture* GetGUIObj(std::string name)
+	{
+		for(unsigned int i =0; i < guiObjs.size(); i++)
+		{
+			if(strcmp(guiObjs.at(i).textureName.c_str(),name.c_str()) == 0)
+			{
+				return &guiObjs.at(i);
+			}
+		}
+		return NULL;
+	}
 private:
 	
 	void LoadGUI();
@@ -88,6 +107,8 @@ private:
 	D3DXMATRIX matProj;
 	LPDIRECT3DDEVICE9 p_Device;
 	ResourceManager* resources;
+	ResourceManager::TextData* healthText;
+	ResourceManager::TextData* armourText;
 	LPDIRECT3DVERTEXBUFFER9 CreateQuadVBuffer(GUITexture* gui);
 	LPDIRECT3DINDEXBUFFER9 CreateQuadIndices();
 };

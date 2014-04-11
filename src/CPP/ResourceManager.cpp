@@ -4,31 +4,42 @@ ResourceManager::ResourceManager(LPDIRECT3DDEVICE9 d3d_Device, HWND handle)
 {
 	p_Device = d3d_Device;
 	wHandle = handle;
-
-	//gui = NULL;
-	//game = NULL;
-	//engine = NULL;
-	//soundHandler = NULL;
-	//inputHandler = NULL;
 }
 int ResourceManager::CreateTextObject(char* font,char* text,int fontsize, int posXPercentage, int posYPercentage, int widthPercentage, int heightPercentage, D3DXCOLOR color)
 {
-	TextData obj;
+	TextData* obj = new TextData();
 	
-	obj.textRect.left =		GetScreenWidth()	*	posXPercentage	/ 100;
-	obj.textRect.top=		GetScreenHeight()	*	posYPercentage	/ 100;
-	obj.textRect.right =	GetScreenWidth()	*	widthPercentage+posXPercentage / 100;
-	obj.textRect.bottom =	GetScreenHeight()	*	heightPercentage+posYPercentage/ 100;
+	obj->textRect.left =		GetScreenWidth()	*	posXPercentage	/ 100;
+	obj->textRect.top=		GetScreenHeight()	*	posYPercentage	/ 100;
+	obj->textRect.right =	GetScreenWidth()	*	widthPercentage+posXPercentage / 100;
+	obj->textRect.bottom =	GetScreenHeight()	*	heightPercentage+posYPercentage/ 100;
+	obj->fontsize = fontsize;
+	obj->font = font;
+	obj->color = color;
+	obj->text = text;
+	obj->hasLostDone = false;
 
-	obj.fontsize = fontsize;
-	obj.font = font;
-	obj.color = color;
-	obj.text = text;
-	obj.hasLostDone = false;
-	D3DXCreateFont(p_Device,fontsize, 0, 1 ,0, false, DEFAULT_CHARSET, OUT_TT_PRECIS,CLIP_DEFAULT_PRECIS,DEFAULT_PITCH,font,&obj.gameFont);
-
-	texts.push_back(obj);
-	return texts.size()-1;
+	if(texts.size() == 0)
+	{
+		D3DXCreateFont(p_Device,fontsize, 0, 1 ,0, false, DEFAULT_CHARSET, OUT_TT_PRECIS,CLIP_DEFAULT_PRECIS,DEFAULT_PITCH,font,&obj->gameFont);
+		texts.push_back(obj);
+		return texts.size()-1;
+	}
+	else if(texts.size() > 0)
+	{
+		for(int i = 0; i < texts.size(); i++)
+		{
+			if(strcmp(font,texts.at(i)->font) == 0)
+			{
+				obj->gameFont = texts.at(0)->gameFont;
+				texts.push_back(obj);
+				return texts.size()-1;
+			}
+		}
+		D3DXCreateFont(p_Device,fontsize, 0, 1 ,0, false, DEFAULT_CHARSET, OUT_TT_PRECIS,CLIP_DEFAULT_PRECIS,DEFAULT_PITCH,font,&obj->gameFont);
+		texts.push_back(obj);
+		return texts.size()-1;
+	}
 }
 void ResourceManager::ReleaseResources()	//main data release
 {
@@ -47,12 +58,10 @@ void ResourceManager::ReleaseResources()	//main data release
 			quads.at(i).texture = NULL;
 		}
 	}
-	for(unsigned int i=0;i<texts.size();i++)
+	for(unsigned int i = 0; i < fonts.size(); i++)
 	{
-		if(texts.at(i).gameFont != NULL)
-		{
-			texts.at(i).ReleaseFont();
-		}
+		fonts.at(i)->Release();
+		fonts.at(i) = NULL;
 	}
 }
 bool ResourceManager::CheckAvailableTexture(char* name)
@@ -107,7 +116,7 @@ LPDIRECT3DTEXTURE9 ResourceManager::GetTexture(char* name)
 	} 
 
 	//should be impossible to come here
-	MessageBox(wHandle,"No texture returned, the program will probably crash now.","GetTexture()",MB_OK);
+	MessageBox(wHandle,"No texture returned","ResourceManager::GetTexture()",MB_OK);
 	return NULL;
 }
 int ResourceManager::GetMeshData(char* name)
@@ -138,7 +147,7 @@ int ResourceManager::GetMeshData(char* name)
 		{
 			std::string str = "Could not find mesh at path: ";
 			str.append(name);
-			MessageBox(GetWindowHandle(),str.c_str(),"GetMeshData()",MB_OK);
+			MessageBox(GetWindowHandle(),str.c_str(),"ResourceManager::GetMeshData()",MB_OK);
 			return 0;
 		}
 		model.d3dxMaterials = (D3DXMATERIAL*)model.materialBuffer->GetBufferPointer();
@@ -147,30 +156,22 @@ int ResourceManager::GetMeshData(char* name)
 		// Filling material and texture arrays
 		for (DWORD i=0; i<model.numMaterials; i++)
 		{
-			// Copy the material
 			model.meshMaterials[i] = model.d3dxMaterials[i].MatD3D;
 
-			// Set the ambient color for the material (D3DX does not do this)
 			model.meshMaterials[i].Ambient = model.meshMaterials[i].Diffuse;
 
-			// Create the texture if it exists - it may not
 			if(model.d3dxMaterials[i].pTextureFilename != NULL)
 			{
-				std::string texturePath = model.d3dxMaterials[i].pTextureFilename; 
-
-				std::cout << model.d3dxMaterials[i].pTextureFilename << std::endl;
+				std::string texturePath = model.d3dxMaterials[i].pTextureFilename;
 				texturePath = "Resources/Models/"+texturePath;
-
-				model.meshTextures[i] =  GetTexture(_strdup(texturePath.c_str()));;
-				
+				model.meshTextures[i] =  GetTexture(_strdup(texturePath.c_str()));
 			}
 		}
 		model.meshName = name;
 		models.push_back(model);
-		std::cout << "Created new model, returned value" << std::endl;
 		return models.size()-1;
 	}
-	MessageBox(wHandle,"No mesh returned, the program will probably crash now.","GetMesh()",MB_OK);
+	MessageBox(wHandle,"No mesh returned.","ResourceManager::GetMesh()",MB_OK);
 	return false;
 }
 bool ResourceManager::CheckAvailableModel(char* name)

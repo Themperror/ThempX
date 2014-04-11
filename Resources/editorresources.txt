@@ -1,2 +1,3 @@
 ﻿path 						hasanim (animspriteonly)TotalXRows 	(animspriteonly)TotalYRows
-Resources/AnimationPNG/ManimatieSheet2.png 	1 			8 				8
+Resources/AnimationPNG/ManimatieSheet2.png 	1 			8 				8	Enemy
+Resources/Models/DeurStandaard.x		0			0				0	Door

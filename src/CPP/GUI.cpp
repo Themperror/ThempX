@@ -5,7 +5,14 @@ GUI::GUI( LPDIRECT3DDEVICE9 d3dDev, ResourceManager* res)
 	p_Device = res->GetDevice();
 	resources = res;
 
+	health = 100;
+	armour = 100;
+	healthText = resources->GetText(resources->CreateTextObject("Arial","Health: ",20,8,84,10,20,D3DXCOLOR(1,1,1,1)));
+	armourText = resources->GetText(resources->CreateTextObject("Arial","Armour: ",20,8,92,10,40,D3DXCOLOR(1,1,1,1)));
+	
 	LoadGUI();
+
+	attackGUI = GetGUIObj("Resources/GUI/Slash.png");
 
 	D3DXMatrixOrthoLH(&matProj,resources->GetScreenWidth(),resources->GetScreenHeight(),0,1);
 }
@@ -38,11 +45,11 @@ void GUI::LoadGUI()
 		int xRows,yRows;
 		xRows = 0;
 		yRows = 0;
-		bool hasAnimation,relativeEndX,relativeEndY;
+		bool hasAnimation,relativeEndX,relativeEndY,doRender;
 		std::string startAnimation;
 		while(getline(fin,str))
 		{
-			fin >> path >> posX >> posY >> sizeX >> sizeY >> xRows >> yRows >> hasAnimation >> relativeEndX >> relativeEndY >> startAnimation;
+			fin >> path >> posX >> posY >> sizeX >> sizeY >> xRows >> yRows >> hasAnimation >> relativeEndX >> relativeEndY >> startAnimation >> doRender;
 			Rectangle rect;
 			rect.Nullify();
 			if(!relativeEndX)
@@ -95,6 +102,7 @@ void GUI::LoadGUI()
 					fin.close();
 				}
 			}
+			guiObjs.at(guiObjs.size()-1).render = doRender;
 		}
 		fin.close();
 	}
@@ -368,7 +376,7 @@ bool GUI::PlayAnimation(GUITexture* obj, std::string name)
 	{
 		if(obj->animations.at(i).AnimationName == name)
 		{
-			std::cout << "Animation executed" << std::endl;
+			//std::cout << "Animation executed" << std::endl;
 			obj->currentXAnimValue = (int)obj->animations.at(i).StartPosition.x;
 			obj->currentYAnimValue = (int)obj->animations.at(i).StartPosition.y;
 			obj->animationSpeed = obj->animations.at(i).AnimationSpeed;
@@ -391,58 +399,81 @@ bool GUI::PlayAnimation(GUITexture* obj, std::string name)
 	MessageBox(resources->GetWindowHandle(),"No animation found with that name",name.c_str(),MB_OK);
 	return false;
 }
-
+void GUI::DrawAllText()
+{
+	if(healthText != NULL)
+	{
+		std::string healthT = "";
+		std::stringstream ss;
+		ss << health;
+		healthT.append(ss.str());
+		healthText->text = _strdup(healthT.c_str());
+		healthText->DrawFont();
+	}
+	if(armourText != NULL)
+	{
+		std::string armourT = "";
+		std::stringstream ss;
+		ss << armour;
+		armourT.append(ss.str());
+		armourText->text = _strdup(armourT.c_str());
+		armourText->DrawFont();
+	}
+}
 void GUI::Render()
 {
 	p_Device->SetTransform(D3DTS_PROJECTION, &matProj);
-	
+	DrawAllText();
 	for(unsigned int i = 0; i < guiObjs.size();i++)
 	{
-		HRESULT result;
-		D3DXMATRIX world;
-		
-		D3DXMatrixTranslation(&world,0,0,0);
-		
-		result = p_Device->SetFVF( D3DFVF_XYZRHW | D3DFVF_TEX1);
-		result = p_Device->SetStreamSource(0, guiObjs.at(i).vBuffer, 0, sizeof(Vertex2D));
-		result = p_Device->SetIndices(guiObjs.at(i).iBuffer);
-		result = p_Device->SetTransform(D3DTS_WORLD,&world);
-		result = p_Device->SetTexture(0,guiObjs.at(i).texture);
-
-		GUITexture* g =  &guiObjs.at(i);
-		
-		if(g->currentAnim >= 0 && g->currentAnim < g->animations.size())
+		if(guiObjs.at(i).render)
 		{
-			Animation* anim = &g->animations.at(g->currentAnim);
-			if(g->hasAnimation && g->currentAnim != -1 && anim->isFinished == false)
+			HRESULT result;
+			D3DXMATRIX world;
+		
+			D3DXMatrixTranslation(&world,0,0,0);
+		
+			result = p_Device->SetFVF( D3DFVF_XYZRHW | D3DFVF_TEX1);
+			result = p_Device->SetStreamSource(0, guiObjs.at(i).vBuffer, 0, sizeof(Vertex2D));
+			result = p_Device->SetIndices(guiObjs.at(i).iBuffer);
+			result = p_Device->SetTransform(D3DTS_WORLD,&world);
+			result = p_Device->SetTexture(0,guiObjs.at(i).texture);
+
+			GUITexture* g =  &guiObjs.at(i);
+		
+			if(g->currentAnim >= 0 && g->currentAnim < g->animations.size())
 			{
-				result = p_Device->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP,0,0,4,0,2);
-			}
-			else if(g->hasAnimation && anim->loop == false && anim->isFinished)
-			{
-				result = p_Device->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP,0,0,4,0,2);
-				g->timeSinceChange += 0.016f;
-				if(g->timeSinceChange > anim->AnimationSpeed)
+				Animation* anim = &g->animations.at(g->currentAnim);
+				if(g->hasAnimation && g->currentAnim != -1 && anim->isFinished == false)
 				{
-					g->timeSinceChange = 0;
-					g->currentAnim = -1;
+					result = p_Device->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP,0,0,4,0,2);
+				}
+				else if(g->hasAnimation && anim->loop == false && anim->isFinished)
+				{
+					result = p_Device->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP,0,0,4,0,2);
+					g->timeSinceChange += 0.016f;
+					if(g->timeSinceChange > anim->AnimationSpeed)
+					{
+						g->timeSinceChange = 0;
+						g->currentAnim = -1;
+					}
 				}
 			}
-		}
-		if(!g->hasAnimation)
-		{
-			result = p_Device->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP,0,0,4,0,2);
-		}
-		switch(result)
-		{
-			case D3DERR_INVALIDCALL: std::cout << "Invalid Call" << std::endl;
-				break;
-			case D3DERR_CONFLICTINGRENDERSTATE: std::cout << "Conflicting Renderstate" << std::endl;
-				break ;
-			case D3DERR_DRIVERINVALIDCALL: std::cout <<"Driver invalid call"<< std::endl;
-				break;
-			case D3DERR_TOOMANYOPERATIONS : std::cout << "too many operations" << std::endl; 
-				break;
+			if(!g->hasAnimation)
+			{
+				result = p_Device->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP,0,0,4,0,2);
+			}
+			switch(result)
+			{
+				case D3DERR_INVALIDCALL: std::cout << "Invalid Call" << std::endl;
+					break;
+				case D3DERR_CONFLICTINGRENDERSTATE: std::cout << "Conflicting Renderstate" << std::endl;
+					break ;
+				case D3DERR_DRIVERINVALIDCALL: std::cout <<"Driver invalid call"<< std::endl;
+					break;
+				case D3DERR_TOOMANYOPERATIONS : std::cout << "too many operations" << std::endl; 
+					break;
+			}
 		}
 	}
 }
@@ -467,6 +498,8 @@ LPDIRECT3DVERTEXBUFFER9 GUI::CreateQuadVBuffer(GUI::GUITexture* gui)
 			//MessageBox(resources->GetWindowHandle(),"Invalid Call while creating VertexBuffer","GUI createQuad()",MB_OK);
 			//Not sure whether this is a smart move due to the possibility of an infinite loop;
 			ReloadGUI();
+
+
 			return NULL;
 			break;
 		case D3DERR_OUTOFVIDEOMEMORY:

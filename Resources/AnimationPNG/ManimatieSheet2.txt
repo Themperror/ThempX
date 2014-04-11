@@ -1,4 +1,9 @@
-AnimationName		startposX	endposX		startposY	endposY  (animaties zijn zero based)
-Test			0		0		1		4	0.25 1
-Damage			0		0		5		5	0.1 0
-Death			1		5		5		5	0.1 0
+AnimationName		startposX	endposX		startposY	endposY  	animationSpeed 	loop actionPosX & actionPosY
+Idle			0		0		0		0		0.25 		1 	0		0
+WalkForward		0		0		1		4		0.25 		1	0		0
+WalkBack		0		0		1		4		0.25 		1	0		0
+WalkLeft		0		0		1		4		0.25 		1	0		0
+WalkRight		0		0		1		4		0.25 		1	0		0
+Damage			0		0		5		5		0.1 		0	0		5
+Death			1		4		5		5		0.1 		0	0		0
+Shoot			1		2		6		6		0.25 		0	2		6

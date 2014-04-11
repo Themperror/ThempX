@@ -7,7 +7,7 @@
 #include "ResourceManager.h"
 #include "DebugCube.h"
 
-#define DEBUG   //remove line for release
+//#define DEBUG   //remove line for release
 
 
 #ifdef DEBUG
@@ -40,7 +40,8 @@ public:
 	//player related
 	float playerGravity;
 
-//engine
+	//engine	
+	DebugCube* dCube;
 
 	physx::PxFoundation* mFoundation;
 	physx::PxPhysics* gPhysicsSDK;
@@ -50,7 +51,7 @@ public:
 	physx::PxScene* gScene;
 	physx::PxShape* shape;
 	physx::PxController* player;
-	PxRigidActor* CreateCube(PxVec3 position, PxVec3 rotation, PxVec3 scaling,float mass, bool isStatic = false);
+	PxRigidActor* CreateCube(PxVec3 position, PxVec3 rotation, PxVec3 scaling,float mass, bool isStatic = false, bool isKinematic = false);
 	PxRigidActor* CreateSphereCapsule(PxReal radius, PxReal capHeight,PxVec3 position,float mass, bool isStatic, bool isKinematic);
 	PxRigidActor* ThrowCube(PxVec3 position,PxVec3 force);
 	void Update(float deltaTime);
