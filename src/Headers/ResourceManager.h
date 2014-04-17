@@ -146,6 +146,13 @@ public:
 			}
 		}
 	}
+	inline void SetTextRenderingFalse()
+	{
+		for(unsigned int i =0;i<texts.size();i++)
+		{
+			texts.at(i)->render = false;
+		}
+	}
 	inline void LostDeviceAllText()
 	{
 		std::cout << "Text device lost" << std::endl;
@@ -166,7 +173,10 @@ public:
 	{
 		for(unsigned int i =0;i<texts.size();i++)
 		{
-			texts.at(i)->DrawFont();
+			if(texts.at(i)->render)
+			{
+				texts.at(i)->DrawFont();
+			}
 		}
 	}
 	inline void PushDevmode(DEVMODE dev)

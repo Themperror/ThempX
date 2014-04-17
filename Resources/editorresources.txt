@@ -1,3 +1,5 @@
-﻿path 						hasanim (animspriteonly)TotalXRows 	(animspriteonly)TotalYRows
+﻿path 						hasanim (animspriteonly)TotalXRows 	(animspriteonly)TotalYRows tag
 Resources/AnimationPNG/ManimatieSheet2.png 	1 			8 				8	Enemy
 Resources/Models/DeurStandaard.x		0			0				0	Door
+Resources/Models/DeurRed.x		0			0				0	RedKey
+Resources/Models/DeurGreen.x		0			0				0	GreenKey

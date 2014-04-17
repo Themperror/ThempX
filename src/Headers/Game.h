@@ -25,6 +25,7 @@
 #include "../Headers/PhysXEngine.h"
 #include "../Headers/Camera.h"
 #include "../Headers/TriggerBox.h"
+#include "../Headers/Menu.h"
 
 #include <iostream>
 #include <ostream>
@@ -41,6 +42,7 @@ using namespace std;
 class Game
 {
 public:
+
 	struct DataStruct
 	{
 		bool loop;
@@ -63,7 +65,7 @@ public:
 		TriggerBox* trigger;
 
 		void (Game::*MemberPointerType)(Item* item); //function to execute (LIMITATION: CANNOT RETURN ANYTHING OR ACCEPT ARGUMENTS UNLESS HARDCODED)
-		Game* context; //class to use (Has to be of type Game)
+		Game* context; //reference to class ("this")
 
 		Item(std::string itemName,void (Game::*MemberFunction)(Item* item) ,Game* gContext, D3DXVECTOR3 pos, D3DXVECTOR3 halfWidthSize)
 		{
@@ -183,6 +185,8 @@ public:
 		D3DXVECTOR3 originalPos;
 		D3DXVECTOR3 moveDir;
 		D3DXVECTOR3 lookDirection;
+		float colRadius;
+		float colCapsuleHeight;
 		void Move(D3DXVECTOR3 dir, float dT)
 		{
 			obj->position += dir*dT;
@@ -225,6 +229,8 @@ public:
 			obj = NULL;
 			actor = NULL;
 			IsDead = false;
+			colRadius= 0;
+			colCapsuleHeight = 0;
 			PlayAnimAfterCurrent = true;
 		}
 	};
@@ -257,10 +263,14 @@ public:
 		void (Game::*sound)(std::string name); //function to execute (LIMITATION: CANNOT RETURN ANYTHING OR ACCEPT ARGUMENTS UNLESS HARDCODED)
 		Game* context; //class to use (Has to be of type Game)
 		bool playedSound;
+		bool requiresRedKey;
+		bool requiresGreenKey;
+		float timeOpen;
 		Door(void (Game::*SoundFunction)(std::string name) ,Game* gContext)
 		{
 			sound = SoundFunction;
 			context = gContext;
+			timeOpen = 0;
 			Nullify();
 		}
 		void MoveUp(float dT)
@@ -276,9 +286,9 @@ public:
 				float amount = obj->position.y + 50;
 				obj->position.y += amount*dT;
 				actor->isRigidDynamic()->setKinematicTarget(PxTransform(obj->position.x,obj->position.y,obj->position.z));
-				if(obj->position.y >= position.y +15)
+				if(obj->position.y >= position.y +9)
 				{
-					obj->position.y = position.y+15;
+					obj->position.y = position.y+9;
 					actor->isRigidDynamic()->setKinematicTarget(PxTransform(obj->position.x,obj->position.y,obj->position.z));
 					isMoving = false;
 					isUp = true;
@@ -287,20 +297,43 @@ public:
 				}
 			}
 		}
+		void Update(float dT)
+		{
+			if(isUp)
+			{
+				timeOpen += dT;
+				if(timeOpen > 3)
+				{
+					activated = true;
+					timeOpen = 0;
+				}
+			}
+			MoveUp(dT);
+			MoveDown(dT);
+
+		}
 		void MoveDown(float dT)
 		{
 			if(activated && isUp)
 			{
 				if(!playedSound) 
 				{
-					(context->*sound)("DoorDown");
+					PxExtendedVec3 pPos = context->physics->player->getPosition(); //WTF gaat er fout? hij pakt positie van IETS
+					D3DXVECTOR3 dPos = D3DXVECTOR3(pPos.x,pPos.y,pPos.z);
+					//std::cout << "Player Pos X: " << pPos.x << " Y: " << pPos.y << " Z: " << pPos.z << "   Door Pos X: " << obj->position.x << " Y: " << obj->position.y << " Z: " << obj->position.z << std::endl;
+					float DISTANCE = context->Vector3Distance(dPos,obj->position);
+					std::cout << "distance was " << DISTANCE << std::endl;
+					if(DISTANCE < 500)
+					{
+						(context->*sound)("DoorDown");
+					}
 					playedSound = true;
 				}
 				isMoving = true;
 				float amount = position.y - obj->position.y +50;
 				obj->position.y -= amount*dT;
 				actor->isRigidDynamic()->setKinematicTarget(PxTransform(obj->position.x,obj->position.y,obj->position.z));
-				if(obj->position.y <= position.y)
+				if(obj->position.y <= position.y) 
 				{
 					obj->position.y = position.y;
 					actor->isRigidDynamic()->setKinematicTarget(PxTransform(obj->position.x,obj->position.y,obj->position.z));
@@ -308,6 +341,7 @@ public:
 					isUp = false;
 					activated = false;
 					playedSound = false;
+					timeOpen = 0;
 				}
 			}
 		}
@@ -330,6 +364,8 @@ public:
 			isMoving = false;
 			activated = false;
 			breakable = false;
+			requiresGreenKey = false;
+			requiresRedKey = false;
 			health = 30;
 		}
 	};
@@ -360,10 +396,12 @@ public:
 		PxReal capsuleHeight;
 		bool isStatic;
 		bool isKinematic;
+		bool flipNormals;
 		void Nullify()
 		{
 			isStatic = false;
 			isKinematic = false;
+			flipNormals = true;
 			flags = NULL;
 			cType = PhysicsType::Uninitialized;
 			boxHalfWidth = PxVec3(0,0,0);
@@ -410,6 +448,7 @@ public:
 		}
 
 	};
+
 	Game(DataStruct* b,HWND windowHandle,ResourceManager* resMan,InputHandler* inputHand,SoundHandler* soundHand, LPDIRECT3DDEVICE9 d3dDev);
 	void Update(double deltaTime);
 	void FixedUpdate(double deltaTime);
@@ -425,9 +464,10 @@ public:
 	bool Create3DObject(bool hasPhysics,Object3DData* data);
 	bool CreateAnimated2DObject(bool hasPhysics, Object2DData* data);
 	bool CreateStatic2DObject(bool hasPhysics, Object2DData* data);
-	//SPEEngine::RigidData CreatePhysicsData(bool draw,bool isStatic, float mass, float density, SPEVector pos,SPEVector scale, SPEVector vel, SPEVector aVel);
+
 	Object2DData CreateObject2DData(char* filePath,bool hasAnim, D3DXVECTOR3 pos,D3DXVECTOR3 scale, D3DXVECTOR2 rows, PhysicsData pData);
 	Object3DData CreateObject3DData(char* filePath,D3DXVECTOR3 pos,D3DXVECTOR3 scale,D3DXVECTOR3 rot, PhysicsData pData);
+
 	PxRaycastBuffer RayFromPlayer();
 	inline D3DXMATRIX* GetCameraView()
 	{
@@ -506,6 +546,7 @@ private:
 	InputHandler* inputHandler;
 	SoundHandler* soundHandler;
 	PhysXEngine* physics;
+	Menu* menu;
 	Camera* cam;
 	GUI* gui;
 	void LoadLevel();
@@ -527,8 +568,10 @@ private:
 
 	//editor mode
 	void UndoEditorAction();
-	enum EditorAction{ThrowCube,Dynamic,Static,ModelWithCollision,None};
+	enum EditorAction{ThrowCube,Dynamic,Static,ModelWithCollision,PlacedDoor,None};
 	std::vector<EditorAction> lastAction;
+	bool doorReqRed;
+	bool doorReqGreen;
 	inline void RemoveLastAction()
 	{
 		if(lastAction.size() > 0)

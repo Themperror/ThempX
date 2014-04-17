@@ -88,7 +88,7 @@ PhysXEngine::PhysXEngine(ResourceManager* res)
 	PxShape* shape = plane1->createShape(PxPlaneGeometry(), *defaultMaterial);
 	gScene->addActor(*plane1);
 	statics.push_back(plane1);
-	/*
+	
 	
 	PxTransform p2 = PxTransform(PxVec3(0.0f, -2.5f, 0.0f),PxQuat(PxHalfPi, PxVec3(0.0f, 0.0f, -1.0f)));
 	PxRigidStatic* plane2 = gPhysicsSDK->createRigidStatic(p2);
@@ -96,7 +96,7 @@ PhysXEngine::PhysXEngine(ResourceManager* res)
 	gScene->addActor(*plane2);
 	statics.push_back(plane2);
 
-	*/
+	
 	cManager = PxCreateControllerManager(*gScene);
 	PxCapsuleControllerDesc playerDesc;
 	playerDesc.setToDefault();
@@ -357,7 +357,7 @@ void PhysXEngine::DrawBoxes()
 			dCube->hasExternalWorldMatrix = true;
 			dCube->eWorldMatrix = world;
 			dCube->position = D3DXVECTOR3(pos.x,pos.y,pos.z);
-			dCube->doRender =true;
+			dCube->doRender = true;
 			dCube->Draw();
 		}
 	}

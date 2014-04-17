@@ -422,6 +422,7 @@ void GUI::DrawAllText()
 }
 void GUI::Render()
 {
+	D3DXMatrixOrthoLH(&matProj,resources->GetScreenWidth(),resources->GetScreenHeight(),0,1);
 	p_Device->SetTransform(D3DTS_PROJECTION, &matProj);
 	DrawAllText();
 	for(unsigned int i = 0; i < guiObjs.size();i++)
@@ -431,7 +432,7 @@ void GUI::Render()
 			HRESULT result;
 			D3DXMATRIX world;
 		
-			D3DXMatrixTranslation(&world,0,0,0);
+			D3DXMatrixTranslation(&world,0,0,0); //vertices are made on position, that's why the world is 0,0,0, look at CreateQuadVBuffer
 		
 			result = p_Device->SetFVF( D3DFVF_XYZRHW | D3DFVF_TEX1);
 			result = p_Device->SetStreamSource(0, guiObjs.at(i).vBuffer, 0, sizeof(Vertex2D));

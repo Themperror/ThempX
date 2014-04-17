@@ -42,6 +42,10 @@ public:
 	};
 	struct GUITexture
 	{
+		GUITexture()
+		{
+			Nullify();
+		}
 		Rectangle rect;
 		LPDIRECT3DTEXTURE9 texture;
 		std::string textureName;
@@ -83,7 +87,11 @@ public:
 	bool PlayAnimation(GUITexture* obj,std::string name);
 	void LoadAnimation(GUITexture* obj);
 	void ReloadGUI();
-
+	inline void SetTextRenderingTrue()
+	{
+		healthText->render = true;
+		armourText->render = true;
+	}
 	//player variables
 	int health;
 	int armour;

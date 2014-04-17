@@ -4,7 +4,6 @@ Game::Game(Game::DataStruct* b,HWND windowHandle,ResourceManager* resMan,InputHa
 {
 	data = b;
 	handleWindow = windowHandle;
-	gui = new GUI(d3dDev,resMan);
 	resources = resMan;
 	inputHandler = inputHand;
 	soundHandler = soundHand;
@@ -12,12 +11,20 @@ Game::Game(Game::DataStruct* b,HWND windowHandle,ResourceManager* resMan,InputHa
 	physics = new PhysXEngine(resources);
 	cam = new Camera(resMan,THEMPX_CAM_PERSPECTIVE);
 	cam->SetPosition(0,0,0);
-	Initialize();
-	LoadLevel();
+	gui = NULL;
+	menu = new Menu(&data->loop,resources,inputHandler);
+	//Program stays on hold after entering the constructor of Menu, this loads and displays the menu, and it will stay there until you've pressed Start or Quit.
+	//after you've pressed start or quit the program will exit menu's constructor and the class is useless afterwards, so we immediatly clean up and continue our game.
+	if(data->loop != true) return;
+	
+	gui = new GUI(d3dDev,resMan);
 
-	//particles.push_back(new Particle(resources,p_Device,"Resources/Particles/grid.png",&cam->GetView(),D3DXVECTOR3(4,-12.5f,0),200,500,1,3));
-//	particles.at(0)->SetMovement(D3DXVECTOR3(0,0,0),D3DXVECTOR3(0,10,0));
-	//particles.at(0)->SetParticleCount(2000,5000);
+	Initialize();
+	LoadLevel();  
+
+	//particles.push_back(new Particle(resources,p_Device,"Resources/Particles/bullet.png",&cam->GetView(),D3DXVECTOR3(4,-12.5f,0),200,500,1,3));
+	//particles.at(0)->SetMovement(D3DXVECTOR3(0,0,0),D3DXVECTOR3(0,10,0));
+	//particles.at(0)->SetParticleCount(500,1000);
 	//particles.at(0)->
 	//particles.at(0)->Release();
 }
@@ -79,6 +86,7 @@ void Game::Initialize()
 	soundHandler->LoadWaveFile("resources/sound/SWORDHIT.wav","SWORDHIT",22050,16,1);
 	soundHandler->LoadWaveFile("resources/sound/pickup.wav","pickup",22050,16,1);
 	soundHandler->LoadWaveFile("resources/sound/deur.wav","deur",22050,16,1);
+	soundHandler->LoadWaveFile("resources/sound/DIGMARK.wav","digmark",22050,16,1);
 	
 	soundHandler->LoadWaveFile("resources/sound/SWONWAL1.wav","SWONWAL1",22050,16,1);
 	soundHandler->LoadWaveFile("resources/sound/SWONWAL2.wav","SWONWAL2",22050,16,1);
@@ -86,11 +94,11 @@ void Game::Initialize()
 	
 	//soundHandler->PlayWaveFile("DoorDown");
 
-	Item* KeyRed = new Item("Red Keycard",&Game::ItemTrigger,this,D3DXVECTOR3(0,-12.5f,0),D3DXVECTOR3(3,10,3));
+	Item* KeyRed = new Item("Red Keycard",&Game::ItemTrigger,this,D3DXVECTOR3(10.6f,-12.5f,-75.18f),D3DXVECTOR3(3,10,3));
 	KeyRed->obj2D = new Object2D(resources,"Resources/Sprites/Redkey.png",&cam->GetView());
 	KeyRed->obj2D->scaling = D3DXVECTOR3(0.3f,0.3f,0.3f);
 
-	Item* KeyGreen = new Item("Green Keycard",&Game::ItemTrigger,this,D3DXVECTOR3(0,-12.5f,5),D3DXVECTOR3(3,10,3));
+	Item* KeyGreen = new Item("Green Keycard",&Game::ItemTrigger,this,D3DXVECTOR3(80,-12.5f,1.8f),D3DXVECTOR3(3,10,3));
 	KeyGreen->obj2D = new Object2D(resources,"Resources/Sprites/Greenkey.png",&cam->GetView());
 	KeyGreen->obj2D->scaling = D3DXVECTOR3(0.3f,0.3f,0.3f);
 	
@@ -99,7 +107,7 @@ void Game::Initialize()
 
 	//itemTest->tBoxVisualized = dCube;
 
-	physics->player->setPosition(PxExtendedVec3(15,5.0f,0));
+	physics->player->setPosition(PxExtendedVec3(-11.18f,-9.94f,34.4f));
 	//cam->SetPosition(5,7.0f,0);
 	//resources->CreateTextObject("Arial","\n    THIS IS TESTING TEXT",12, 0, 0, 30, 20, 0xFFFF0000);
 }
@@ -117,13 +125,15 @@ void Game::ItemTrigger(Item* item)
 	std::cout << "|             Picked up item: " << item->name <<"|";
 	std::cout << "\n|                                                      | \n--------------------------------------------------------"<< std::endl;
 	
-	if(item->name.compare("Red Keycard"))
+	if(strcmp(_strdup(item->name.c_str()),"Red Keycard") == 0)
 	{
 		player->hasRedKey = true;
+	//	std::cout << "picked up Red keycard" << std::endl;
 	}
-	else if(item->name.compare("Green Keycard"))
+	else if(strcmp(_strdup(item->name.c_str()),"Green Keycard") == 0)
 	{
 		player->hasGreenKey = true;
+	//	std::cout << "picked up Green keycard" << std::endl;
 	}
 	
 	for(unsigned int i = 0; i < items.size(); i++)
@@ -155,6 +165,9 @@ void Game::ReleaseEnemy(Enemy* enemy)
 		}
 	}
 	enemy->obj->ReleaseResources();
+	delete enemy->obj;
+	enemy->actor->release();
+	delete enemy;
 }
 void Game::DoAI(float dT)
 {
@@ -283,8 +296,7 @@ void Game::Update(double deltaTime)
 	}
 	for(unsigned int i =0; i < doors.size(); i++)
 	{
-		doors.at(i)->MoveUp(deltaTime);
-		doors.at(i)->MoveDown(deltaTime);
+		doors.at(i)->Update(deltaTime);
 	}
 	for(unsigned int i = 0; i < items.size();i++)
 	{
@@ -322,7 +334,7 @@ void Game::Update(double deltaTime)
 					names.push_back("SAMHIT1");
 					names.push_back("SAMHIT2");
 					names.push_back("SAMHIT3");
-					soundHandler->PlayRandom(names,50);
+					soundHandler->PlayRandom(&names);
 				}
 				else
 				{
@@ -468,6 +480,10 @@ void Game::Render()
 	{
 		modelObjs.at(i)->obj->DrawModel();	
 	}
+	for(unsigned int i = 0; i < doors.size(); i++)
+	{
+		doors.at(i)->obj->DrawModel();
+	}
 	for(unsigned int i = 0; i < debugCubes.size();i++)
 	{
 		debugCubes.at(i)->Draw();
@@ -499,7 +515,15 @@ void Game::UndoEditorAction()
 		physics->DeleteLastStatic();
 		RemoveLastAction();
 	}
-
+	if(GetLastAction() == PlacedDoor)
+	{
+		Door* door = doors.at(doors.size()-1);
+		doors.erase(doors.begin()+doors.size()-1);
+		physics->RemoveActor(door->actor->isRigidDynamic());
+		delete door->obj;
+		delete door;
+		RemoveLastAction();
+	}
 }
 PxVec3 Game::DoInput(float dT)
 {
@@ -520,6 +544,7 @@ PxVec3 Game::DoInput(float dT)
 	}
 	if(KeyPressed(DIK_SPACE) == 2)
 	{
+		std::cout << "Player position: " << physics->player->getFootPosition().x << "  "  << physics->player->getFootPosition().y << "  " << physics->player->getFootPosition().z << std::endl;
 		physics->playerGravity = 0.4f;
 	}
 	//std::cout << "   x: "<<physics->player->getFootPosition().x <<"   y: " <<physics->player->getFootPosition().y << "   z: "<<physics->player->getFootPosition().z << std::endl;
@@ -549,9 +574,11 @@ PxVec3 Game::DoInput(float dT)
 	}
 	
 	int speed = 60;
+	float scaleSpeed = 0.9f;
 	if(KeyPressed(DIK_LSHIFT))
 	{
-		speed = 90;
+		speed = 10;
+		scaleSpeed = 0.4f;
 	}
 	if(KeyPressed(DIK_W))
 	{
@@ -643,7 +670,7 @@ PxVec3 Game::DoInput(float dT)
 			}
 			else IFOBJ3D
 			{
-				currentEditorObj->obj3D->scaling.x += scaleMultiplier*dT;
+				currentEditorObj->obj3D->scaling.x += scaleMultiplier*dT*scaleSpeed;
 			}
 			else IFOBJ2D
 			{
@@ -658,7 +685,7 @@ PxVec3 Game::DoInput(float dT)
 			}
 			else IFOBJ3D
 			{
-				currentEditorObj->obj3D->scaling.y += scaleMultiplier*dT;
+				currentEditorObj->obj3D->scaling.y += scaleMultiplier*dT*scaleSpeed;
 			}
 			else IFOBJ2D
 			{
@@ -673,10 +700,10 @@ PxVec3 Game::DoInput(float dT)
 			}
 			else IFOBJ3D
 			{
-				currentEditorObj->obj3D->scaling.z += scaleMultiplier*dT;
+				currentEditorObj->obj3D->scaling.z += scaleMultiplier*dT*scaleSpeed;
 			}
 		}
-		if(KeyPressed(DIK_I))
+		if(KeyPressed(DIK_I) == 2)
 		{
 			IFCOL
 			{
@@ -684,10 +711,10 @@ PxVec3 Game::DoInput(float dT)
 			}
 			else IFOBJ3D
 			{
-				currentEditorObj->obj3D->rotation.x += dT*5;
+				currentEditorObj->obj3D->rotation.x += 45*ToRadian;
 			}
 		}
-		if(KeyPressed(DIK_K))
+		if(KeyPressed(DIK_K) == 2)
 		{
 			IFCOL
 			{
@@ -695,7 +722,7 @@ PxVec3 Game::DoInput(float dT)
 			}
 			else IFOBJ3D
 			{
-				currentEditorObj->obj3D->rotation.x -=dT*5;
+				currentEditorObj->obj3D->rotation.x -= 45*ToRadian;
 			}
 		}
 		if(KeyPressed(DIK_J))
@@ -754,6 +781,7 @@ PxVec3 Game::DoInput(float dT)
 	}
 	if(KeyPressed(DIK_F))
 	{
+		soundHandler->PlayWaveFile("digmark",81);
 		D3DXVECTOR3 camPos = cam->GetPosition()+cam->GetLookDir()*2;
 		physics->ThrowCube(PxVec3(camPos.x,camPos.y,camPos.z),PxVec3(cam->GetLookDir().x*60,cam->GetLookDir().y*60,cam->GetLookDir().z*60));
 		lastAction.push_back(ThrowCube);
@@ -794,7 +822,9 @@ PxVec3 Game::DoInput(float dT)
 	}
 	if(inputHandler->KeyPressed(DIK_ESCAPE))
 	{
-		data->loop = false;
+		menu->ShowMenu(Menu::PauseScreen);
+		gui->SetTextRenderingTrue();
+		//data->loop = false;
 	}
 	return moveDir;
 }
@@ -810,7 +840,7 @@ bool Game::Create3DObject(bool hasPhysics, Object3DData* data)
 			PxRigidActor* actor = NULL;
 			if(data->physics.cType == PhysicsData::PhysicsType::Mesh)
 			{
-				physics->BakeMesh(obj->model.mesh,PxVec3(obj->scaling.x,obj->scaling.y,obj->scaling.z),true); //3rd arg "true" must be flipnormals, that is linked data from lvl.txt
+				physics->BakeMesh(obj->model.mesh,PxVec3(obj->scaling.x,obj->scaling.y,obj->scaling.z),data->physics.flipNormals); //3rd arg "true" must be flipnormals, that is linked data from lvl.txt
 			}
 			else
 			{
@@ -852,6 +882,8 @@ bool Game::CreateAnimated2DObject(bool hasPhysics, Object2DData* data)
 			obj->scaling = data->scale;
 			PxRigidActor* actor = physics->CreateSphereCapsule(data->physics.radius, data->physics.capsuleHeight ,PxVec3(data->position.x,data->position.y,data->position.z), 10, data->physics.isStatic, data->physics.isKinematic);
 			enemy->actor = actor;
+			enemy->colRadius = data->physics.radius;
+			enemy->colCapsuleHeight = data->physics.capsuleHeight;
 			actor->setName("Enemy");
 			PhysicsUserData* uData = new PhysicsUserData();
 			uData->Nullify();
@@ -900,6 +932,8 @@ bool Game::CreateStatic2DObject(bool hasPhysics, Object2DData* data)
 			obj->scaling = data->scale;
 			PxRigidActor* actor = physics->CreateSphereCapsule(data->physics.radius, data->physics.capsuleHeight ,PxVec3(data->position.x,data->position.y,data->position.z), 10,data->physics.isStatic,data->physics.isKinematic);
 			enemy->actor = actor;
+			enemy->colRadius = data->physics.radius;
+			enemy->colCapsuleHeight = data->physics.capsuleHeight;
 			PhysicsUserData* uData = new PhysicsUserData();
 			uData->Nullify();
 			uData->related2D= obj;
@@ -931,8 +965,11 @@ void Game::OpenDoor()
 			{
 				Door* door;
 				door = (Door*)p->userData;
-				door->activated = true;
 				
+				if(door->requiresGreenKey && player->hasGreenKey || door->requiresRedKey && player->hasRedKey || !door->requiresGreenKey && !door->requiresRedKey)
+				{
+					door->activated = true;
+				}
 			}
 		}
 	}
@@ -969,20 +1006,28 @@ void Game::LeftMouseClick()
 		else if(currentEditorObj->obj3D != NULL)
 		{
 			Door* door = new Door(&Game::PlaySound,this);
-			
 			soundHandler->PlayWaveFile("deur");
 			D3DXVECTOR3 pos = cam->GetPosition()+cam->GetLookDir()*editorObjectDistance;
 			Create3DObject(true,&CreateObject3DData(currentEditorObj->obj3D->model.meshPath,pos,currentEditorObj->obj3D->scaling,currentEditorObj->obj3D->rotation,CreatePhysicsData(PxVec3(currentEditorObj->obj3D->scaling.x/2,currentEditorObj->obj3D->scaling.y/2,currentEditorObj->obj3D->scaling.z/2),false,true,0)));
 			//Object3D* obj = new Object3D(resources,currentEditorObj->obj3D->model.meshPath);
 			Object3D* obj = GetLastObject3D();
+			modelObjs.erase(modelObjs.begin()+modelObjs.size()-1);
 			obj->objName = currentEditorObj->obj3D->objName;
 			door->obj = obj;
 			door->position = pos;
 			door->actor = physics->GetLastDynamic();
 			door->actor->userData = door;
+			if(strcmp(_strdup(currentEditorObj->obj3D->tag.c_str()),"RedKey") == 0)
+			{
+				door->requiresRedKey = true;
+			}
+			else if(strcmp(_strdup(currentEditorObj->obj3D->tag.c_str()),"GreenKey") == 0)
+			{
+				door->requiresGreenKey = true;
+			}
 			door->actor->setName(_strdup(currentEditorObj->obj3D->tag.c_str()));
 			doors.push_back(door);
-			lastAction.push_back(ModelWithCollision);
+			lastAction.push_back(PlacedDoor);
 		}
 		else if(currentEditorObj->col != NULL)
 		{
@@ -1014,7 +1059,7 @@ void Game::LeftMouseClick()
 		names.push_back("SWIPE3");
 		names.push_back("SWIPE4");
 		names.push_back("SWIPE5");
-		soundHandler->PlayRandom(names,50);
+		soundHandler->PlayRandom(&names,100);
 
 		PxRaycastBuffer hit = RayFromPlayer();
 		if(hit.block.actor != NULL)
@@ -1037,7 +1082,7 @@ void Game::LeftMouseClick()
 							std::vector<std::string> names;
 							names.push_back("MAN1DIE1");
 							names.push_back("MAN1DIE2");
-							soundHandler->PlayRandom(names,50);
+							soundHandler->PlayRandom(&names);
 						}
 						else
 						{
@@ -1045,7 +1090,7 @@ void Game::LeftMouseClick()
 							names.push_back("MAN1HIT1");
 							names.push_back("MAN1HIT2");
 							names.push_back("MAN1HIT3");
-							soundHandler->PlayRandom(names,50);
+							soundHandler->PlayRandom(&names);
 						}
 					}
 				}
@@ -1089,23 +1134,13 @@ void Game::RightMouseClick()
 void Game::ReleaseAll()
 {
 	DestroyLevel();
-	for(unsigned int i=0;i<modelObjs.size();i++)
-	{
-		delete modelObjs.at(i)->obj;
-	}
-	for(unsigned int i=0;i<spriteObjs.size();i++)
-	{
-		spriteObjs.at(i)->obj->ReleaseResources();  
-		delete spriteObjs.at(i)->obj;
-	}
-	for(unsigned int i=0;i<debugCubes.size();i++)
-	{
-		debugCubes.at(i)->Release(); 
-		delete debugCubes.at(i);
-	}
+	delete menu;
 	physics->ReleaseAll();
-	gui->Release();
-	delete gui;
+	if(gui != NULL)
+	{
+		gui->Release();
+		delete gui;
+	}
 	delete cam;
 }
 //easy-for-use function for testing keys to be pressed
@@ -1140,6 +1175,15 @@ void Game::DestroyLevel()
 		delete spriteObjs.at(i)->obj;
 	}
 	spriteObjs.clear();
+	for(unsigned int i=0;i<doors.size();i++)
+	{
+		Door* d = doors.at(i);
+		physics->RemoveActor(d->actor->isRigidDynamic());
+		//d->actor->release();
+		//delete d->obj;
+		delete d;
+	}
+	doors.clear();
 	for(unsigned int i=0;i<debugCubes.size();i++)
 	{
 		debugCubes.at(i)->Release();
@@ -1264,16 +1308,31 @@ void Game::CreateLevelFile()
 	ofstream level("level.txt");
 	if (level.is_open())
 	{
-		level << "name" << "\t"<< "objName" << "\t"<< "posx" << "\t"<< "posy" << "\t"<< "posz" << "\t"<< "scalex" << "\t"<< "scaley" << "\t"<< "scalez" << "\t"<< "rotx" << "\t"<< "roty" << "\t"<< "rotz" << "\t"<< "XAnimRows" << "\t"<< "YAnimRows" << "Tag" << "\n";
+		level << "name" << "\t"<< "objName" << "\t"<< "posx" << "\t"<< "posy" << "\t"<< "posz" << "\t"<< "scalex" << "\t"<< "scaley" << "\t"<< "scalez" << "\t"<< "rotx" << "\t"<< "roty" << "\t"<< "rotz" << "\t"<< "XAnimRows" << "\t"<< "YAnimRows" << "\t"<< "Tag" << "\t"<< "hasPhysics"<< "\t" <<	"isStatic" << "\t"<< "isKinematic"<< "\t" <<	"meshCollision"	<< "\t" << "FlipNormals"<< "\t"<<"doDraw" 	<< "\t"<<"hitBoxX" << "\t"<<	"hitBoxY" << "\t"<<	"hitBoxZ" << "\t"<<	"radius"<< "\t"<<	"capsuleHeight" <<"\n";
 		for(unsigned int i = 0; i < modelObjs.size();i++)
 		{
 			Object3D* obj = modelObjs.at(i)->obj;
-			level << obj->model.meshPath << "\t" << obj->objName << "\t" << obj->position.x << "\t" << obj->position.y << "\t" << obj->position.z << "\t" << obj->scaling.x << "\t" << obj->scaling.y << "\t" << obj->scaling.z << "\t" << obj->rotation.x << "\t" << obj->rotation.y << "\t" << obj->rotation.z << "\t" << 0 << "\t" <<0 <<obj->tag << "\n";
+			level << obj->model.meshPath << "\t" << obj->objName << "\t" << obj->position.x << "\t" << obj->position.y << "\t" << obj->position.z << "\t" << obj->scaling.x << "\t" << obj->scaling.y << "\t" << obj->scaling.z << "\t" << obj->rotation.x << "\t" << obj->rotation.y << "\t" << obj->rotation.z << "\t" << 0 << "\t" <<0 << "\t" <<obj->tag << "\t" <<  0 << "\t" << 0 << "\t" << 0 << "\t" <<0 << "\t" << 0 << "\t" << 1 << "\t" << 0 << "\t" <<0 << "\t" <<0 << "\t" <<0 << "\t" <<0 << "\n";
 		}
 		for(unsigned int i = 0; i < spriteObjs.size();i++)
 		{
 			Object2D* obj = spriteObjs.at(i)->obj;
-			level << obj->quad.textureName << "\t" << obj->objName << "\t" << obj->position.x << "\t" << obj->position.y << "\t" << obj->position.z << "\t" << obj->scaling.x << "\t" << obj->scaling.y << "\t" << obj->scaling.z << "\t" << obj->rotation.x << "\t" << obj->rotation.y << "\t" << obj->rotation.z << "\t" << obj->GetXRows() << "\t" << obj->GetYRows() <<obj->tag << "\n";
+			Enemy* d = spriteObjs.at(i);
+			level << obj->quad.textureName << "\t" << obj->objName << "\t" << obj->position.x << "\t" << obj->position.y << "\t" << obj->position.z << "\t" << obj->scaling.x << "\t" << obj->scaling.y << "\t" << obj->scaling.z << "\t" << obj->rotation.x << "\t" << obj->rotation.y << "\t" << obj->rotation.z << "\t" << obj->GetXRows() << "\t" << obj->GetYRows() << "\t" << obj->tag  << "\t" <<  (d->actor!=NULL) << "\t" << 0 << "\t" <<1 << "\t" << 0 << "\t" << 1 << "\t" << 0 << "\t" << 0 << "\t" <<0 << "\t" <<0 << "\t" << d->colRadius << "\t" <<d->colCapsuleHeight << "\n";
+		}
+		for(unsigned int i = 0; i < doors.size(); i++)
+		{
+			Door* d = doors.at(i);
+			std::string toTag = "NoKey";
+			if(d->requiresGreenKey)
+			{
+				toTag = "GreenKey";
+			}
+			if(d->requiresRedKey)
+			{
+				toTag = "RedKey";
+			}
+			level << d->obj->model.meshPath << "\t" << "Door" << "\t" << d->position.x << "\t" << d->position.y << "\t" << d->position.z << "\t" << d->obj->scaling.x << "\t" << d->obj->scaling.y << "\t" << d->obj->scaling.z << "\t" << d->obj->rotation.x << "\t" << d->obj->rotation.y << "\t" << d->obj->rotation.z << "\t" << 0 << "\t" << 0 << "\t" << toTag << "\t" <<  1 << "\t" << 0 << "\t" <<1 << "\t" << 0 << "\t" << 0 << "\t" << 1 << "\t" << d->obj->scaling.x << "\t" << d->obj->scaling.y << "\t" << d->obj->scaling.z << "\t" << 0 << "\t" << 0 << "\n";
 		}
 		for(unsigned int i = 0; i < debugCubes.size();i++)
 		{
@@ -1307,8 +1366,8 @@ void Game::LoadLevel()
 			float XAnimRows;
 			float YAnimRows;
 			float posx,posy,posz,scalex,scaley,scalez,rotx,roty,rotz,hitBoxX,hitBoxY,hitBoxZ,radius,capHeight;
-			bool hasPhysics,isStatic,doDraw,meshCollision;
-			fin >> name >> objName >>posx >> posy >> posz >> scalex >> scaley >> scalez >> rotx >> roty >> rotz >> XAnimRows >> YAnimRows >> tag >> hasPhysics >> isStatic >> meshCollision >> doDraw >>hitBoxX >> hitBoxY >> hitBoxZ >> radius >> capHeight;
+			bool hasPhysics,isStatic,isKinematic,doDraw,meshCollision,flipNormals;
+			fin >> name >> objName >>posx >> posy >> posz >> scalex >> scaley >> scalez >> rotx >> roty >> rotz >> XAnimRows >> YAnimRows >> tag >> hasPhysics >> isStatic >> isKinematic >> meshCollision >> flipNormals>> doDraw >>hitBoxX >> hitBoxY >> hitBoxZ >> radius >> capHeight;
 
 			if(name.at(name.size()-1) == check[0])
 			{
@@ -1329,6 +1388,7 @@ void Game::LoadLevel()
 					if(meshCollision)
 					{
 						data.physics.cType = PhysicsData::PhysicsType::Mesh;
+						data.physics.flipNormals = flipNormals;
 					}
 					else if (radius != 0)
 					{
@@ -1336,12 +1396,32 @@ void Game::LoadLevel()
 					}
 					else
 					{
-						data.physics = CreatePhysicsData(PxVec3(hitBoxX,hitBoxY,hitBoxZ));
+						data.physics = CreatePhysicsData(PxVec3(hitBoxX,hitBoxY,hitBoxZ),isStatic,isKinematic);
 					}
 					Create3DObject(hasPhysics,&data);
 					Object3D* obj = modelObjs.at(modelObjs.size()-1)->obj;
 					obj->objName = objName;
 					obj->tag = tag;
+				}
+				if(strcmp(_strdup(objName.c_str()),"Door") == 0)
+				{
+					Door* door = new Door(&Game::PlaySound,this);
+					door->actor = physics->GetLastDynamic();
+					door->actor->isRigidDynamic()->setRigidDynamicFlag(PxRigidBodyFlag::eKINEMATIC,true);
+					door->actor->userData = door;
+					door->actor->setName("Door");
+					door->obj = GetLastObject3D();
+					door->position = door->obj->position;
+					doors.push_back(door);
+					
+					if(strcmp(_strdup(tag.c_str()),"GreenKey") == 0)
+					{
+						door->requiresGreenKey = true;
+					}
+					else if(strcmp(_strdup(tag.c_str()),"RedKey") == 0)
+					{
+						door->requiresRedKey = true;
+					}
 				}
 			}
 			else

@@ -18,7 +18,7 @@ int ResourceManager::CreateTextObject(char* font,char* text,int fontsize, int po
 	obj->color = color;
 	obj->text = text;
 	obj->hasLostDone = false;
-
+	obj->render = true;
 	if(texts.size() == 0)
 	{
 		D3DXCreateFont(p_Device,fontsize, 0, 1 ,0, false, DEFAULT_CHARSET, OUT_TT_PRECIS,CLIP_DEFAULT_PRECIS,DEFAULT_PITCH,font,&obj->gameFont);
@@ -27,7 +27,7 @@ int ResourceManager::CreateTextObject(char* font,char* text,int fontsize, int po
 	}
 	else if(texts.size() > 0)
 	{
-		for(int i = 0; i < texts.size(); i++)
+		for(unsigned int i = 0; i < texts.size(); i++)
 		{
 			if(strcmp(font,texts.at(i)->font) == 0)
 			{

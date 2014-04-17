@@ -303,10 +303,10 @@ bool SoundHandler::LoadWaveFile(char* filename,char* name, DWORD samplesPerSec,W
 	return false;
 }
 
-bool SoundHandler::PlayRandom(std::vector<std::string> names, DWORD volume)
+bool SoundHandler::PlayRandom(std::vector<std::string>* names, DWORD volume)
 {
-	int r = rand() % names.size();
-	return PlayWaveFile(_strdup(names.at(r).c_str()),volume);
+	int r = rand() % names->size();
+	return PlayWaveFile(_strdup(names->at(r).c_str()),volume);
 	
 }
 bool SoundHandler::PlayWaveFile(char* name, DWORD volume)
@@ -353,7 +353,8 @@ bool SoundHandler::PlayWaveFile(char* name, DWORD volume)
 
 
 					duplicate->SetCurrentPosition(0);
-					duplicate->SetVolume(volume);
+					signed int value  = -((100-volume) * 100);
+					duplicate->SetVolume(value);
 					duplicate->Play(0, 0, 0);
 					return true;
 				}
@@ -361,7 +362,8 @@ bool SoundHandler::PlayWaveFile(char* name, DWORD volume)
 				{
 					IDirectSoundBuffer* sBuffer = sounds.at(i)->soundBuffer;
 					sBuffer->SetCurrentPosition(0);
-					sBuffer->SetVolume(volume);
+					signed int value  = -((100-volume) * 100);
+					sBuffer->SetVolume(value);
 					sBuffer->Play(0,0,0);
 					return true;
 				}

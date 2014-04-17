@@ -21,8 +21,8 @@ public:
 	bool Initialize(HWND);
 	
 	bool LoadWaveFile(char* path, char* name, DWORD samplesPerSec,WORD bitsPerSample, WORD channels);
-	bool PlayWaveFile(char* name, DWORD volume = 50);
-	bool PlayRandom(std::vector<std::string> names, DWORD volume);
+	bool PlayWaveFile(char* name, DWORD volume = 96);
+	bool PlayRandom(std::vector<std::string>* names, DWORD volume = 96);
 
 private:
 	struct WaveHeaderType

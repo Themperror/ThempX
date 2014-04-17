@@ -18,6 +18,7 @@
     <ClInclude Include="src\Headers\GUI.h" />
     <ClInclude Include="src\Headers\InputHandler.h" />
     <ClInclude Include="src\Headers\Main.h" />
+    <ClInclude Include="src\Headers\Menu.h" />
     <ClInclude Include="src\Headers\Object2D.h" />
     <ClInclude Include="src\Headers\Object3D.h" />
     <ClInclude Include="src\Headers\Particle.h" />
@@ -36,6 +37,7 @@
     <ClCompile Include="src\CPP\GUI.cpp" />
     <ClCompile Include="src\CPP\InputHandler.cpp" />
     <ClCompile Include="src\CPP\Main.cpp" />
+    <ClCompile Include="src\CPP\Menu.cpp" />
     <ClCompile Include="src\CPP\Object2D.cpp" />
     <ClCompile Include="src\CPP\Object3D.cpp" />
     <ClCompile Include="src\CPP\Particle.cpp" />
