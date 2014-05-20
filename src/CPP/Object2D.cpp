@@ -110,21 +110,43 @@ void Object2D::InitVars()
 	quad.iBuffer = FillIndices();
 	//light = new light etc
 }
+
+bool Object2D::IsAnimFinished(std::string anim)
+{
+	std::string a = LowCaseString(anim);
+	for(unsigned int i = 0; i < animations.size();i++)
+	{
+		if(animations.at(i).AnimationName.compare(a) == 0)
+		{
+			return animations.at(i).isFinished;
+		}
+	}
+}
+Object2D::Animation Object2D::GetAnimation(std::string aName)
+{
+	std::string a = LowCaseString(aName);
+	for(unsigned int i = 0; i < animations.size();i++)
+	{
+		if(animations.at(i).AnimationName.compare(a) == 0)
+		{
+			return animations.at(i);
+		}
+	}
+}
 void Object2D::Draw()
 {
 	//Matrixes are used for rotation/scaling/position and everything
 	D3DXMATRIX m_ViewScale;
 	D3DXMATRIX m_ViewWorld;
-
-	
+	D3DXVECTOR3 transScale;
 	D3DXMatrixInverse(&m_ViewWorld, 0, cameraView); //turns toward camera 
+	//D3DXVec3TransformNormal(&transScale,&scaling,&m_ViewWorld);
 
 	D3DXMATRIX m_Scale;
-	D3DXMatrixScaling(&m_Scale,scaling.x,scaling.y,scaling.z); //scaling
+	D3DXMatrixScaling(&m_Scale,scaling.x,scaling.y,scaling.x); //scaling
 
 	D3DXMATRIX m_Translation;
 	D3DXMatrixTranslation(&m_Translation,position.x,position.y,position.z); //positioning
-	
 
 	D3DXMatrixMultiply(&m_ViewScale, &m_ViewWorld, &m_Scale);
 
@@ -158,9 +180,58 @@ void Object2D::Draw()
 			break;
 	}
 }
+
 void Object2D::Update(float deltaTime)
 {
-	if(currentAnim != -1)
+	if(currentAnim != -1 && hasAnimation)
+	{
+		if(currentAnim >= 0 && currentAnim < animations.size())
+		{
+			Animation* a = &animations.at(currentAnim);
+			timeSinceChange+=deltaTime;
+			if(hasAnimation && timeSinceChange > a->AnimationSpeed)
+			{
+				int actionFrameX=0,actionFrameY=0;
+				int endX=0, endY=0;
+				currentXAnimValue++;		
+				if(currentXAnimValue > a->EndPosition.x)
+				{
+					currentYAnimValue++;
+					currentXAnimValue = a->StartPosition.x;
+					if(currentYAnimValue > a->EndPosition.y)
+					{
+						a->isFinished = true;
+						if(a->loop)
+						{
+							currentYAnimValue = a->StartPosition.y;
+							a->isFinished = false;
+						}
+						else
+						{
+							currentXAnimValue = a->EndPosition.x;
+							currentYAnimValue = a->EndPosition.y;
+						}
+					}
+				}
+				if(currentXAnimValue == (int)a->ActionFrame.x &&  currentYAnimValue == (int)a->ActionFrame.y)
+				{
+					a->doAction = true;
+					//std::cout << "ACTION" << std::endl;
+				}
+				if(!a->isFinished)
+				{
+					Animate();
+				}
+				timeSinceChange = 0;
+			}
+		}
+	}
+}
+
+/*
+void Object2D::Update(float deltaTime)
+{
+	if(currentAnim != -1 && hasAnimation)
 	{
 		if(currentAnim >= 0 && currentAnim < animations.size())
 		{
@@ -172,14 +243,14 @@ void Object2D::Update(float deltaTime)
 				int cX = 0, cY = 0, aX = 0, aY = 0,eX=0,eY=0;
 
 				currentXAnimValue++;
-				cX = (int)ceil(currentXAnimValue-0.5f);
-				eX = (int)ceil(cAnim->EndPosition.x-0.5f);
+				cX = (int)floor(currentXAnimValue-0.5f);
+				eX = (int)floor(cAnim->EndPosition.x-0.5f);
 				
 				if((int)ceil(currentXAnimValue-0.5f) > eX)
 				{
 					currentYAnimValue++;
-					cY = (int)ceil(currentYAnimValue-0.5f);
-					eY = (int)ceil(cAnim->EndPosition.y-0.5f);
+					cY = (int)floor(currentYAnimValue-0.5f);
+					eY = (int)floor(cAnim->EndPosition.y-0.5f);
 					
 					currentXAnimValue = (int)cAnim->StartPosition.x;
 
@@ -190,11 +261,11 @@ void Object2D::Update(float deltaTime)
 					}
 				}
 
-				cY = (int)ceil(currentYAnimValue-0.5f);
-				eY = (int)ceil(cAnim->EndPosition.y-0.5f);
-				aX = (int)ceil(cAnim->ActionFrame.x-0.5f);
-				aY = (int)ceil(cAnim->ActionFrame.y-0.5f);
-				if((int)ceil(currentXAnimValue-0.5f) == aX &&  (int)ceil(currentYAnimValue-0.5f) == aY)
+				cY = (int)floor(currentYAnimValue-0.5f);
+				eY = (int)floor(cAnim->EndPosition.y-0.5f);
+				aX = (int)floor(cAnim->ActionFrame.x-0.5f);
+				aY = (int)floor(cAnim->ActionFrame.y-0.5f);
+				if((int)floor(currentXAnimValue-0.5f) == aX &&  (int)floor(currentYAnimValue-0.5f) == aY)
 				{
 					cAnim->doAction = true;
 				}
@@ -202,7 +273,7 @@ void Object2D::Update(float deltaTime)
 				{
 					cAnim->doAction = false;
 				}
-				if((int)ceil(currentXAnimValue-0.5f) > eX && (int)ceil(currentYAnimValue-0.5f) > eY)
+				if((int)floor(currentXAnimValue-0.5f) > eX && (int)floor(currentYAnimValue-0.5f) > eY)
 				{
 					currentXAnimValue = cAnim->EndPosition.x;
 					currentYAnimValue = cAnim->EndPosition.y;
@@ -211,7 +282,7 @@ void Object2D::Update(float deltaTime)
 				{
 					Animate();
 				}
-				if((int)ceil(currentXAnimValue-0.5f) >= eX && (int)ceil(currentYAnimValue-0.5f) >= eY)
+				if((int)floor(currentXAnimValue-0.5f) >= eX && (int)floor(currentYAnimValue-0.5f) >= eY)
 				{
 					if(cAnim->loop)
 					{
@@ -228,7 +299,7 @@ void Object2D::Update(float deltaTime)
 			}
 		}
 	}
-}
+}*/
 void Object2D::CheckPlayingAnimation(std::string playAnimFinished)
 {
 	if(hasAnimation)
@@ -397,7 +468,7 @@ void Object2D::LoadAnimation()
 			std::string name;
 
 			fin >> name >> startPosX >> endPosX >> startPosY >> endPosY >> animSpeed >> loop >> actionPosX >> actionPosY;
-			anim.AnimationName = name;
+			anim.AnimationName = LowCaseString(name);
 			anim.StartPosition.x = startPosX;
 			anim.StartPosition.y = startPosY;
 			if(actionPosX == 0 && actionPosY == 0)
@@ -417,8 +488,9 @@ void Object2D::LoadAnimation()
 	}
 	fin.close();
 }
-bool Object2D::PlayAnimation(std::string name)
+bool Object2D::PlayAnimation(std::string aName)
 {
+	std::string name = LowCaseString(aName);
 	for(unsigned int i=0; i < animations.size();i++)
 	{
 		if(animations.at(i).AnimationName == name)
@@ -441,7 +513,7 @@ bool Object2D::PlayAnimation(std::string name)
 	currentYAnimValue = 0;
 	currentlyPlayingAnimation = "None";
 	currentAnim = NULL;
-	MessageBox(resources->GetWindowHandle(),"No animation found with that name",name.c_str(),MB_OK);
+	std::cout << "No animation found with that name: " <<name.c_str() << std::endl;
 	return false;
 }
 

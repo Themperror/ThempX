@@ -1,5 +1,8 @@
 ﻿path 						hasanim (animspriteonly)TotalXRows 	(animspriteonly)TotalYRows tag
 Resources/AnimationPNG/ManimatieSheet2.png 	1 			8 				8	Enemy
-Resources/Models/DeurStandaard.x		0			0				0	Door
-Resources/Models/DeurRed.x		0			0				0	RedKey
-Resources/Models/DeurGreen.x		0			0				0	GreenKey
+Resources/Models/Box.x				0			0				0	Box
+Resources/Sprites/RottenFlower.png 		0 			0 				0	RottenFlower
+Resources/Models/Bookcase.x			0			0				0	Bookcase
+Resources/Models/table.x			0			0				0	Bookcase
+Resources/Models/chair.x			0			0				0	Bookcase
+Resources/Sprites/bbottle.png 			0 			0 				0	BeerBottle

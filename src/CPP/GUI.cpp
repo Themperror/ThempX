@@ -11,9 +11,12 @@ GUI::GUI( LPDIRECT3DDEVICE9 d3dDev, ResourceManager* res)
 	armourText = resources->GetText(resources->CreateTextObject("Arial","Armour: ",20,8,92,10,40,D3DXCOLOR(1,1,1,1)));
 	
 	LoadGUI();
-
+	
 	attackGUI = GetGUIObj("Resources/GUI/Slash.png");
+	levelCompleteGUI = GetGUIObj("Resources/GUI/LevelComplete.png");
+	levelCompleteGUI->render = false;
 
+	resources->CreateTextObject("Arial"," Movement: W/A/S/D  \n Jump: Space \n Attack: Left Mouse Button \n\n Fun: \n Spawn Boxes: F \n Clear Boxes: Z \n \n Enter Editor Mode: 0 \n Change Object: 8/9 \n Scale Object: Numpad 4,5,8 \n Reverse Scaling: Right CTRL",16,2,2,100,100,0xFFFFFFFF);
 	D3DXMatrixOrthoLH(&matProj,resources->GetScreenWidth(),resources->GetScreenHeight(),0,1);
 }
 void GUI::Release()
@@ -78,7 +81,7 @@ void GUI::LoadGUI()
 			rect.y = resources->GetScreenHeight() * posY / 100;
 			rect.w = resources->GetScreenWidth() * sizeX / 100;
 			rect.h = resources->GetScreenHeight() * sizeY / 100;
-
+			path = LowCaseString(path);
 			if(hasAnimation)
 			{
 				if(CreateGUIObject(rect,_strdup(path.c_str()),xRows,yRows))
@@ -364,7 +367,8 @@ void GUI::LoadAnimation(GUITexture* obj)
 			anim.EndPosition.x = endPosX;
 			anim.EndPosition.y = endPosY;
 			anim.AnimationSpeed = animSpeed;
-			(loop == 1 ? anim.loop = true : anim.loop = false);
+			anim.loop = loop;
+			//(loop == 1 ? anim.loop = true : anim.loop = false);
 			obj->animations.push_back(anim);
 		}
 	}
@@ -456,7 +460,10 @@ void GUI::Render()
 					if(g->timeSinceChange > anim->AnimationSpeed)
 					{
 						g->timeSinceChange = 0;
-						g->currentAnim = -1;
+						if(!anim->showEnd)
+						{
+							g->currentAnim = -1;
+						}
 					}
 				}
 			}

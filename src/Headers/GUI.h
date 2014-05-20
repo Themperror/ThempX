@@ -30,6 +30,7 @@ public:
 		float AnimationSpeed;
 		bool isFinished;
 		bool loop;
+		bool showEnd;
 		void Nullify()
 		{
 			StartPosition = D3DXVECTOR2(0,0);
@@ -37,6 +38,7 @@ public:
 			AnimationName = "";
 			AnimationSpeed = 0;
 			isFinished = false;
+			showEnd = false;
 			loop = false;
 		}
 	};
@@ -58,7 +60,6 @@ public:
 		int xRows, yRows;
 		std::string currentlyPlayingAnimation;
 		int currentAnim;
-		
 		void Nullify()
 		{
 			rect.Nullify();
@@ -96,8 +97,12 @@ public:
 	int health;
 	int armour;
 	GUITexture* attackGUI;
-	inline GUITexture* GetGUIObj(std::string name)
+	GUITexture* levelCompleteGUI;
+	ResourceManager::TextData* healthText;
+	ResourceManager::TextData* armourText;
+	inline GUITexture* GetGUIObj(std::string sname)
 	{
+		std::string name = LowCaseString(sname);
 		for(unsigned int i =0; i < guiObjs.size(); i++)
 		{
 			if(strcmp(guiObjs.at(i).textureName.c_str(),name.c_str()) == 0)
@@ -107,6 +112,15 @@ public:
 		}
 		return NULL;
 	}
+	inline std::string LowCaseString(std::string string)
+	{
+		std::string newString = string;
+		for(DWORD i = 0; i < string.size(); i++)
+		{
+			newString[i] = (char)tolower(string[i]);
+		}
+		return newString;
+	}
 private:
 	
 	void LoadGUI();
@@ -115,8 +129,6 @@ private:
 	D3DXMATRIX matProj;
 	LPDIRECT3DDEVICE9 p_Device;
 	ResourceManager* resources;
-	ResourceManager::TextData* healthText;
-	ResourceManager::TextData* armourText;
 	LPDIRECT3DVERTEXBUFFER9 CreateQuadVBuffer(GUITexture* gui);
 	LPDIRECT3DINDEXBUFFER9 CreateQuadIndices();
 };

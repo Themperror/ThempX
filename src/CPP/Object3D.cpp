@@ -24,11 +24,10 @@ Object3D::Object3D(ResourceManager* resources,char* path)
 	model.meshPath = path;
 	switch(LoadModel(path,resources))
 	{
-		case true: std::cout << "Model Loaded Succesfully" << std::endl; break;
 		case false: std::cout << "Something went wrong with loading the model" << std::endl; break;
 	}
 }
-bool Object3D::LoadModel(LPSTR pathName, ResourceManager* res)
+bool Object3D::LoadModel(char* pathName, ResourceManager* res)
 {
 	ResourceManager::Model* m = res->GetModelStructFromVector(res->GetMeshData(pathName));
 	model.d3dxMaterials = m->d3dxMaterials;
@@ -41,21 +40,22 @@ bool Object3D::LoadModel(LPSTR pathName, ResourceManager* res)
 }
 void Object3D::DrawModel()
 {
-	D3DXMatrixIdentity(&worldMatrix);
+	if(D3DXMatrixIsIdentity(&worldMatrix))
+	{
+		D3DXMATRIX m_Scaling;
+		D3DXMatrixScaling(&m_Scaling,scaling.x,scaling.y,scaling.z);
 
-	D3DXMATRIX m_Scaling;
-	D3DXMatrixScaling(&m_Scaling,scaling.x,scaling.y,scaling.z);
+		D3DXMATRIX m_Rotation;
+		D3DXMatrixRotationYawPitchRoll(&m_Rotation,rotation.x,rotation.y,rotation.z);
 
-	D3DXMATRIX m_Rotation;
-	D3DXMatrixRotationYawPitchRoll(&m_Rotation,rotation.x,rotation.y,rotation.z);
-
-	D3DXMATRIX m_Translation;
-	D3DXMatrixTranslation(&m_Translation,position.x,position.y,position.z);
+		D3DXMATRIX m_Translation;
+		D3DXMatrixTranslation(&m_Translation,position.x,position.y,position.z);
 	
-	D3DXMATRIX m_rotScale;
-	D3DXMatrixMultiply(&m_rotScale,&m_Rotation,&m_Scaling);
+		D3DXMATRIX m_rotScale;
+		D3DXMatrixMultiply(&m_rotScale,&m_Rotation,&m_Scaling);
 
-	D3DXMatrixMultiply(&worldMatrix,&m_rotScale,&m_Translation);
+		D3DXMatrixMultiply(&worldMatrix,&m_rotScale,&m_Translation);
+	}
 	p_Device->SetTransform(D3DTS_WORLD, &worldMatrix);
 	if(model.mesh != NULL)
 	{
@@ -74,62 +74,82 @@ void Object3D::DrawModel()
 			}
 		}
 	}
+	D3DXMatrixIdentity(&worldMatrix);
 	
 }
-HRESULT Object3D::CalcBoundingBox(ID3DXMesh *pMesh,D3DXVECTOR3* inner,D3DXVECTOR3 *outer)
+D3DXVECTOR3 Object3D::GetBoundingBox()
 {
-	void* ptr = NULL;
-
-	if (!pMesh){return D3DERR_INVALIDCALL;}
-
-	DWORD numVerts=pMesh->GetNumVertices();
-	DWORD fvfSize=D3DXGetFVFVertexSize(pMesh->GetFVF());
-	result = pMesh->LockVertexBuffer(0,&ptr);
-
-	if(result != D3D_OK){return result;}
-
-	result = D3DXComputeBoundingBox((D3DXVECTOR3 *) ptr,numVerts,fvfSize,inner,outer);
-	result = pMesh->UnlockVertexBuffer();
-
-	if (result != D3D_OK){return result;}
-
-	delete ptr;
-	return S_OK;
-}
-HRESULT Object3D::CalcBounds(ID3DXMesh *pMesh, D3DXVECTOR3 *vCenter, float *radius)
-{
-	void* ptr = NULL;
-	if (!pMesh)
+	BYTE* vPtr = NULL;
+	HRESULT result;
+	D3DXVECTOR3 inner = D3DXVECTOR3(0,0,0);
+	D3DXVECTOR3 outer = D3DXVECTOR3(0,0,0);
+	//model.mesh->OptimizeInplace(NULL,NULL,NULL,NULL,NULL);
+	if(model.mesh == NULL)
 	{
-		return D3DERR_INVALIDCALL;
+		return D3DXVECTOR3(0,0,0);
 	}
+	DWORD numVerts=model.mesh->GetNumVertices();
+	DWORD fvf=model.mesh->GetFVF();
 
-	DWORD numVerts=pMesh->GetNumVertices();
-
-	DWORD fvfSize=D3DXGetFVFVertexSize(pMesh->GetFVF());
-
-	result = pMesh->LockVertexBuffer(0,&ptr);
+	result = model.mesh->LockVertexBuffer(D3DLOCK_READONLY,(LPVOID*)&vPtr);
 	if(result != D3D_OK)
 	{
-		return result;
+		return D3DXVECTOR3(0,0,0);
 	}
-	result = D3DXComputeBoundingSphere((D3DXVECTOR3 *) ptr, numVerts, fvfSize, vCenter, radius);
-	
-	centerPos.x = vCenter->x;
-	centerPos.y = vCenter->y;
-	centerPos.z = vCenter->z;
+
+	float* vertices = new float[model.mesh->GetNumVertices()*3];
+	ZeroMemory(vertices,sizeof(vertices));
+	UINT vertSize=D3DXGetFVFVertexSize(fvf);
+	for (DWORD i=0;i<numVerts;i++) 
+	{	
+		D3DXVECTOR3 *ptr=(D3DXVECTOR3 *) vPtr;  //vertices are retrieved correctly
+        vertices[i*3] =		ptr->x * scaling.x;
+        vertices[i*3+1] =	ptr->y * scaling.y;
+        vertices[i*3+2] =	ptr->z * scaling.z;
+		//std::cout << "vertex was: X: " << vertices[i*3] << " Y: " << vertices[i*3+1] << " Z: " << vertices[i*3+2] << std::endl;
+		if(vertices[i*3] < inner.x)
+		{
+			inner.x = vertices[i*3];
+		}
+		if(vertices[i*3] > outer.x)
+		{
+			outer.x = vertices[i*3];
+		}
+		if(vertices[i*3+1] < inner.y)
+		{
+			inner.y = vertices[i*3+1];
+		}
+		if(vertices[i*3+1] > outer.y)
+		{
+			outer.y = vertices[i*3+1];
+		}
+		if(vertices[i*3+2] < inner.z)
+		{
+			inner.z = vertices[i*3+2];
+		}
+		if(vertices[i*3+2] > outer.z)
+		{
+			outer.z = vertices[i*3+2];
+		}
+
+		vPtr+=vertSize;
+	}
+	float xDistance = (abs(inner.x) + abs(outer.x))/2;
+	float yDistance = (abs(inner.y) + abs(outer.y))/2;
+	float zDistance = (abs(inner.z) + abs(outer.z))/2;
+
+	result = model.mesh->UnlockVertexBuffer();
+	//result = D3DXComputeBoundingBox((D3DXVECTOR3*)vertices,numVerts,sizeof(D3DXVECTOR3),&inner,&outer);
+
 	if (result != D3D_OK)
 	{
-		return result;
+		return D3DXVECTOR3(0,0,0);
 	}
-	result = pMesh->UnlockVertexBuffer();
-	if (result != D3D_OK)
-	{
-		return result;
-	}
-	delete ptr;
-	return S_OK;
+
+	return D3DXVECTOR3(xDistance,yDistance,zDistance);
 }
+
+
 void Object3D::SetPosition(float x,float y,float z)
 {
 	position.x = x;
@@ -147,95 +167,4 @@ void Object3D::SetRotation(float x,float y,float z)
 	rotation.x = x;
 	rotation.y = y;
 	rotation.z = z;
-}
-HRESULT Object3D::NormalizeMesh(float scaleToX, float scaleToY, float scaleToZ, bool bCenter)
-{
-	D3DXVECTOR3 vCenter;
-	float radius;
-	result = CalcBounds(model.mesh,&vCenter,&radius);
-	// calculate bounds of mesh
-	if (result != D3D_OK)
-	{
-		return result;
-	}
-
-	// calculate scaling factor
-	float scaleX=scaleToX/radius;
-	float scaleY=scaleToY/radius;
-	float scaleZ=scaleToZ/radius;
-
-	// calculate offset if centering requested
-	D3DXVECTOR3 vOff;
-	if (bCenter) 
-	{
-		vOff=-vCenter;
-	}
-	else
-	{
-		vOff=D3DXVECTOR3(0.0f,0.0f,0.0f);
-	}
-
-	// scale and offset mesh
-	return ScaleMesh(model.mesh,scaleX,scaleY,scaleZ,&vOff);
-}
-HRESULT Object3D::ScaleMesh(ID3DXMesh *pMesh, float scaleX,float scaleY,float scaleZ, D3DXVECTOR3* offset)
-{
-	BYTE* ptr = NULL;
-	D3DXVECTOR3 vOff;
-
-	// return failure if no mesh pointer set
-	if (!pMesh)
-		return D3DERR_INVALIDCALL;
-
-	// select default or specified offset vector
-	if (offset)
-	{
-		vOff=*offset;
-	}
-	else
-	{
-		vOff=D3DXVECTOR3(0.0f,0.0f,0.0f);
-	}
-
-	// get the face count
-	DWORD numVerts=pMesh->GetNumVertices();
-
-	// get the FVF flags
-	DWORD fvf=pMesh->GetFVF();
-
-	// calculate vertex size
-	DWORD vertSize=D3DXGetFVFVertexSize(fvf);
-
-	// lock the vertex buffer
-	result = pMesh->LockVertexBuffer(0,(LPVOID*)&ptr);
-	if(result != D3D_OK)
-	{
-		return result;
-	}
-
-	// loop through the vertices
-	for (DWORD i=0;i<numVerts;i++) 
-	{
-		// get pointer to location
-		D3DXVECTOR3 *vPtr=(D3DXVECTOR3 *) ptr;
-
-		// scale the vertex
-		*vPtr+=vOff;
-		vPtr->x*=scaleX;
-		vPtr->y*=scaleY;
-		vPtr->z*=scaleZ;
-
-		// increment pointer to next vertex
-		ptr+=vertSize;
-	}
-
-	// unlock the vertex buffer
-	result = pMesh->UnlockVertexBuffer();
-	if (result != D3D_OK)
-	{
-		return result;
-	}
-	// return success to caller
-	delete ptr;	
-	return S_OK;
 }

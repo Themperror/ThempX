@@ -2,7 +2,8 @@
 #define _RESOURCEMANAGER_H_
 
 #define ToRadian 0.0174532925f
-
+#define ToDegrees 57.2957795f
+#define PI 3.1415926f
 #include <d3dx9.h>
 #include <d3d9.h>
 #include <vector>
@@ -11,15 +12,26 @@
 #include <stdlib.h>
 #include <D3DX9Mesh.h>
 #include <string>
-//#include "GUI.h"
-//#include "ThempX.h"
-//#include "SoundHandler.h"
-//#include "Game.h"
+#include "SoundHandler.h"
 
 class ResourceManager
 {
 	
 public:
+	struct DataStruct
+	{
+		bool loop;
+		bool lockCursor;
+		bool changeDisplay;
+		bool windowed;
+		int windowSizeX;
+		int windowSizeY;
+		int renderSizeX;
+		int renderSizeY;
+		int devmodeIndex;
+		D3DPRESENT_PARAMETERS d3dxpresentationparams;
+		bool applicationActive;
+	};
 	struct Model
 	{
 		LPD3DXMESH mesh;
@@ -63,8 +75,8 @@ public:
 	
 	ResourceManager(LPDIRECT3DDEVICE9 d3d_Device, HWND handle);
 	void ReleaseResources();
-	int GetMeshData(char* name);
-	LPDIRECT3DTEXTURE9 GetTexture(char* name);
+	int GetMeshData(std::string mName);
+	LPDIRECT3DTEXTURE9 GetTexture(std::string tName);
 	inline LPDIRECT3DDEVICE9 GetDevice()
 	{
 		return p_Device;
@@ -73,16 +85,6 @@ public:
 	{
 		return wHandle;
 	}
-	/*
-	inline D3DXMATRIX* GetCameraView()
-	{
-		return &cam->GetView();
-	}
-	inline void SetCamera(Camera* camPtr)
-	{
-		cam = camPtr;
-	}
-	*/
 	inline void GetDesktopResolution(int& x, int& y)
 	{
 		RECT desktop;
@@ -100,6 +102,10 @@ public:
 	{
 		screenWidth = x;
 		screenHeight = y;
+	}
+	inline bool IsFullscreen()
+	{
+		return !data->windowed;
 	}
 	inline int GetScreenHeight()
 	{
@@ -155,7 +161,6 @@ public:
 	}
 	inline void LostDeviceAllText()
 	{
-		std::cout << "Text device lost" << std::endl;
 		for(unsigned int i =0;i<texts.size();i++)
 		{
 			texts.at(i)->LostDevice();
@@ -163,7 +168,6 @@ public:
 	}
 	inline void ResetDeviceAllText()
 	{
-		std::cout << "Text device reset" << std::endl;
 		for(unsigned int i =0;i<texts.size();i++)
 		{
 			texts.at(i)->ResetDevice();
@@ -195,7 +199,7 @@ public:
 	{
 		for(unsigned int i =0; i < devmodes.size();i++)
 		{
-			if(devmodes.at(i).dmPanningWidth == width && devmodes.at(i).dmPelsHeight == height)
+			if(devmodes.at(i).dmPelsWidth == width && devmodes.at(i).dmPelsHeight == height)
 			{
 				return i;
 			}
@@ -210,42 +214,80 @@ public:
 	{
 		return cameraCircle;
 	}
-	//inline void SetGUI(GUI* g)
-	//{
-	//	gui = g;
-	//}
-	//inline GUI* getGUI()
-	//{
-	//	return gui;
-	//}
+	inline std::string LowCaseString(std::string string)
+	{
+		std::string newString = string;
+		for(DWORD i = 0; i < string.size(); i++)
+		{
+			newString[i] = (char)tolower(string[i]);
+		}
+		return newString;
+	}
+	inline void SetData(DataStruct* datas) //ONLY USE ONCE IN THEMPX.CPP CONSTRUCTOR
+	{
+		if(!setData)
+		{
+			data = datas;
+			setData = true;
+		}		
+	}
+	inline void SetSoundHandler(SoundHandler* s)
+	{
+		if(!setSound)
+		{
+			soundHandler = s;
+			setSound = true;
+		}
+	}
+	inline SoundHandler* GetSoundHandler()
+	{
+		return soundHandler;
+	}
+	inline void ClearConsole()
+	{
+		COORD topLeft  = { 0, 0 };
+		HANDLE console = GetStdHandle(STD_OUTPUT_HANDLE);
+		CONSOLE_SCREEN_BUFFER_INFO screen;
+		DWORD written;
+
+		GetConsoleScreenBufferInfo(console, &screen);
+		FillConsoleOutputCharacterA(
+			console, ' ', screen.dwSize.X * screen.dwSize.Y, topLeft, &written
+		);
+		FillConsoleOutputAttribute(
+			console, FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_BLUE,
+			screen.dwSize.X * screen.dwSize.Y, topLeft, &written
+		);
+		SetConsoleCursorPosition(console, topLeft);
+	}
+	inline void GetRenderingSize(int* x, int* y)
+	{
+		*x = data->renderSizeX;
+		*y = data->renderSizeY;
+	}
 
 private:
-	
-	
 	struct Quad
 	{
 		LPDIRECT3DTEXTURE9 texture;
 		char* textureName;
 	};
+	bool setData;
+	bool setSound;
 	std::vector<TextData*> texts;
 	std::vector<Model> models;
 	std::vector<Quad> quads;
 	std::vector<DEVMODE> devmodes;
 	std::vector<LPD3DXFONT> fonts;
-	bool LoadQuadTexture(char* path);
-	bool CheckAvailableTexture(char* name);
-	bool CheckAvailableModel(char* name);
+	SoundHandler* soundHandler;
+	bool LoadQuadTexture(std::string path);
+	bool CheckAvailableTexture(std::string name);
+	bool CheckAvailableModel(std::string name);
 	int screenWidth,screenHeight;
 	D3DXVECTOR3 cameraCircle;
+	DataStruct* data;
 	//easy access classes and variables
 	HWND wHandle;
 	LPDIRECT3DDEVICE9 p_Device;
-	//Camera* cam;
-	//Game* game;
-	//ThempX* engine;
-	//SoundHandler* soundHandler;
-	//InputHandler* inputHandler;
-
-	
 };
 #endif

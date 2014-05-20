@@ -26,6 +26,7 @@
 #include "../Headers/Camera.h"
 #include "../Headers/TriggerBox.h"
 #include "../Headers/Menu.h"
+#include "../Headers/Enemy.h"
 
 #include <iostream>
 #include <ostream>
@@ -42,21 +43,6 @@ using namespace std;
 class Game
 {
 public:
-
-	struct DataStruct
-	{
-		bool loop;
-		bool lockCursor;
-		bool changeDisplay;
-		bool windowed;
-		int windowSizeX;
-		int windowSizeY;
-		int renderSizeX;
-		int renderSizeY;
-		int devmodeIndex;
-		D3DPRESENT_PARAMETERS d3dxpresentationparams;
-		bool applicationActive;
-	};
 	struct Item
 	{
 		Object2D* obj2D;
@@ -64,14 +50,27 @@ public:
 		std::string name;
 		TriggerBox* trigger;
 
-		void (Game::*MemberPointerType)(Item* item); //function to execute (LIMITATION: CANNOT RETURN ANYTHING OR ACCEPT ARGUMENTS UNLESS HARDCODED)
+		void (Game::*MemberPointerType1)(Item* item); //function to execute (LIMITATION: CANNOT RETURN ANYTHING OR ACCEPT ARGUMENTS UNLESS HARDCODED)
+		void (Game::*MemberPointerType2)(void);
 		Game* context; //reference to class ("this")
 
 		Item(std::string itemName,void (Game::*MemberFunction)(Item* item) ,Game* gContext, D3DXVECTOR3 pos, D3DXVECTOR3 halfWidthSize)
 		{
 			trigger = new TriggerBox(pos,halfWidthSize);
 			name = itemName;
-			MemberPointerType = MemberFunction;
+			MemberPointerType1 = MemberFunction;
+			MemberPointerType2 = NULL;
+			context = gContext;
+			obj2D = NULL;
+			obj3D = NULL;
+			tBoxVisualized = NULL;
+		}
+		Item(void (Game::*MemberFunction)(void) ,Game* gContext, D3DXVECTOR3 pos, D3DXVECTOR3 halfWidthSize)
+		{
+			trigger = new TriggerBox(pos,halfWidthSize);
+			name = "Trigger";
+			MemberPointerType1 = NULL;
+			MemberPointerType2 = MemberFunction;
 			context = gContext;
 			obj2D = NULL;
 			obj3D = NULL;
@@ -79,9 +78,13 @@ public:
 		}
 		void CheckTrigger(D3DXVECTOR3* pos)
 		{
-			if(trigger->CheckInBox(pos) && MemberPointerType !=NULL)
+			if(trigger->CheckInBox(pos) && MemberPointerType1 !=NULL)
 			{
-				(context->*MemberPointerType)(this);
+				(context->*MemberPointerType1)(this);
+			}
+			else if(trigger->CheckInBox(pos) && MemberPointerType2 !=NULL)
+			{
+				(context->*MemberPointerType2)();
 			}
 		}
 		
@@ -90,12 +93,12 @@ public:
 		{
 			if(obj2D != NULL)
 			{
-				obj2D->SetPosition(trigger->GetPosition());
+				obj2D->SetPosition(&trigger->GetPosition());
 				obj2D->Draw();
 			}
 			else if(obj3D != NULL)
 			{
-				obj3D->SetPosition(trigger->GetPosition());
+				obj3D->SetPosition(&trigger->GetPosition());
 				obj3D->DrawModel();
 			}
 			if(tBoxVisualized != NULL)
@@ -127,7 +130,6 @@ public:
 	};
 	struct Player
 	{
-		
 		Camera* cam;
 		PxController* physicsPlayer;
 
@@ -161,79 +163,6 @@ public:
 			cam->SetPosition(GetD3DXPosition()+D3DXVECTOR3(0,2,0));
 		}
 	};
-	struct Enemy
-	{
-		Enemy()
-		{
-			Nullify();
-		}
-		Object2D* obj;
-		PxRigidActor* actor;
-		float Health;
-		float Damage;
-		bool IsDead;
-		bool PlayAnimAfterCurrent;
-		float lastTimeShot;
-		float shootDelay;
-		float movementSwitchTime;
-		float currentMoveTime;
-		enum EnemyState{Moving,Shooting,Dead,Idle,Damaged};
-		enum MovementState{Forward,Left,Right,Back};
-		EnemyState cState;
-		EnemyState prevState;
-		MovementState cMState;
-		D3DXVECTOR3 originalPos;
-		D3DXVECTOR3 moveDir;
-		D3DXVECTOR3 lookDirection;
-		float colRadius;
-		float colCapsuleHeight;
-		void Move(D3DXVECTOR3 dir, float dT)
-		{
-			obj->position += dir*dT;
-			if(actor->isRigidDynamic() != NULL) actor->isRigidDynamic()->setKinematicTarget(PxTransform(PxVec3(obj->position.x,obj->position.y,obj->position.z)));
-		}
-		void SetCState(EnemyState s)
-		{
-			prevState = cState;
-			cState = s;
-		}
-		void TakeDamage(float damage)
-		{
-			Health -= damage;
-			if(Health <= 0)
-			{
-				obj->PlayAnimation("Death");
-				PlayAnimAfterCurrent = false;
-				IsDead = true;
-			}
-			else
-			{
-				prevState = cState;
-				cState = Damaged;
-				//obj->PlayAnimation("Damage");
-				PlayAnimAfterCurrent = true;
-			}
-		}
-		void Nullify()
-		{
-			Health = 0;
-			Damage = 0;
-			cState = EnemyState::Moving;
-			cMState = MovementState::Forward;
-			lastTimeShot = 2.5f;
-			movementSwitchTime = 0.25f;
-			moveDir = D3DXVECTOR3(0,0,0);
-			currentMoveTime = 0;
-			originalPos = D3DXVECTOR3(0,0,0);
-			shootDelay = 5.0f;
-			obj = NULL;
-			actor = NULL;
-			IsDead = false;
-			colRadius= 0;
-			colCapsuleHeight = 0;
-			PlayAnimAfterCurrent = true;
-		}
-	};
 	struct Model
 	{
 		Model()
@@ -242,6 +171,16 @@ public:
 			actor = NULL;
 		}
 		Object3D* obj;
+		PxRigidActor* actor;
+	};
+	struct Sprite
+	{
+		Sprite()
+		{
+			obj = NULL;
+			actor = NULL;
+		}
+		Object2D* obj;
 		PxRigidActor* actor;
 	};
 	struct Bullet
@@ -318,12 +257,12 @@ public:
 			{
 				if(!playedSound) 
 				{
-					PxExtendedVec3 pPos = context->physics->player->getPosition(); //WTF gaat er fout? hij pakt positie van IETS
+					PxExtendedVec3 pPos = context->physics->player->getPosition();
 					D3DXVECTOR3 dPos = D3DXVECTOR3(pPos.x,pPos.y,pPos.z);
 					//std::cout << "Player Pos X: " << pPos.x << " Y: " << pPos.y << " Z: " << pPos.z << "   Door Pos X: " << obj->position.x << " Y: " << obj->position.y << " Z: " << obj->position.z << std::endl;
-					float DISTANCE = context->Vector3Distance(dPos,obj->position);
+					float DISTANCE = context->Vector3Distance(&dPos,&obj->position);
 					std::cout << "distance was " << DISTANCE << std::endl;
-					if(DISTANCE < 500)
+					if(DISTANCE < 160)
 					{
 						(context->*sound)("DoorDown");
 					}
@@ -388,7 +327,7 @@ public:
 	};
 	struct PhysicsData
 	{
-		enum PhysicsType{Box,Capsule,Sphere,Mesh,Uninitialized};
+		enum PhysicsType{Box,Capsule,Sphere,Mesh,BoundingBox,Uninitialized};
 		PhysicsType cType;
 		DWORD flags; //unused
 		PxVec3 boxHalfWidth;
@@ -449,7 +388,7 @@ public:
 
 	};
 
-	Game(DataStruct* b,HWND windowHandle,ResourceManager* resMan,InputHandler* inputHand,SoundHandler* soundHand, LPDIRECT3DDEVICE9 d3dDev);
+	Game(ResourceManager::DataStruct* b,HWND windowHandle,ResourceManager* resMan,InputHandler* inputHand,SoundHandler* soundHand, LPDIRECT3DDEVICE9 d3dDev);
 	void Update(double deltaTime);
 	void FixedUpdate(double deltaTime);
 	void Render();
@@ -458,13 +397,13 @@ public:
 	void ReloadGUI();
 	void ReleaseEnemy(Enemy* enemy);
 	void RemoveEnemyCollision(Enemy* enemy);
-	void DoAI(float dT);
 	void OpenDoor();
+	void LevelComplete();
 	void PlaceEnemy(std::string textureString, D3DXVECTOR3 position, D3DXVECTOR3 scaling, float xRows,float yRows, float colRadius, float colHeight);
 	bool Create3DObject(bool hasPhysics,Object3DData* data);
-	bool CreateAnimated2DObject(bool hasPhysics, Object2DData* data);
-	bool CreateStatic2DObject(bool hasPhysics, Object2DData* data);
-
+	bool CreateAnimatedSprite(bool hasPhysics, Object2DData* data);
+	bool CreateStaticSprite(bool hasPhysics, Object2DData* data);
+	bool CreateEnemy(bool hasPhysics, Object2DData* data);
 	Object2DData CreateObject2DData(char* filePath,bool hasAnim, D3DXVECTOR3 pos,D3DXVECTOR3 scale, D3DXVECTOR2 rows, PhysicsData pData);
 	Object3DData CreateObject3DData(char* filePath,D3DXVECTOR3 pos,D3DXVECTOR3 scale,D3DXVECTOR3 rot, PhysicsData pData);
 
@@ -486,7 +425,11 @@ public:
 	}
 	inline Object2D* GetLastObject2D()
 	{
-		return spriteObjs.at(spriteObjs.size()-1)->obj;
+		return sprites.at(sprites.size()-1)->obj;
+	}
+	inline Enemy* GetLastEnemy()
+	{
+		return enemies.at(enemies.size()-1);
 	}
 	inline PhysicsData CreatePhysicsData(PxVec3 boxHalf, bool isStatic = true, bool isKinematic = false, DWORD flags = 0)
 	{
@@ -494,7 +437,14 @@ public:
 		data.Nullify();
 		data.isStatic = isStatic;
 		data.isKinematic = isKinematic;
-		data.cType = PhysicsData::PhysicsType::Box;
+		if(boxHalf.x == 0 && boxHalf.y == 0 && boxHalf.z == 0)
+		{
+			data.cType = PhysicsData::PhysicsType::BoundingBox;
+		}
+		else
+		{
+			data.cType = PhysicsData::PhysicsType::Box;
+		}
 		data.boxHalfWidth = boxHalf;
 		return data;
 	}
@@ -526,10 +476,11 @@ public:
 	void PlaySound(std::string name);
 private:
 	//object holders
-	DataStruct* data;
+	ResourceManager::DataStruct* data;
 	int qualityLevel;
 	std::vector<Model*> modelObjs;
-	std::vector<Enemy*> spriteObjs;
+	std::vector<Enemy*> enemies;
+	std::vector<Sprite*> sprites;
 	std::vector<DebugCube*> debugCubes;
 	std::vector<Particle*> particles;
 	std::vector<D3DLIGHT9*> lights;
@@ -549,13 +500,14 @@ private:
 	Menu* menu;
 	Camera* cam;
 	GUI* gui;
-	void LoadLevel();
+	void LoadLevel(char* txtPath);
 	void DestroyLevel();
 	bool wireframe;
 
 	//////game functions and variables
-	Player* player;
 	
+	Player* player;
+	bool levelComplete;
 	//input stuff
 	PxVec3 DoInput(float deltaTime);
 	void HandlePlayerCollisions(PxVec3 moveDir);
@@ -626,7 +578,14 @@ private:
 	{
 		return D3DXVECTOR3(a->x*val,a->y*val, a->z*val);
 	}
-
+	inline PxVec3 ToVec3(D3DXVECTOR3* pos)
+	{
+		return PxVec3(pos->x,pos->y,pos->z);
+	}
+	inline D3DXVECTOR3 ToD3D(PxVec3* pos)
+	{
+		return D3DXVECTOR3(pos->x,pos->y,pos->z);
+	}
 };
 
 #endif

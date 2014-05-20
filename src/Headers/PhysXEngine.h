@@ -7,8 +7,7 @@
 #include "ResourceManager.h"
 #include "DebugCube.h"
 
-//#define DEBUG   //remove line for release
-
+//#define DEBUG //remove line for release
 
 #ifdef DEBUG
 #pragma comment(lib, "PhysX3CHECKED_x86.lib")
@@ -26,7 +25,6 @@
 #pragma comment(lib, "PhysX3_x86.lib")
 #pragma comment(lib, "PhysX3Extensions.lib")
 #endif
-
 
 using namespace physx;
 
@@ -51,15 +49,21 @@ public:
 	physx::PxScene* gScene;
 	physx::PxShape* shape;
 	physx::PxController* player;
-	PxRigidActor* CreateCube(PxVec3 position, PxVec3 rotation, PxVec3 scaling,float mass, bool isStatic = false, bool isKinematic = false);
-	PxRigidActor* CreateSphereCapsule(PxReal radius, PxReal capHeight,PxVec3 position,float mass, bool isStatic, bool isKinematic);
+
+	PxRigidActor* CreateCube(PxVec3 position, PxVec3 rotation, PxVec3 scaling,float mass, bool isStatic = false, bool isKinematic = false, float matStaticFriction = 0.5f, float matDynamicFriction = 0.5f, float matRestitution = 0.5f);
+	PxRigidActor* CreateSphereCapsule(PxReal radius, PxReal capHeight,PxVec3 position,float mass, bool isStatic, bool isKinematic, float matStaticFriction = 0.5f, float matDynamicFriction = 0.5f, float matRestitution = 0.5f);
 	PxRigidActor* ThrowCube(PxVec3 position,PxVec3 force);
+	void CreateUpperAndLowerLimits(PxVec3 lower, PxVec3 upper);
 	void Update(float deltaTime);
-	bool BakeMesh(LPD3DXMESH mesh,PxVec3 scale, bool flipNormals);
+	void Draw(bool drawCubes, bool drawDynamics, bool drawStatics);
+	void DrawBoxes();
+	bool BakeConvexMesh(LPD3DXMESH mesh,PxVec3 scale, bool flipNormals, bool isStatic, float matStaticFriction = 0.5f, float matDynamicFriction = 0.5f, float matRestitution = 0.5f);
+	bool BakeTriangleMesh(LPD3DXMESH mesh, PxVec3 position,PxVec3 scale, bool flipNormals);
 	bool RaycastAny(PxVec3 origin, PxVec3 nDir, float distance);
 	PxRaycastBuffer RaycastSingle(PxVec3 origin, PxVec3 nDir, float distance);
-	//PxProfileZoneManager* profiler;
-	void DrawBoxes();
+	PxRaycastHit* RaycastMultiple(PxVec3 origin, PxVec3 nDir, float distance, PxSceneQueryFilterFlags filters = PxSceneQueryFilterFlag::eSTATIC | PxSceneQueryFilterFlag::eDYNAMIC);
+	void RemoveAllActors();
+	void RemoveAllBoxes();
 	void RemoveActor(PxRigidDynamic* actor);
 	void RemoveActor(PxRigidStatic* actor);
 	inline PxRigidStatic* GetLastStatic()
@@ -82,8 +86,6 @@ public:
 	{
 		if(dynamics.size() > 0)
 		{
-			PxShape* ptr;
-			dynamics.at(dynamics.size()-1)->getShapes(&ptr,256);
 			PxShape* shapes;
 			dynamics.at(dynamics.size()-1)->getShapes(&shapes,sizeof(PxShape));
 			for(unsigned int i = 0; i < dynamics.at(i)->getNbShapes(); i++)
@@ -92,16 +94,12 @@ public:
 			}
 			dynamics.at(dynamics.size()-1)->release();
 			dynamics.erase(dynamics.end()-1);
-			dynamicVisualCubes.at(dynamicVisualCubes.size()-1)->Release();
-			dynamicVisualCubes.erase(dynamicVisualCubes.end()-1);
 		}
 	}
 	inline void DeleteLastStatic()
 	{
 		if(statics.size() > 0)
 		{
-			PxShape* ptr;
-			statics.at(statics.size()-1)->getShapes(&ptr,256);
 			PxShape* shapes;
 			statics.at(statics.size()-1)->getShapes(&shapes,sizeof(PxShape));
 			for(unsigned int i = 0; i < statics.at(i)->getNbShapes(); i++)
@@ -110,8 +108,6 @@ public:
 			}
 			statics.at(statics.size()-1)->release();
 			statics.erase(statics.end()-1);
-			staticVisualCubes.at(staticVisualCubes.size()-1)->Release();
-			staticVisualCubes.erase(staticVisualCubes.end()-1);
 		}
 	}
 private:
@@ -121,9 +117,9 @@ private:
 	PxMaterial* defaultMaterial;
 	std::vector<PxRigidStatic*> statics;
 	std::vector<PxRigidDynamic*> dynamics;
-	std::vector<DebugCube*> staticVisualCubes;
+	std::vector<PxRigidDynamic*> thrownCubes;
+	std::vector<PxMaterial*> mats;
 	std::vector<DebugCube*> dynamicVisualCubes;
-
 	
 };
 #endif

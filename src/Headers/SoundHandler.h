@@ -20,9 +20,20 @@ public:
 	void ShutdownDirectSound();
 	bool Initialize(HWND);
 	
-	bool LoadWaveFile(char* path, char* name, DWORD samplesPerSec,WORD bitsPerSample, WORD channels);
-	bool PlayWaveFile(char* name, DWORD volume = 96);
+	bool LoadWaveFile(std::string path, std::string tag, DWORD samplesPerSec,WORD bitsPerSample, WORD channels);
+	bool PlayWaveFile(std::string sName, DWORD volume = 96);
 	bool PlayRandom(std::vector<std::string>* names, DWORD volume = 96);
+	bool IsPlaying(std::string sName);
+
+	inline std::string LowCaseString(std::string string)
+	{
+		std::string newString = string;
+		for(DWORD i = 0; i < string.size(); i++)
+		{
+			newString[i] = (char)tolower(string[i]);
+		}
+		return newString;
+	}
 
 private:
 	struct WaveHeaderType
@@ -57,8 +68,8 @@ private:
 		WORD channels;
 		std::vector<IDirectSoundBuffer*> extraSounds;
 		IDirectSoundBuffer8* soundBuffer;
-		char* name;
-		char* tag; //unused atm
+		std::string name;
+		std::string tag; //unused atm
 		DSBUFFERDESC bufferDesc;
 	};
 

@@ -1,0 +1,2 @@
+AnimationName		startposX	endposX		startposY	endposY  (animaties zijn zero based) 	AnimationSpeed loop
+Complete		0		1		0		1					0.5 	    	0

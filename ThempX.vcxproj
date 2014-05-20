@@ -13,6 +13,7 @@
   <ItemGroup>
     <ClInclude Include="src\Headers\Camera.h" />
     <ClInclude Include="src\Headers\DebugCube.h" />
+    <ClInclude Include="src\Headers\Enemy.h" />
     <ClInclude Include="src\Headers\FirstPersonPlayer.h" />
     <ClInclude Include="src\Headers\Game.h" />
     <ClInclude Include="src\Headers\GUI.h" />
@@ -32,6 +33,7 @@
   <ItemGroup>
     <ClCompile Include="src\CPP\Camera.cpp" />
     <ClCompile Include="src\CPP\DebugCube.cpp" />
+    <ClCompile Include="src\CPP\Enemy.cpp" />
     <ClCompile Include="src\CPP\FirstPersonPlayer.cpp" />
     <ClCompile Include="src\CPP\Game.cpp" />
     <ClCompile Include="src\CPP\GUI.cpp" />

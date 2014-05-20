@@ -21,12 +21,12 @@ Menu::Menu(bool* loop, ResourceManager* res, InputHandler* inputHandler)
 	background->rect.y = -1;
 	background->vBuffer = CreateQuadVBuffer(background);
 	background->iBuffer = CreateQuadIndices();
-	StartButton		= new Button(true, D3DXVECTOR2(res->GetScreenWidth()/2-64,res->GetScreenHeight()/2-height+32),D3DXVECTOR2(128,64),"Resources/GUI/Start.png",&Menu::StartGame,this);
-	CreditsButton	= new Button(true, D3DXVECTOR2(res->GetScreenWidth()/2-64,res->GetScreenHeight()/2-height+96+spacing),D3DXVECTOR2(128,64),"Resources/GUI/Credits.png",&Menu::Credits,this);
-	ResumeButton	= new Button(false, D3DXVECTOR2(res->GetScreenWidth()/2-64,res->GetScreenHeight()/2-height+96+spacing),D3DXVECTOR2(128,64),"Resources/GUI/Resume.png",&Menu::StartGame,this);
-	QuitButton		= new Button(true, D3DXVECTOR2(res->GetScreenWidth()/2-64,res->GetScreenHeight()/2-height+160+(spacing*2)),D3DXVECTOR2(128,64),"Resources/GUI/Quit.png",&Menu::Quit,this);
-	BackButton		= new Button(false, D3DXVECTOR2(res->GetScreenWidth()/2-64,res->GetScreenHeight()/2-height+160+(spacing*2)),D3DXVECTOR2(128,64),"Resources/GUI/Back.png",&Menu::Back,this);
-	text = resources->GetText(resources->CreateTextObject("Arial","              Developer: Floyd \n               Spriter: Gerson \n          Texture Artist: Gerson \n              3D Artist: Floyd \n Music done by: Other game companies",20,32,30,400,200,D3DXCOLOR(0xFFFF0000)));
+	StartButton		= new Button(true, D3DXVECTOR2(res->GetScreenWidth()/2-128,res->GetScreenHeight()/2-height+32),D3DXVECTOR2(256,64),"Resources/GUI/Start.png",&Menu::StartGame,this);
+	CreditsButton	= new Button(true, D3DXVECTOR2(res->GetScreenWidth()/2-128,res->GetScreenHeight()/2-height+96+spacing),D3DXVECTOR2(256,64),"Resources/GUI/Credits.png",&Menu::Credits,this);
+	ResumeButton	= new Button(false, D3DXVECTOR2(res->GetScreenWidth()/2-128,res->GetScreenHeight()/2-height+96+spacing),D3DXVECTOR2(256,64),"Resources/GUI/Resume.png",&Menu::StartGame,this);
+	QuitButton		= new Button(true, D3DXVECTOR2(res->GetScreenWidth()/2-128,res->GetScreenHeight()/2-height+160+(spacing*2)),D3DXVECTOR2(256,64),"Resources/GUI/Quit.png",&Menu::Quit,this);
+	BackButton		= new Button(false, D3DXVECTOR2(res->GetScreenWidth()/2-128,res->GetScreenHeight()/2-height+160+(spacing*2)),D3DXVECTOR2(256,64),"Resources/GUI/Back.png",&Menu::Back,this);
+	text = resources->GetText(resources->CreateTextObject("Arial","              Developer: Floyd \n               Spriter: Gerson \n          Texture Artist: Gerson \n              3D Artist: Floyd \n Music done by: Other game companies",20,32,30,400,200,D3DXCOLOR(0xFFFFFFFF)));
 	text->render = false;
 	
 	buttons.push_back(StartButton);
@@ -48,6 +48,8 @@ Menu::~Menu()
 }
 void Menu::ShowMenu(MenuState state)
 {
+	ShowCursor(true);
+	resources->GetDevice()->SetRenderState(D3DRS_FILLMODE,D3DFILL_SOLID);
 	mState = state;
 	LARGE_INTEGER currentTicks;
 	LARGE_INTEGER currentFrequency;
@@ -86,9 +88,19 @@ void Menu::ShowMenu(MenuState state)
 	}
 
 	started = false;
-	
+	MSG msg;
 	while(!started)
-	{
+	{		
+		while(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+        {
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);	
+			if(msg.message == WM_QUIT)
+			{
+				started = false;
+				*doLoop = false;
+			}
+        }
 		QueryPerformanceFrequency(&currentFrequency);
 		QueryPerformanceCounter(&currentTicks);
 		currentTicks.QuadPart = currentTicks.QuadPart*deltaTimerPrecision / currentFrequency.QuadPart;
@@ -101,6 +113,8 @@ void Menu::ShowMenu(MenuState state)
 		}
 		Sleep(1);
 	}
+	
+	ShowCursor(false);
 }
 void Menu::Back()
 {

@@ -23,6 +23,36 @@ bool SoundHandler::Initialize(HWND hwnd)
 	}
 	return true;
 }
+bool SoundHandler::IsPlaying(std::string tag)
+{
+	std::string name = LowCaseString(tag);
+	bool isPlaying = false;
+	for(unsigned int i = 0; i < currentlyPlayingSounds.size();i++)
+	{
+		if(currentlyPlayingSounds.at(i)->name.compare(name) == 0)
+		{
+			DWORD status = NULL;
+			currentlyPlayingSounds.at(i)->soundBuffer->GetStatus(&status);
+			if(status & DSBSTATUS_PLAYING)
+			{
+				isPlaying = true;
+			}
+		}
+	}
+	for(unsigned int i = 0; i < sounds.size();i++)
+	{
+		if(sounds.at(i)->name.compare(name) == 0)
+		{
+			DWORD status = NULL;
+			sounds.at(i)->soundBuffer->GetStatus(&status);
+			if(status & DSBSTATUS_PLAYING)
+			{
+				isPlaying = true;
+			}
+		}
+	}
+	return isPlaying;
+}
 bool SoundHandler::InitializeDirectSound(HWND hwnd)
 {
 	HRESULT result;
@@ -73,7 +103,6 @@ bool SoundHandler::InitializeDirectSound(HWND hwnd)
 	*/
 	return true;
 }
-
 void SoundHandler::ShutdownDirectSound()
 {
 	// Release the primary sound buffer pointer.
@@ -109,18 +138,18 @@ void SoundHandler::ShutdownDirectSound()
  
 	return;
 }
-
-bool SoundHandler::LoadWaveFile(char* filename,char* name, DWORD samplesPerSec,WORD bitsPerSample, WORD channels)
+bool SoundHandler::LoadWaveFile(std::string filename,std::string tag, DWORD samplesPerSec,WORD bitsPerSample, WORD channels)
 {
 	if(initialized)
 	{
+		std::string name = LowCaseString(tag);
 		SoundData* data = new SoundData();
 		data->bitsPerSample = bitsPerSample;
 		data->samplesPerSec = samplesPerSec;
 		data->channels = channels;
 		data->name = name;
 		data->soundBuffer = NULL;
-		data->tag = NULL;
+		data->tag = "";
 
 		int error;
 		FILE* filePtr;
@@ -134,21 +163,16 @@ bool SoundHandler::LoadWaveFile(char* filename,char* name, DWORD samplesPerSec,W
 		unsigned char *bufferPtr;
 		unsigned long bufferSize;
 
-		error = fopen_s(&filePtr, filename, "rb");
+		error = fopen_s(&filePtr, _strdup(filename.c_str()), "rb");
 		if(error != 0 || filePtr == NULL)
 		{
 			delete data;
-			std::cout << "Opening file  = " << 0 << std::endl;
 			return false;
-		}
-		else
-		{
-			std::cout << "Opening file  = " << 1 << std::endl;
 		}
  
 		// Read in the wave file header.
 		count = fread(&waveFileHeader, sizeof(waveFileHeader), 1, filePtr);
-		std::cout << "reading file  = " << count << std::endl;
+		//std::cout << "reading file  = " << count << std::endl;
 		if(count != 1)
 		{
 			return false;
@@ -302,15 +326,14 @@ bool SoundHandler::LoadWaveFile(char* filename,char* name, DWORD samplesPerSec,W
 	}		   
 	return false;
 }
-
 bool SoundHandler::PlayRandom(std::vector<std::string>* names, DWORD volume)
 {
 	int r = rand() % names->size();
 	return PlayWaveFile(_strdup(names->at(r).c_str()),volume);
-	
 }
-bool SoundHandler::PlayWaveFile(char* name, DWORD volume)
+bool SoundHandler::PlayWaveFile(std::string sName, DWORD volume)
 {
+	std::string name = LowCaseString(sName);
 	if(initialized)
 	{
 		for(unsigned int i = 0; i < currentlyPlayingSounds.size();i++)
@@ -330,7 +353,7 @@ bool SoundHandler::PlayWaveFile(char* name, DWORD volume)
 		}
 		for(unsigned int i = 0; i < sounds.size();i++) 
 		{
-			if(strcmp(name,sounds.at(i)->name) == 0)
+			if(name.compare(sounds.at(i)->name) == 0)
 			{
 				DWORD status = NULL;
 				sounds.at(i)->soundBuffer->GetStatus(&status);
@@ -372,68 +395,3 @@ bool SoundHandler::PlayWaveFile(char* name, DWORD volume)
 	}
 	return false;
 }
-/*
-bool SoundHandler::PlayWaveFile(char* name)
-{
-	if(initialized)
-	{
-		for(unsigned int i =0; i<sounds.size();i++) 
-		{
-			if(name == sounds.at(i).name)
-			{
-				DWORD status = NULL;
-				sounds.at(i).soundBuffer->GetStatus(&status);
-				if(status & DSBSTATUS_PLAYING)
-				{
-					IDirectSoundBuffer* duplicate;
-					m_DirectSound->DuplicateSoundBuffer(sounds.at(i).soundBuffer,&duplicate);
-					sounds.at(i).extraSounds.push_back(duplicate);
-					HRESULT result;
-					result = duplicate->SetCurrentPosition(0);
-					result = duplicate->SetVolume(DSBVOLUME_MAX);
-					result = duplicate->Play(0, 0, 0);
-					return true;
-				}
-				else
-				{
-					HRESULT result;
-					// Set volume of the buffer to 100%.
-					result = sounds.at(i).soundBuffer->SetVolume(DSBVOLUME_MAX);
-					if(FAILED(result))
-					{
-						return false;
-					}
- 
-					// Play the contents of the secondary sound buffer.
-					result = sounds.at(i).soundBuffer->Play(0, 0, 0);
-					if(FAILED(result))
-					{
-						return false;
-					}
-					return true;
-				}
-			}
-			DWORD status = NULL;
-			sounds.at(i).soundBuffer->GetStatus(&status);
-			for(unsigned int j = 0; j<sounds.at(i).extraSounds.size();j++)
-			{
-				if(status & DSBSTATUS_PLAYING)
-				{
-					if(sounds.at(i).extraSounds.at(j) != NULL)
-					{
-						DWORD status = NULL;
-						sounds.at(i).extraSounds.at(j)->GetStatus(&status);
-						if(!status & DSBSTATUS_PLAYING)
-						{
-							sounds.at(i).extraSounds.at(j)->Release();
-							sounds.at(i).extraSounds.at(j) = NULL;
-							sounds.at(i).extraSounds.erase(sounds.at(i).extraSounds.begin()+j);
-						}
-					}
-				}
-			}
-		}
-	}
-	return false;
-}
-*/

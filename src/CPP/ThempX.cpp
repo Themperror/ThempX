@@ -78,13 +78,16 @@ void ThempX::SetDisplayModeFullScreen(int devmodeIndex)
 		return;
 	}
 	ChangeDisplaySettings(&resources->GetDevMode(devmodeIndex),CDS_FULLSCREEN);
-
-	Sleep(200);
-	//SetWindowLong(handleWindow,0,WS_EX_TOPMOST | WS_POPUP);
+	
 	SetWindowPos(handleWindow,HWND_TOPMOST,0,0, wSizeX,wSizeY, SWP_NOZORDER | SWP_SHOWWINDOW);
+	Sleep(200);
+	
+	ChangeDisplaySettings(&resources->GetDevMode(devmodeIndex),CDS_FULLSCREEN);
+	SetWindowPos(handleWindow,HWND_TOPMOST,0,0, wSizeX,wSizeY, SWP_NOZORDER | SWP_SHOWWINDOW);
+	Sleep(200);
 
-	dx_PresParams.BackBufferHeight = wSizeY;
-	dx_PresParams.BackBufferWidth = wSizeX;
+	dx_PresParams.BackBufferHeight = SRenderSizeY;
+	dx_PresParams.BackBufferWidth = SRenderSizeX;
 	dx_PresParams.Windowed = FALSE;
 	dx_PresParams.FullScreen_RefreshRateInHz = devmode.dmDisplayFrequency;
 	dx_PresParams.BackBufferFormat = D3DFMT_A8R8G8B8;
@@ -104,7 +107,7 @@ void ThempX::SetDisplayModeFullScreen(int devmodeIndex)
 	}
 	
 	data.d3dxpresentationparams = dx_PresParams;
-	resources->SetScreenResolution(wSizeX,wSizeY);	
+	resources->SetScreenResolution(SRenderSizeX,SRenderSizeY);
 }
 void ThempX::GetListofDisplayModes()
 {
@@ -156,7 +159,7 @@ HWND ThempX::NewWindow(LPCTSTR windowName,int posX,int posY, int sizeX,int sizeY
 	wc.hbrBackground = GetSysColorBrush(COLOR_BTNFACE);
 	wc.lpszClassName = "ThempX";
 	wc.lpszMenuName = NULL;
-	wc.hIconSm = LoadIcon(NULL,IDI_APPLICATION);
+	wc.hIconSm = LoadIcon(NULL,IDI_WINLOGO);
 		
 	RegisterClassEx(&wc);
 	
@@ -195,22 +198,26 @@ void ThempX::PreCreateWindow()
 	
 	wSizeX = 800;
 	wSizeY = 600;
-
+	SRenderSizeX = 800;
+	SRenderSizeY = 600;
 	handleWindow = NewWindow("The Morph",dHorizontal/2-(wSizeX/2),dVertical/2-(wSizeY/2),wSizeX,wSizeY,true);
-
-
+#ifdef DEBUG
 	AllocConsole();
+	SetConsoleTitle("ThempX Debug Console");
+
 	freopen("CONOUT$", "w", stdout);
+#endif
 
 }
 
 //Entry point of the engine (This class is created in main.cpp where the program entrypoint is).
 ThempX::ThempX(HINSTANCE hInstance,LPSTR lpCmdLine)
 {
+	
+	ShowCursor(false);
 	PreCreateWindow();
 	p_Device = InitializeDevice(handleWindow);
 	SetDefaultRenderStateSettings();
-
 	//Render loading screen
 	CreateLoadingScreen();
 	//SetDisplayMode(false,800,600);
@@ -219,7 +226,6 @@ ThempX::ThempX(HINSTANCE hInstance,LPSTR lpCmdLine)
 	resources->SetScreenResolution(wSizeX,wSizeY);
 	inputHandler = new InputHandler(handleWindow);
 	soundHandler = new SoundHandler(handleWindow,44100,16,2);
-	
 	GetListofDisplayModes();
 	//SetDisplayMode(false,320,200,320,200);
 
@@ -233,7 +239,9 @@ ThempX::ThempX(HINSTANCE hInstance,LPSTR lpCmdLine)
 	data.windowSizeX = wSizeX;
 	data.windowSizeY = wSizeY;
 	// Game loop starts here after everything is initialized
-
+	
+	resources->SetSoundHandler(soundHandler);
+	resources->SetData(&data);
 	std::cout << "Initialized OK, starting game..." << std::endl;
 
 	g = new Game(&data,handleWindow,resources,inputHandler,soundHandler,p_Device);
@@ -285,6 +293,10 @@ ThempX::ThempX(HINSTANCE hInstance,LPSTR lpCmdLine)
 			if(data.windowed == true)
 			{
 				SetDisplayModeWindowed(data.windowSizeX,data.windowSizeY,data.renderSizeX,data.renderSizeY);
+				int dHorizontal = 0;
+				int dVertical = 0;
+				resources->GetDesktopResolution(dHorizontal,dVertical);
+				SetWindowPos(handleWindow,HWND_TOPMOST,dHorizontal/2-(data.windowSizeX/2),dVertical/2-(data.windowSizeY/2),data.windowSizeX,data.windowSizeY, NULL);
 			}
 			else
 			{
@@ -325,6 +337,8 @@ ThempX::ThempX(HINSTANCE hInstance,LPSTR lpCmdLine)
 					Update();
 					DrawScene();
 				}*/ //guarded, due to the nature of alt-tabbing and switching screen modes, this was a security to ensure no errors would come from a lost d3ddevice
+				//though you shouldn't be able to lose a device mid-loop code-wise but I'm not sure of that..
+				//so if it ever happens I'll uncomment it, but for now the checkdevice is one of the first things in this loop
 				Update();
 				DrawScene();
 				frames++;
@@ -334,7 +348,7 @@ ThempX::ThempX(HINSTANCE hInstance,LPSTR lpCmdLine)
 			if(cTicks-oTicks > deltaTimerPrecision+((cTicks-oTicks) % deltaTimerPrecision))
 			{
 				std::cout << "FixedUpdate running at "<<realframes <<" times per second"<< std::endl;
-				std::cout << "FPS: " << frames/2 << std::endl;
+				std::cout << "FPS: " << frames << std::endl;
 				frames = 0;
 				realframes = 0;
 				oTicks = cTicks;
@@ -345,7 +359,8 @@ ThempX::ThempX(HINSTANCE hInstance,LPSTR lpCmdLine)
 			Sleep(100);
 		}
     }
-
+	
+	ShowCursor(true);
 	//t.join();
 	//release everything
 	resources->ReleaseResources();

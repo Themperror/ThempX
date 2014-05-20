@@ -33,6 +33,13 @@ public:
 	inline void SetPosition(D3DXVECTOR3 pos)
 	{
 		position = pos;
+
+	}
+	inline void SetPosition(D3DXVECTOR3* pos)
+	{
+		position.x = pos->x;
+		position.y = pos->y;
+		position.z = pos->z;
 	}
 	void SetScale(float x,float y,float z);
 	inline void SetScale(D3DXVECTOR3 scale)
@@ -40,7 +47,7 @@ public:
 		scaling = scale;
 	}
 	void SetRotation(float x,float y,float z);
-
+	D3DXVECTOR3 GetBoundingBox();
 	bool LoadModel(LPSTR pathName, ResourceManager* res);
 	Model model;
 	D3DXMATRIX worldMatrix;
@@ -48,11 +55,6 @@ public:
 	std::string tag;
 private:
 	void InitVars();
-	
-	HRESULT CalcBounds(ID3DXMesh* mesh, D3DXVECTOR3* vCenter, float* radius);
-	HRESULT Object3D::CalcBoundingBox(ID3DXMesh *pMesh,D3DXVECTOR3* inner,D3DXVECTOR3 *outer);
-	HRESULT ScaleMesh(ID3DXMesh *pMesh, float scaleX,float scaleY,float scaleZ, D3DXVECTOR3* offset);
-	HRESULT NormalizeMesh(float scaleToX, float scaleToY, float scaleToZ, bool bCenter);
 	
 	LPDIRECT3DDEVICE9 p_Device;
 

@@ -61,7 +61,7 @@ public:
   
 	Object2D(ResourceManager* res, char* texturePath, D3DXMATRIX* camView);
 	Object2D(ResourceManager* res, char* texturePath, D3DXMATRIX* camView, D3DXVECTOR2 LLPos, D3DXVECTOR2 URPos);
-	Object2D(ResourceManager* res, char* texturePath,D3DXMATRIX* camViewMatrix,int xRowsAnim,int yRowsAnim);
+	Object2D(ResourceManager* res, char* texturePath, D3DXMATRIX* camViewMatrix,int xRowsAnim,int yRowsAnim);
 	D3DXVECTOR3 rotation;
 	D3DXVECTOR3 position;
 	D3DXVECTOR3 scaling;	 
@@ -69,8 +69,10 @@ public:
 
 	void Update(float deltaTime);
 	void SetUVValues();
-	bool PlayAnimation(std::string name);
+	bool PlayAnimation(std::string aName);
+	bool IsAnimFinished(std::string anim);
 	void CheckPlayingAnimation(std::string playAnimFinished);
+	Animation GetAnimation(std::string aName);
 	void Draw(); 
 	
 	bool hasAnimation;
@@ -80,6 +82,12 @@ public:
 	inline void SetPosition(D3DXVECTOR3 pos)
 	{
 		position = pos;
+	}
+	inline void SetPosition(D3DXVECTOR3* pos)
+	{
+		position.x = pos->x;
+		position.y = pos->y;
+		position.z = pos->z;
 	}
 	void SetScale(float x,float y,float z);
 	inline void SetScale(D3DXVECTOR3 scale)
@@ -97,7 +105,6 @@ public:
 	D3DXMATRIX worldMatrix;
 	std::string objName;
 	std::string tag;
-	//linkedphysX obj
 	std::string currentlyPlayingAnimation;
 	
 	inline int GetXRows()
@@ -108,6 +115,15 @@ public:
 	{
 		return yRows;
 	}
+	inline std::string LowCaseString(std::string string)
+	{
+		std::string newString = string;
+		for(DWORD i = 0; i < string.size(); i++)
+		{
+			newString[i] = (char)tolower(string[i]);
+		}
+		return newString;
+	}
 private:
 	void InitVars(); 
 	std::vector<Animation> animations; 
@@ -116,7 +132,6 @@ private:
 	LPDIRECT3DVERTEXBUFFER9 FillCustomVertices(D3DXVECTOR2 LLPos,D3DXVECTOR2 URPos);
 	LPDIRECT3DVERTEXBUFFER9 FillVertices();
 	LPDIRECT3DINDEXBUFFER9 FillIndices();
-
 	
 	void Animate();
 	void LoadAnimation();

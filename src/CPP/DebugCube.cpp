@@ -17,7 +17,7 @@ DebugCube::DebugCube(D3DXVECTOR3 cubePosition,D3DXVECTOR3 cubeRotation, D3DXVECT
 	LLFPos = D3DXVECTOR3(LLFPosition.x,LLFPosition.y,LLFPosition.z);
 	URBPos = D3DXVECTOR3(URBPosition.x,URBPosition.y,URBPosition.z);
 	resource = resources;
-	texture = resources->GetTexture("Resources/Models/CubeRed.png");
+	texture = resources->GetTexture("Resources/Models/Box.png");
 	ZeroMemory(&meshMaterial,sizeof(meshMaterial));
 
 	meshMaterial.Diffuse.a = 255; meshMaterial.Diffuse.r = 128; meshMaterial.Diffuse.g = 128; meshMaterial.Diffuse.b = 128;

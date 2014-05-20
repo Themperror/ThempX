@@ -1,7 +1,6 @@
 #ifndef _THEMPX_H_
 #define _THEMPX_H_
 
-
 #include <Windows.h>
 #include <windowsx.h>
 #include <conio.h>
@@ -32,7 +31,7 @@ class ThempX
 {
 public:
 	LPDIRECT3DDEVICE9 p_Device;
-	Game::DataStruct data;
+	ResourceManager::DataStruct data;
 	MSG input;
 	HWND handleWindow;
 	ThempX(HINSTANCE hInstance,LPSTR lpCmdLine);
@@ -58,6 +57,8 @@ private:
 	void GetListofDisplayModes();
 	Game* g;
 
+	int SRenderSizeX;
+	int SRenderSizeY;
 
 	LARGE_INTEGER fixedFrequency;        // ticks per second
 	LARGE_INTEGER newFixedDelta, oldFixedDelta;           // ticks

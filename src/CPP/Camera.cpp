@@ -9,9 +9,8 @@ Camera::Camera(ResourceManager* res, DWORD cameraModeFlag)
 	angleZ = 0;
 	sensitivity = 0.12f;
 	SetUpCamera(cameraModeFlag);
-	FoV =  D3DX_PI/4;
+	FoV = 1;
 	AspectRatio = 800/600;
-
 }
 
 void Camera::Update(float deltaTime, float mouseInputX,float mouseInputY)

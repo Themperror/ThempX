@@ -4,6 +4,8 @@ ResourceManager::ResourceManager(LPDIRECT3DDEVICE9 d3d_Device, HWND handle)
 {
 	p_Device = d3d_Device;
 	wHandle = handle;
+	setData = false;
+	setSound = false;
 }
 int ResourceManager::CreateTextObject(char* font,char* text,int fontsize, int posXPercentage, int posYPercentage, int widthPercentage, int heightPercentage, D3DXCOLOR color)
 {
@@ -29,7 +31,7 @@ int ResourceManager::CreateTextObject(char* font,char* text,int fontsize, int po
 	{
 		for(unsigned int i = 0; i < texts.size(); i++)
 		{
-			if(strcmp(font,texts.at(i)->font) == 0)
+			if(strcmp(font,texts.at(i)->font) == 0 && texts.at(i)->fontsize == obj->fontsize)
 			{
 				obj->gameFont = texts.at(0)->gameFont;
 				texts.push_back(obj);
@@ -49,39 +51,48 @@ void ResourceManager::ReleaseResources()	//main data release
 		models.at(i).materialBuffer = NULL;
 		models.at(i).mesh->Release();
 		models.at(i).mesh = NULL;
+		models.erase(models.begin()+i);
 	}
+	models.clear();
 	for(unsigned int i=0;i<quads.size();i++)
 	{
 		if(quads.at(i).texture != NULL)
 		{
 			quads.at(i).texture->Release();
 			quads.at(i).texture = NULL;
+			quads.erase(quads.begin()+i);
 		}
 	}
+	quads.clear();
 	for(unsigned int i = 0; i < fonts.size(); i++)
 	{
 		fonts.at(i)->Release();
 		fonts.at(i) = NULL;
+		fonts.erase(fonts.begin()+i);
 	}
+	fonts.clear();
+	
 }
-bool ResourceManager::CheckAvailableTexture(char* name)
+bool ResourceManager::CheckAvailableTexture(std::string tName)
 {
+	std::string name = LowCaseString(tName);
 	for(unsigned int i = 0; i < quads.size(); i++)
 	{
-		if(strcmp(quads.at(i).textureName,name)== 0)
+		if(strcmp(quads.at(i).textureName,_strdup(name.c_str()))== 0)
 		{
 			return true;
 		}
 	}
 	return false;
 }
-LPDIRECT3DTEXTURE9 ResourceManager::GetTexture(char* name)
+LPDIRECT3DTEXTURE9 ResourceManager::GetTexture(std::string tName)
 {
+	std::string name = LowCaseString(tName);
 	if(CheckAvailableTexture(name))
 	{
 		for(unsigned int  i =0;i< quads.size();i++)
 		{
-			if(strcmp(quads.at(i).textureName,name)== 0)
+			if(strcmp(quads.at(i).textureName,_strdup(name.c_str()))== 0)
 			{
 				//std::cout << "texture found and reused" << std::endl;
 				return quads.at(i).texture;
@@ -91,9 +102,9 @@ LPDIRECT3DTEXTURE9 ResourceManager::GetTexture(char* name)
 	else
 	{
 		Quad quad;
-		quad.textureName = name;
+		quad.textureName = _strdup(name.c_str());
 		quad.texture = NULL;
-		HRESULT result = D3DXCreateTextureFromFile(p_Device, name,&quad.texture);
+		HRESULT result = D3DXCreateTextureFromFile(p_Device, _strdup(name.c_str()),&quad.texture);
 		switch(result)
 		{
 		case D3DERR_NOTAVAILABLE: std::cout << "Texture not found/available" << std::endl; break;
@@ -113,21 +124,21 @@ LPDIRECT3DTEXTURE9 ResourceManager::GetTexture(char* name)
 			MessageBox(wHandle,"Texture was not found", "ResourceManager::GetTexture()",MB_OK);
 			return NULL;
 		}
-	} 
-
+	}
 	//should be impossible to come here
 	MessageBox(wHandle,"No texture returned","ResourceManager::GetTexture()",MB_OK);
 	return NULL;
 }
-int ResourceManager::GetMeshData(char* name)
+int ResourceManager::GetMeshData(std::string mName)
 {
+	std::string name = LowCaseString(mName);
 	if(CheckAvailableModel(name))
 	{
 		for(unsigned int i = 0; i < models.size(); i++)
 		{
-			if(strcmp(models.at(i).meshName ,name) == 0)
+			if(strcmp(models.at(i).meshName ,_strdup(name.c_str())) == 0)
 			{
-				//std::cout << "model found and reused  "<<std::endl;
+				//model was found and will be re-used
 				return i;
 			}
 		}
@@ -137,7 +148,7 @@ int ResourceManager::GetMeshData(char* name)
 	{
 		Model model;
 		model.mesh = NULL;
-		HRESULT result = D3DXLoadMeshFromX(name, D3DXMESH_SYSTEMMEM,p_Device, NULL, &model.materialBuffer,NULL, &model.numMaterials,  &model.mesh );
+		HRESULT result = D3DXLoadMeshFromX(_strdup(name.c_str()), D3DXMESH_SYSTEMMEM,p_Device, NULL, &model.materialBuffer,NULL, &model.numMaterials,  &model.mesh );
 		switch(result)
 		{
 			case D3DERR_INVALIDCALL: std::cout << "invalid call" << std::endl; break;
@@ -167,18 +178,19 @@ int ResourceManager::GetMeshData(char* name)
 				model.meshTextures[i] =  GetTexture(_strdup(texturePath.c_str()));
 			}
 		}
-		model.meshName = name;
+		model.meshName = _strdup(name.c_str());
 		models.push_back(model);
 		return models.size()-1;
 	}
 	MessageBox(wHandle,"No mesh returned.","ResourceManager::GetMesh()",MB_OK);
 	return false;
 }
-bool ResourceManager::CheckAvailableModel(char* name)
+bool ResourceManager::CheckAvailableModel(std::string mName)
 {
+	std::string name = LowCaseString(mName);
 	for(unsigned int i = 0; i < models.size(); i++)
 	{
-		if(strcmp(models.at(i).meshName,name)== 0)
+		if(strcmp(models.at(i).meshName,_strdup(name.c_str()))== 0)
 		{
 			return true;
 		}
