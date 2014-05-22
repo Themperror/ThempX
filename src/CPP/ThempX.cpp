@@ -37,8 +37,8 @@ void ThempX::SetDisplayModeWindowed(int sizeX, int sizeY, int renderSizeX,int re
 	dx_PresParams.hDeviceWindow = handleWindow;
 	dx_PresParams.SwapEffect = D3DSWAPEFFECT_DISCARD;
 	dx_PresParams.BackBufferCount = 1;
-	dx_PresParams.MultiSampleQuality = 0;
-	dx_PresParams.MultiSampleType = D3DMULTISAMPLE_NONE;
+	dx_PresParams.MultiSampleQuality = 1;
+	dx_PresParams.MultiSampleType = D3DMULTISAMPLE_2_SAMPLES;
 	dx_PresParams.EnableAutoDepthStencil = TRUE;
 	dx_PresParams.AutoDepthStencilFormat = D3DFMT_D16;
 
@@ -78,7 +78,6 @@ void ThempX::SetDisplayModeFullScreen(int devmodeIndex)
 		return;
 	}
 	ChangeDisplaySettings(&resources->GetDevMode(devmodeIndex),CDS_FULLSCREEN);
-	
 	SetWindowPos(handleWindow,HWND_TOPMOST,0,0, wSizeX,wSizeY, SWP_NOZORDER | SWP_SHOWWINDOW);
 	Sleep(200);
 	
@@ -95,8 +94,8 @@ void ThempX::SetDisplayModeFullScreen(int devmodeIndex)
 	dx_PresParams.hDeviceWindow = handleWindow;
 	dx_PresParams.SwapEffect = D3DSWAPEFFECT_DISCARD;
 	dx_PresParams.BackBufferCount = 1;
-	dx_PresParams.MultiSampleQuality = 0;
-	dx_PresParams.MultiSampleType = D3DMULTISAMPLE_NONE;
+	dx_PresParams.MultiSampleQuality = 1;
+	dx_PresParams.MultiSampleType = D3DMULTISAMPLE_2_SAMPLES;
 	dx_PresParams.EnableAutoDepthStencil = TRUE;
 	dx_PresParams.AutoDepthStencilFormat = D3DFMT_D16;
 	

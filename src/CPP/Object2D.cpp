@@ -8,6 +8,7 @@ Object2D::Object2D(ResourceManager* res,char* texturePath,D3DXMATRIX* camViewMat
 	quad.texture = NULL;
 	quad.textureName = texturePath;
 	quad.texture = resources->GetTexture(texturePath);
+	currentlyPlayingAnimation = "";
 	hasAnimation = false;
 	sizeX = 0;
 	sizeY = 0;
@@ -56,6 +57,8 @@ Object2D::Object2D(ResourceManager* res, char* texturePath, D3DXMATRIX* camView,
 	sizeY = 0;
 	yRows = 0;
 	xRows = 0;
+	
+	currentlyPlayingAnimation = "";
 
 	quad.vBuffer = NULL;
 	quad.vBuffer = FillCustomVertices(LLPos,URPos);
@@ -72,6 +75,8 @@ Object2D::Object2D(ResourceManager* res,char* texturePath,D3DXMATRIX* camViewMat
 	quad.texture = resources->GetTexture(texturePath);
 	xRows = (int)xRowsAnim;
 	yRows = (int)yRowsAnim;
+	
+	currentlyPlayingAnimation = "";
 	InitVars();
 	hasAnimation = true;
 	LoadAnimation();
@@ -121,6 +126,7 @@ bool Object2D::IsAnimFinished(std::string anim)
 			return animations.at(i).isFinished;
 		}
 	}
+	return false;
 }
 Object2D::Animation Object2D::GetAnimation(std::string aName)
 {
@@ -132,6 +138,9 @@ Object2D::Animation Object2D::GetAnimation(std::string aName)
 			return animations.at(i);
 		}
 	}
+	Animation an;
+	an.Nullify();
+	return an;
 }
 void Object2D::Draw()
 {
@@ -201,6 +210,7 @@ void Object2D::Update(float deltaTime)
 					if(currentYAnimValue > a->EndPosition.y)
 					{
 						a->isFinished = true;
+						a->waitForEnd = false;
 						if(a->loop)
 						{
 							currentYAnimValue = a->StartPosition.y;
@@ -216,7 +226,6 @@ void Object2D::Update(float deltaTime)
 				if(currentXAnimValue == (int)a->ActionFrame.x &&  currentYAnimValue == (int)a->ActionFrame.y)
 				{
 					a->doAction = true;
-					//std::cout << "ACTION" << std::endl;
 				}
 				if(!a->isFinished)
 				{
@@ -488,34 +497,68 @@ void Object2D::LoadAnimation()
 	}
 	fin.close();
 }
-bool Object2D::PlayAnimation(std::string aName)
+bool Object2D::PlayAnimation(std::string aName, bool waitEnd)
 {
 	std::string name = LowCaseString(aName);
 	for(unsigned int i=0; i < animations.size();i++)
 	{
 		if(animations.at(i).AnimationName == name)
 		{
-			currentXAnimValue = (int)animations.at(i).StartPosition.x;
-			currentYAnimValue = (int)animations.at(i).StartPosition.y;
-			animationSpeed = animations.at(i).AnimationSpeed;
-			currentlyPlayingAnimation = name;
-			currentAnim = i;
-			animations.at(i).isFinished = false;
-			timeSinceChange = animationSpeed/2;
-			if(p_Device->TestCooperativeLevel() == D3D_OK)
+			if(currentlyPlayingAnimation.compare("") != 0)
 			{
-				SetUVValues();
+				if(!GetCurrentAnim()->waitForEnd || !GetCurrentAnim()->waitForEnd && waitEnd)
+				{
+					currentXAnimValue = (int)animations.at(i).StartPosition.x;
+					currentYAnimValue = (int)animations.at(i).StartPosition.y;
+					animationSpeed = animations.at(i).AnimationSpeed;
+					currentlyPlayingAnimation = name;
+					currentAnim = i;
+					animations.at(i).isFinished = false;
+					animations.at(i).waitForEnd = waitEnd;
+					animations.at(i).doAction = false;
+					timeSinceChange = animationSpeed/2;
+					if(p_Device->TestCooperativeLevel() == D3D_OK)
+					{
+						SetUVValues();
+					}
+					return true;			   
+				}
+				else
+				{
+					return false;
+				}
 			}
-			return true;			   
+			else
+			{
+				currentXAnimValue = (int)animations.at(i).StartPosition.x;
+				currentYAnimValue = (int)animations.at(i).StartPosition.y;
+				animationSpeed = animations.at(i).AnimationSpeed;
+				currentlyPlayingAnimation = name;
+				currentAnim = i;
+				animations.at(i).isFinished = false;
+				animations.at(i).waitForEnd = waitEnd;
+				animations.at(i).doAction = false;
+				timeSinceChange = animationSpeed/2;
+				if(p_Device->TestCooperativeLevel() == D3D_OK)
+				{
+					SetUVValues();
+				}
+				return true;			   
+			}
+			
 		}
 	}
-	currentXAnimValue = 0;
-	currentYAnimValue = 0;
-	currentlyPlayingAnimation = "None";
-	currentAnim = NULL;
-	std::cout << "No animation found with that name: " <<name.c_str() << std::endl;
+	if(currentlyPlayingAnimation.compare("") != 0 && !GetCurrentAnim()->waitForEnd)
+	{
+		currentXAnimValue = 0;
+		currentYAnimValue = 0;
+		currentlyPlayingAnimation = "None";
+		currentAnim = NULL;
+		std::cout << "No animation found with that name: " <<name.c_str() << std::endl;
+	}
 	return false;
 }
+
 
 void Object2D::ReleaseResources()
 {

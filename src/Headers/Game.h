@@ -183,20 +183,7 @@ public:
 		Object2D* obj;
 		PxRigidActor* actor;
 	};
-	struct Bullet
-	{
-		Bullet(Object2D* texture, D3DXVECTOR3 dir)
-		{
-			obj = texture;
-			direction = dir;
-			hasHit = false;
-			bulletLife = 0;
-		}
-		Object2D* obj;
-		D3DXVECTOR3 direction;
-		float bulletLife;
-		bool hasHit;
-	};
+	
 	struct Door
 	{
 		void (Game::*sound)(std::string name); //function to execute (LIMITATION: CANNOT RETURN ANYTHING OR ACCEPT ARGUMENTS UNLESS HARDCODED)
@@ -485,7 +472,6 @@ private:
 	std::vector<Particle*> particles;
 	std::vector<D3DLIGHT9*> lights;
 	std::vector<Door*> doors;
-	std::vector<Bullet*> bullets;
 	std::vector<Item*> items;
 	D3DLIGHT9* CreateLight(D3DXVECTOR3 position,D3DXVECTOR3 direction, D3DLIGHTTYPE lightType,D3DXCOLOR lightColor,float range,float falloff);
 
@@ -513,6 +499,7 @@ private:
 	void HandlePlayerCollisions(PxVec3 moveDir);
 	void LeftMouseClick();
 	void RightMouseClick();
+	void CreateBullet(PxVec3 origin, PxVec3 dir);
 	std::vector<unsigned int> keys;
 	int KeyPressed(int key);
 	bool mouseLeftJustDown;

@@ -38,6 +38,7 @@ public:
 		std::string AnimationName;
 		float AnimationSpeed;
 		bool isFinished;
+		bool waitForEnd;
 		bool loop;
 		void Nullify()
 		{
@@ -47,6 +48,7 @@ public:
 			AnimationName = "";
 			AnimationSpeed = 0;
 			isFinished = false;
+			waitForEnd = false;
 			loop = false;
 			doAction = false;
 		}
@@ -69,7 +71,7 @@ public:
 
 	void Update(float deltaTime);
 	void SetUVValues();
-	bool PlayAnimation(std::string aName);
+	bool PlayAnimation(std::string aName, bool waitEnd = false);
 	bool IsAnimFinished(std::string anim);
 	void CheckPlayingAnimation(std::string playAnimFinished);
 	Animation GetAnimation(std::string aName);

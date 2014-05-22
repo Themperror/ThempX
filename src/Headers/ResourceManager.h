@@ -265,6 +265,14 @@ public:
 		*x = data->renderSizeX;
 		*y = data->renderSizeY;
 	}
+	inline D3DXMATRIX* GetCameraView()
+	{
+		return cameraView;
+	}
+	inline void SetCameraView(D3DXMATRIX* camView)
+	{
+		cameraView = camView;
+	}
 
 private:
 	struct Quad
@@ -285,6 +293,7 @@ private:
 	bool CheckAvailableModel(std::string name);
 	int screenWidth,screenHeight;
 	D3DXVECTOR3 cameraCircle;
+	D3DXMATRIX* cameraView;
 	DataStruct* data;
 	//easy access classes and variables
 	HWND wHandle;

@@ -1,0 +1,43 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="src\CPP\Camera.cpp" />
+    <ClCompile Include="src\CPP\DebugCube.cpp" />
+    <ClCompile Include="src\CPP\Enemy.cpp" />
+    <ClCompile Include="src\CPP\FirstPersonPlayer.cpp" />
+    <ClCompile Include="src\CPP\Game.cpp" />
+    <ClCompile Include="src\CPP\GUI.cpp" />
+    <ClCompile Include="src\CPP\InputHandler.cpp" />
+    <ClCompile Include="src\CPP\Main.cpp" />
+    <ClCompile Include="src\CPP\Menu.cpp" />
+    <ClCompile Include="src\CPP\Object2D.cpp" />
+    <ClCompile Include="src\CPP\Object3D.cpp" />
+    <ClCompile Include="src\CPP\Particle.cpp" />
+    <ClCompile Include="src\CPP\Particle2D.cpp" />
+    <ClCompile Include="src\CPP\ResourceManager.cpp" />
+    <ClCompile Include="src\CPP\SoundHandler.cpp" />
+    <ClCompile Include="src\CPP\PhysXEngine.cpp" />
+    <ClCompile Include="src\CPP\ThempX.cpp" />
+    <ClCompile Include="src\CPP\Triggerbox.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\Headers\Camera.h" />
+    <ClInclude Include="src\Headers\DebugCube.h" />
+    <ClInclude Include="src\Headers\Enemy.h" />
+    <ClInclude Include="src\Headers\FirstPersonPlayer.h" />
+    <ClInclude Include="src\Headers\Game.h" />
+    <ClInclude Include="src\Headers\GUI.h" />
+    <ClInclude Include="src\Headers\InputHandler.h" />
+    <ClInclude Include="src\Headers\Main.h" />
+    <ClInclude Include="src\Headers\Menu.h" />
+    <ClInclude Include="src\Headers\Object2D.h" />
+    <ClInclude Include="src\Headers\Object3D.h" />
+    <ClInclude Include="src\Headers\Particle.h" />
+    <ClInclude Include="src\Headers\Particle2D.h" />
+    <ClInclude Include="src\Headers\ResourceManager.h" />
+    <ClInclude Include="src\Headers\SoundHandler.h" />
+    <ClInclude Include="src\Headers\PhysXEngine.h" />
+    <ClInclude Include="src\Headers\ThempX.h" />
+    <ClInclude Include="src\Headers\Triggerbox.h" />
+  </ItemGroup>
+</Project>

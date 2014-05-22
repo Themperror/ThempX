@@ -194,11 +194,13 @@ void Game::ReleaseEnemy(Enemy* enemy)
 	enemy->actor->release();
 	delete enemy;
 }
+
 void Game::Update(double deltaTime)
 {
 	float deltaTimeF = (float)deltaTime;
 	if(deltaTimeF < 0.8f)
 	{
+		resources->SetCameraView(&cam->GetView());
 		for(int i = 0; i < enemies.size();i++)
 		{
 			Enemy* enemy = enemies.at(i);
@@ -243,66 +245,7 @@ void Game::Update(double deltaTime)
 		{
 			items.at(i)->CheckTrigger(&cam->GetPosition());
 		}
-		for(unsigned int i = 0; i < bullets.size(); i++)
-		{
-			Bullet* bullet = bullets.at(i);
-			bullet->bulletLife+=deltaTimeF;
-			bullet->obj->position += bullet->direction*deltaTimeF*50;
-			PxRaycastBuffer hit = physics->RaycastSingle(PxVec3(bullet->obj->position.x,bullet->obj->position.y,bullet->obj->position.z),PxVec3(bullet->direction.x,bullet->direction.y,bullet->direction.z),2);
-			if(hit.block.actor != NULL)
-			{
-				if(hit.block.actor == physics->player->getActor())
-				{
-					int damageToReceive = 15;
-					if(gui->armour > 0)
-					{
-						gui->armour -= damageToReceive;
-						if(gui->armour < 0)
-						{
-							damageToReceive = abs(gui->armour);
-							gui->health -= damageToReceive;
-							gui->armour = 0;
-						}
-					}
-					else
-					{
-						gui->health -= damageToReceive;
-					}
-					if(gui->health > 0)
-					{
-					
-						std::vector<std::string> names;
-						names.push_back("SAMHIT1");
-						names.push_back("SAMHIT2");
-						names.push_back("SAMHIT3");
-						soundHandler->PlayRandom(&names);
-					}
-					else
-					{
-						soundHandler->PlayWaveFile("SAMDIE1");
-					}
-					bullets.erase(bullets.begin()+i);
-					bullet->obj->ReleaseResources();
-					delete bullet->obj;
-					delete bullet;
-					return;
-				}
-
-				bullets.erase(bullets.begin()+i);
-				bullet->obj->ReleaseResources();
-				delete bullet->obj;
-				delete bullet;
-				return;
-			}
-			if(Vector3Distance(cam->GetPosition(),bullet->obj->position) > 300 && bullet->bulletLife > 2)
-			{
-				bullets.erase(bullets.begin()+i);
-				bullet->obj->ReleaseResources();
-				delete bullet->obj;
-				delete bullet;
-				return;
-			}
-		}
+		
 		for(unsigned int i = 0; i < particles.size(); i++)
 		{
 			particles.at(i)->Update(deltaTimeF);
@@ -375,6 +318,7 @@ void Game::Render()
 	{
 		enemies.at(i)->obj->cameraView = camView;
 		enemies.at(i)->obj->Draw();
+		enemies.at(i)->RenderBullets(camView);
 	}
 	for(unsigned int i =0; i < sprites.size();i++)
 	{
@@ -455,11 +399,7 @@ void Game::Render()
 	{
 		debugCubes.at(i)->Draw();
 	}
-	for(unsigned int i = 0; i < bullets.size(); i++)
-	{
-		bullets.at(i)->obj->cameraView = camView;
-		bullets.at(i)->obj->Draw();
-	}
+	
 	gui->Render();
 	cam->RenderCamera(THEMPX_CAM_PERSPECTIVE);
 	resources->DrawAllText();
@@ -762,6 +702,7 @@ PxVec3 Game::DoInput(float dT)
 			if(currentEditorObj->obj2D != NULL && currentEditorObj->obj2D->hasAnimation)
 			{
 				currentEditorObj->obj2D->PlayAnimation("WalkForward");
+				currentEditorObj->obj2D->SetUVValues();
 			}
 		}
 		if(KeyPressed(DIK_9) == 2)
@@ -776,6 +717,7 @@ PxVec3 Game::DoInput(float dT)
 			if(currentEditorObj->obj2D != NULL && currentEditorObj->obj2D->hasAnimation)
 			{
 				currentEditorObj->obj2D->PlayAnimation("WalkForward");
+				currentEditorObj->obj2D->SetUVValues();
 			}
 		}
 		editorObjectDistance+=inputHandler->GetMouseScroll()*dT;
@@ -783,7 +725,7 @@ PxVec3 Game::DoInput(float dT)
 	if(KeyPressed(DIK_F))
 	{
 		soundHandler->PlayWaveFile("digmark",81);
-		D3DXVECTOR3 camPos = cam->GetPosition()+cam->GetLookDir()*2;
+		D3DXVECTOR3 camPos = cam->GetPosition()+cam->GetLookDir()*3.5f;
 		physics->ThrowCube(PxVec3(camPos.x,camPos.y,camPos.z),PxVec3(cam->GetLookDir().x*60,cam->GetLookDir().y*60,cam->GetLookDir().z*60));
 		lastAction.push_back(ThrowCube);
 	}
@@ -870,7 +812,7 @@ bool Game::Create3DObject(bool hasPhysics, Object3DData* data)
 bool Game::CreateEnemy(bool hasPhysics, Object2DData* data)
 {
 	Object2D* obj;
-	Enemy* enemy = new Enemy(resources,physics);
+	Enemy* enemy = new Enemy(resources,physics,&gui->health,&gui->armour);
 	enemy->Health = 60;
 	enemy->Damage = 10;
 	if(hasPhysics)
@@ -1071,12 +1013,6 @@ void Game::LeftMouseClick()
 			doors.push_back(door);
 			lastAction.push_back(PlacedDoor);*/
 		}
-		else if(currentEditorObj->col != NULL)
-		{
-			D3DXVECTOR3 pos = cam->GetPosition()+cam->GetLookDir()*editorObjectDistance;
-			physics->CreateCube(PxVec3(pos.x,pos.y,pos.z),PxVec3(currentEditorObj->col->rotation.x,currentEditorObj->col->rotation.y,currentEditorObj->col->rotation.z),PxVec3(currentEditorObj->col->scaling.x,currentEditorObj->col->scaling.y,currentEditorObj->col->scaling.z),50,true);
-			lastAction.push_back(Static);
-		}
 		CreateLevelFile();
 	}
 	else
@@ -1228,8 +1164,6 @@ void Game::DestroyLevel()
 	{
 		Door* d = doors.at(i);
 		physics->RemoveActor(d->actor->isRigidDynamic());
-		//d->actor->release();
-		//delete d->obj;
 		delete d;
 	}
 	doors.clear();
@@ -1279,12 +1213,9 @@ void Game::SetUpEditorMode()
 	{
 		MessageBox(handleWindow,"Editor mode activated","SetUpEditorMode",MB_OK);
 		EditorObj obj;
-		obj.col = new DebugCube(D3DXVECTOR3(0,0,0),D3DXVECTOR3(0,0,0),D3DXVECTOR3(-1,-1,-1),D3DXVECTOR3(1,1,1),resources);
-		obj.col->doRender = true;
-		obj.col->scaling = D3DXVECTOR3(1,1,1);
+		obj.col = NULL;
 		obj.obj2D = NULL;
 		obj.obj3D = NULL;
-		editorObjs.push_back(obj);
 		int animatedSpriteNr = 0;
 		int staticSpriteNr = 0;
 		int modelNr = 0;
@@ -1335,6 +1266,8 @@ void Game::SetUpEditorMode()
 					obj.obj2D = spriteObj;
 					spriteObj->tag = tag;
 					editorObjs.push_back(obj);
+					spriteObj->PlayAnimation("WalkForward");
+					spriteObj->SetUVValues();
 				}
 			}
 		}
@@ -1516,7 +1449,7 @@ void Game::LoadLevel(char* txtPath)
 		fin.close();
 		CreateLevelFile();
 	}
-	physics->CreateUpperAndLowerLimits(PxVec3(0,-13.6,0),PxVec3(0,-2.5f,0));
+	physics->CreateUpperAndLowerLimits(PxVec3(0,-13.6f,0),PxVec3(0,-2.5f,0));
 }
 //unused light function
 D3DLIGHT9* Game::CreateLight(D3DXVECTOR3 position,D3DXVECTOR3 direction, D3DLIGHTTYPE lightType,D3DXCOLOR lightColor,float range,float falloff)
