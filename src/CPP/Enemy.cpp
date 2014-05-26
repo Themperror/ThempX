@@ -43,7 +43,7 @@ void Enemy::UpdateBullets(float deltaTimeF)
 		Bullet* bullet = bullets.at(i);
 		bullet->bulletLife+=deltaTimeF;
 		//physics->player->setPosition(PxExtendedVec3(bullet->obj->position.x,bullet->obj->position.y,bullet->obj->position.z));
-		bullet->obj->position += bullet->direction*deltaTimeF*30;
+		bullet->obj->position += bullet->direction*deltaTimeF*55;
 		PxRaycastBuffer hit = physics->RaycastSingle(PxVec3(bullet->obj->position.x,bullet->obj->position.y,bullet->obj->position.z),PxVec3(bullet->direction.x,bullet->direction.y,bullet->direction.z),2);
 		if(hit.block.actor != NULL)
 		{
@@ -131,6 +131,7 @@ void Enemy::Update(float dT)
 		Object2D::Animation anim;
 		if(angle < -45)
 		{
+			CheckShooting(40,dT);
 			cMState = MovementState::Forward; 
 			anim = obj->GetAnimation("WalkForward");
 			if(anim.isFinished || cAnim->AnimationName.compare(anim.AnimationName) != 0)
@@ -140,6 +141,7 @@ void Enemy::Update(float dT)
 		}
 		if(angle > -45 && angle < 0 && direction < 0)
 		{
+			CheckShooting(40,dT);
 			cMState = MovementState::Left;
 			anim = obj->GetAnimation("WalkLeft");
 			if(anim.isFinished || cAnim->AnimationName.compare(anim.AnimationName) != 0)
@@ -149,6 +151,7 @@ void Enemy::Update(float dT)
 		}
 		else if(angle > 0 && angle < 45 && direction > 0)
 		{
+			CheckShooting(40,dT);
 			cMState = MovementState::Right; 
 			anim = obj->GetAnimation("WalkRight");
 			if(anim.isFinished || cAnim->AnimationName.compare(anim.AnimationName) != 0)
@@ -158,6 +161,7 @@ void Enemy::Update(float dT)
 		}
 		if(angle > -45 && angle < 0 && direction > 0)
 		{
+			CheckShooting(40,dT);
 			cMState = MovementState::Right; 
 			anim = obj->GetAnimation("WalkRight");
 			if(anim.isFinished || cAnim->AnimationName.compare(anim.AnimationName) != 0)
@@ -167,6 +171,7 @@ void Enemy::Update(float dT)
 		}
 		else if(angle > 0 && angle < 45 && direction < 0)
 		{
+			CheckShooting(40,dT);
 			cMState = MovementState::Left;
 			anim = obj->GetAnimation("WalkLeft");
 			if(anim.isFinished || cAnim->AnimationName.compare(anim.AnimationName) != 0)
@@ -185,7 +190,6 @@ void Enemy::Update(float dT)
 		}
 		cState = Enemy::Moving;
 		CheckFutureCollision();
-		CheckShooting(40,dT);
 		Move(moveDir,dT*movementSpeed);
 	}
 }
@@ -194,16 +198,17 @@ void Enemy::CheckShooting(float dist, float deltaTime)
 	PxExtendedVec3 pPos = physics->player->getPosition();
 	PxVec3 ori = actor->getGlobalPose().p;
 	PxVec3 dir = (ori - PxVec3(pPos.x,pPos.y,pPos.z)).getNormalized();
-	PxRaycastBuffer hit = physics->RaycastSingle(ori-dir*2,-dir,dist);
+	PxRaycastBuffer hit = physics->RaycastSingle(ori-dir*3,-dir,dist);
 	if(hit.block.actor != NULL && hit.block.actor == physics->player->getActor())
 	{
+		std::cout << " Seeing Player " << std::endl;
 		lastTimeShot+=deltaTime;
 		if(lastTimeShot > shootDelay)
 		{
 			obj->PlayAnimation("Shoot",true);
 			if(obj->GetCurrentAnim()->doAction)
 			{
-				CreateBullet(ori-dir*2,-dir);
+				CreateBullet(ori-dir*3,-dir);
 				lastTimeShot = 0;
 				resources->GetSoundHandler()->PlayWaveFile("piew");
 				obj->GetCurrentAnim()->doAction = false;
@@ -270,13 +275,13 @@ void Enemy::Nullify()
 	Damage = 0;
 	cState = EnemyState::Moving;
 	cMState = MovementState::Forward;
-	lastTimeShot = 2.0f;
+	lastTimeShot = 1.0f;
 	movementSpeed = 4;
 	movementSwitchTime = 2;
 	moveDir = D3DXVECTOR3(0,0,0);
 	currentMoveTime = 0;
 	originalPos = D3DXVECTOR3(0,0,0);
-	shootDelay = 4.0f;
+	shootDelay = 2.0f;
 	obj = NULL;
 	actor = NULL;
 	IsDead = false;

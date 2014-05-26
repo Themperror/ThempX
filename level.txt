@@ -50,7 +50,9 @@ Resources/Models/Bookcase.x	Model2	-67.9252	-9.58231	21.133	2.836	3.4327	2.3311	
 Resources/Models/table.x	Model3	-32.1434	-12.2752	43.8325	2.7442	2.6065	2.2852	0	0	0	0	0	Bookcase	1	1	0	0	0	1	0	0	0	0	0
 Resources/Models/chair.x	Model4	-37.9777	-12.0973	44.059	2.05381	1.8721	2.377	0	0	0	0	0	Bookcase	1	1	0	0	0	1	0	0	0	0	0
 Resources/Models/chair.x	Model4	-26.0245	-11.9785	44.3073	2.05381	1.8721	2.377	3.14159	0	0	0	0	Bookcase	1	1	0	0	0	1	0	0	0	0	0
-Resources/AnimationPNG/ManimatieSheet2.png	Enemy	-16.275	-9.1	34.7141	1	1	1	0	0	0	8	8		1	0	1	0	1	0	0	0	0	1.5	3
+Resources/AnimationPNG/ManimatieSheet2.png	Enemy	15.0457	-9.1	29.2226	1	1	1	0	0	0	8	8		1	0	1	0	1	0	0	0	0	1.5	3
+Resources/AnimationPNG/ManimatieSheet2.png	Enemy	16.6912	-9.1	39.3376	1	1	1	0	0	0	8	8		1	0	1	0	1	0	0	0	0	1.5	3
+Resources/AnimationPNG/ManimatieSheet2.png	Enemy	15.1766	-9.1	48.9819	1	1	1	0	0	0	8	8		1	0	1	0	1	0	0	0	0	1.5	3
 Resources/Sprites/RottenFlower.png	StaticSprite1	21.2681	-10.3945	22.533	0.385	0.49	1	0	0	0	0	0	RottenFlower	1	0	1	0	1	0	0	0	0	1	0
 Resources/Sprites/RottenFlower.png	StaticSprite1	24.7137	-7.40075	63.287	0.385	0.49	1	0	0	0	0	0	RottenFlower	1	0	1	0	1	0	0	0	0	1	0
 Resources/Sprites/RottenFlower.png	StaticSprite1	-45.9131	-10.0263	65.659	0.385	0.49	1	0	0	0	0	0	RottenFlower	1	0	1	0	1	0	0	0	0	1	0
