@@ -1,0 +1,1 @@
+path							name		posx		posy		posz		scalex	scaley	colx	coly	colz

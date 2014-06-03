@@ -29,11 +29,6 @@ Game::Game(ResourceManager::DataStruct* b,HWND windowHandle,ResourceManager* res
 	LoadLevel("Resources/level.txt");
 	LoadItems("Resources/items1.txt");
 	std::cout << "After LoadLevel" << std::endl;
-	//particles.push_back(new Particle(resources,p_Device,"Resources/Particles/bullet.png",&cam->GetView(),D3DXVECTOR3(4,-12.5f,0),200,500,1,3));
-	//particles.at(0)->SetMovement(D3DXVECTOR3(0,0,0),D3DXVECTOR3(0,10,0));
-	//particles.at(0)->SetParticleCount(500,1000);
-	//particles.at(0)->
-	//particles.at(0)->Release();
 }
 Game::Object2DData Game::CreateObject2DData(char* filePath,bool hasAnim, D3DXVECTOR3 pos,D3DXVECTOR3 scale, D3DXVECTOR2 rows, PhysicsData pData)
 {
@@ -304,7 +299,7 @@ void Game::Update(double deltaTime)
 				player->hasRedKey = false;
 				DestroyLevel();
 				LoadLevel("Resources/Level2.txt");
-				LoadItems("Resources/items2.txt");
+				//LoadItems("Resources/items2.txt");
 				gui->levelCompleteGUI->render = false;
 				gui->GetGUIObj("Resources/GUI/HealthArmor.png")->render = true;
 				gui->GetGUIObj("Resources/GUI/WeaponAmmo.png")->render = true;
@@ -680,6 +675,7 @@ PxVec3 Game::DoInput(float dT)
 			gui->gameOverText->render = false;
 			DestroyLevel();
 			LoadLevel("Resources/level.txt");
+			LoadItems("Resources/items1.txt");
 			player->physicsPlayer->setPosition(PxExtendedVec3(-11.18f,-8.94f,34.4f));
 		}
 	}

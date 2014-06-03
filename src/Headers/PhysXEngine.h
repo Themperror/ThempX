@@ -7,7 +7,7 @@
 #include "ResourceManager.h"
 #include "DebugCube.h"
 
-#define DEBUG //remove line for release
+//#define DEBUG //remove line for release
 
 #ifdef DEBUG
 #pragma comment(lib, "PhysX3CHECKED_x86.lib")

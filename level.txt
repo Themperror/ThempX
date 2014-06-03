@@ -121,7 +121,6 @@ Resources/Sprites/RottenFlower.png	StaticSprite1	-104.247	-7.45717	25.3934	0.385
 Resources/Sprites/RottenFlower.png	StaticSprite1	24.4169	-7.17467	67.2739	0.3355	0.643	1	0	0	0	0	0	RottenFlower	1	0	1	0	1	0	0	0	0	1	0
 Resources/Sprites/RottenFlower.png	StaticSprite1	24.3838	-7.14418	65.6943	0.3355	0.643	1	0	0	0	0	0	RottenFlower	1	0	1	0	1	0	0	0	0	1	0
 Resources/Sprites/RottenFlower.png	StaticSprite1	24.8005	-7.11368	64.5123	0.3355	0.643	1	0	0	0	0	0	RottenFlower	1	0	1	0	1	0	0	0	0	1	0
-Resources/Sprites/RottenFlower.png	StaticSprite1	24.0713	-5.35434	22.5292	0.3355	0.643	1	0	0	0	0	0	RottenFlower	1	0	1	0	1	0	0	0	0	1	0
 Resources/Sprites/RottenFlower.png	StaticSprite1	-43.2235	-9.76727	65.8563	0.3355	0.643	1	0	0	0	0	0	RottenFlower	1	0	1	0	1	0	0	0	0	1	0
 Resources/Sprites/RottenFlower.png	StaticSprite1	-75.5533	-7.26617	28.1483	0.3355	0.643	1	0	0	0	0	0	RottenFlower	1	0	1	0	1	0	0	0	0	1	0
 Resources/Sprites/RottenFlower.png	StaticSprite1	-104.067	-7.20516	22.6533	0.3355	0.643	1	0	0	0	0	0	RottenFlower	1	0	1	0	1	0	0	0	0	1	0
@@ -129,7 +128,6 @@ Resources/Sprites/RottenFlower.png	StaticSprite1	-82.3846	-6.96126	62.8154	0.335
 Resources/Sprites/RottenFlower.png	StaticSprite1	-58.0453	-8.73177	83.4109	0.3355	0.643	1	0	0	0	0	0	RottenFlower	1	0	1	0	1	0	0	0	0	1	0
 Resources/Sprites/RottenFlower.png	StaticSprite1	-53.95	-8.67073	80.7237	0.3355	0.643	1	0	0	0	0	0	RottenFlower	1	0	1	0	1	0	0	0	0	1	0
 Resources/Sprites/RottenFlower.png	StaticSprite1	-51.279	-8.67073	77.6229	0.3355	0.643	1	0	0	0	0	0	RottenFlower	1	0	1	0	1	0	0	0	0	1	0
-Resources/Sprites/RottenFlower.png	StaticSprite1	-32.9821	-7	43.737	0.235	0.49	1	0	0	0	0	0	RottenFlower	1	0	1	0	1	0	0	0	0	1	0
 Resources/Sprites/RottenFlower.png	StaticSprite1	21.2681	-10.3945	22.533	0.385	0.49	1	0	0	0	0	0	RottenFlower	1	0	1	0	1	0	0	0	0	1	0
 Resources/Sprites/RottenFlower.png	StaticSprite1	24.7137	-7.40075	63.287	0.385	0.49	1	0	0	0	0	0	RottenFlower	1	0	1	0	1	0	0	0	0	1	0
 Resources/Sprites/RottenFlower.png	StaticSprite1	-45.9131	-10.0263	65.659	0.385	0.49	1	0	0	0	0	0	RottenFlower	1	0	1	0	1	0	0	0	0	1	0
@@ -137,7 +135,6 @@ Resources/Sprites/RottenFlower.png	StaticSprite1	-104.247	-7.45717	25.3934	0.385
 Resources/Sprites/RottenFlower.png	StaticSprite1	24.4169	-7.17467	67.2739	0.3355	0.643	1	0	0	0	0	0	RottenFlower	1	0	1	0	1	0	0	0	0	1	0
 Resources/Sprites/RottenFlower.png	StaticSprite1	24.3838	-7.14418	65.6943	0.3355	0.643	1	0	0	0	0	0	RottenFlower	1	0	1	0	1	0	0	0	0	1	0
 Resources/Sprites/RottenFlower.png	StaticSprite1	24.8005	-7.11368	64.5123	0.3355	0.643	1	0	0	0	0	0	RottenFlower	1	0	1	0	1	0	0	0	0	1	0
-Resources/Sprites/RottenFlower.png	StaticSprite1	24.0713	-5.35434	22.5292	0.3355	0.643	1	0	0	0	0	0	RottenFlower	1	0	1	0	1	0	0	0	0	1	0
 Resources/Sprites/RottenFlower.png	StaticSprite1	-43.2235	-9.76727	65.8563	0.3355	0.643	1	0	0	0	0	0	RottenFlower	1	0	1	0	1	0	0	0	0	1	0
 Resources/Sprites/RottenFlower.png	StaticSprite1	-75.5533	-7.26617	28.1483	0.3355	0.643	1	0	0	0	0	0	RottenFlower	1	0	1	0	1	0	0	0	0	1	0
 Resources/Sprites/RottenFlower.png	StaticSprite1	-104.067	-7.20516	22.6533	0.3355	0.643	1	0	0	0	0	0	RottenFlower	1	0	1	0	1	0	0	0	0	1	0
@@ -145,4 +142,3 @@ Resources/Sprites/RottenFlower.png	StaticSprite1	-82.3846	-6.96126	62.8154	0.335
 Resources/Sprites/RottenFlower.png	StaticSprite1	-58.0453	-8.73177	83.4109	0.3355	0.643	1	0	0	0	0	0	RottenFlower	1	0	1	0	1	0	0	0	0	1	0
 Resources/Sprites/RottenFlower.png	StaticSprite1	-53.95	-8.67073	80.7237	0.3355	0.643	1	0	0	0	0	0	RottenFlower	1	0	1	0	1	0	0	0	0	1	0
 Resources/Sprites/RottenFlower.png	StaticSprite1	-51.279	-8.67073	77.6229	0.3355	0.643	1	0	0	0	0	0	RottenFlower	1	0	1	0	1	0	0	0	0	1	0
-Resources/Sprites/RottenFlower.png	StaticSprite1	-32.9821	-9.60445	43.737	0.235	0.49	1	0	0	0	0	0	RottenFlower	1	0	1	0	1	0	0	0	0	1	0
