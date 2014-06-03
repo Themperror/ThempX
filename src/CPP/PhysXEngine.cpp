@@ -125,7 +125,7 @@ PxRaycastHit* PhysXEngine::RaycastMultiple(PxVec3 origin, PxVec3 nDir, float dis
 	bool blockingHit = false;
 	PxRaycastHit hitBuffer[2]; 
 	if(!nDir.isNormalized()) nDir.normalize();
-	PxI32 nbHits = gScene->raycastMultiple(origin, nDir, distance,PxHitFlag::eDEFAULT, hitBuffer, 2, blockingHit);
+	PxI32 nbHits = gScene->raycastMultiple(origin, nDir, distance,PxHitFlag::eDEFAULT | PxHitFlag::eMESH_BOTH_SIDES, hitBuffer, 2, blockingHit);
 	return hitBuffer;
 }
 void PhysXEngine::Update(float deltaTime)
@@ -370,7 +370,7 @@ void PhysXEngine::RemoveAllActors()
 	dynamics.clear();
 	RemoveAllBoxes();
 }
-void PhysXEngine::ReleaseAll()
+void PhysXEngine::Release()
 {
 	for(unsigned int i = 0; i < statics.size(); i++)
 	{

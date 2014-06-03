@@ -100,9 +100,18 @@ public:
 	{
 		mat = material;
 	}
+	inline void SetMoveDir(D3DXVECTOR3 dir)
+	{
+		moveDir = dir;
+	}
+	inline D3DXVECTOR3 GetMoveDir()
+	{
+		return moveDir;
+	}
 private:
 	D3DXVECTOR3 position;
 	D3DXVECTOR3 scaling;
+	D3DXVECTOR3 moveDir;
 	D3DXMATRIX* viewMatrix;
 	double currentLife;
 	double maxLife;

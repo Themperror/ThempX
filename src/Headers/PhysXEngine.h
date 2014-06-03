@@ -33,7 +33,7 @@ class PhysXEngine
 public:
 
 	PhysXEngine(ResourceManager* res);
-	void ReleaseAll();
+	void Release();
 	ResourceManager* resources;
 	//player related
 	float playerGravity;

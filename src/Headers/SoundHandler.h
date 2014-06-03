@@ -17,9 +17,9 @@ class SoundHandler
 public:
 	SoundHandler(HWND handle,DWORD samplesPerSec,WORD bitsPerSample, WORD channels);
 	
-	void ShutdownDirectSound();
+	void Release();
 	bool Initialize(HWND);
-	
+	void Stop(std::string tag);
 	bool LoadWaveFile(std::string path, std::string tag, DWORD samplesPerSec,WORD bitsPerSample, WORD channels);
 	bool PlayWaveFile(std::string sName, DWORD volume = 96);
 	bool PlayRandom(std::vector<std::string>* names, DWORD volume = 96);
@@ -81,7 +81,7 @@ private:
 	//WORD nChannels;
 	bool initialized;
 	std::vector<SoundData*> sounds;
-	IDirectSound8* m_DirectSound;
+	IDirectSound8* directSound;
 	//IDirectSoundBuffer* m_primaryBuffer;
 	//IDirectSoundBuffer8* m_secondaryBuffer1;
 };

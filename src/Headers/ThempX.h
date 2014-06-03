@@ -31,7 +31,7 @@ class ThempX
 {
 public:
 	LPDIRECT3DDEVICE9 p_Device;
-	ResourceManager::DataStruct data;
+	ResourceManager::DataStruct* data;
 	MSG input;
 	HWND handleWindow;
 	ThempX(HINSTANCE hInstance,LPSTR lpCmdLine);

@@ -13,10 +13,10 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 void ThempX::SetDisplayModeWindowed(int sizeX, int sizeY, int renderSizeX,int renderSizeY)
 {
 	
-	data.applicationActive = false;
+	data->applicationActive = false;
 
 	D3DPRESENT_PARAMETERS dx_PresParams;
-	data.windowed = true;
+	data->windowed = true;
 	oldWSizeX = wSizeX;
 	oldWSizeY = wSizeY;
 	wSizeX = sizeX;
@@ -37,8 +37,8 @@ void ThempX::SetDisplayModeWindowed(int sizeX, int sizeY, int renderSizeX,int re
 	dx_PresParams.hDeviceWindow = handleWindow;
 	dx_PresParams.SwapEffect = D3DSWAPEFFECT_DISCARD;
 	dx_PresParams.BackBufferCount = 1;
-	dx_PresParams.MultiSampleQuality = 1;
-	dx_PresParams.MultiSampleType = D3DMULTISAMPLE_2_SAMPLES;
+	dx_PresParams.MultiSampleQuality = 0;
+	dx_PresParams.MultiSampleType = D3DMULTISAMPLE_NONE;
 	dx_PresParams.EnableAutoDepthStencil = TRUE;
 	dx_PresParams.AutoDepthStencilFormat = D3DFMT_D16;
 
@@ -49,17 +49,18 @@ void ThempX::SetDisplayModeWindowed(int sizeX, int sizeY, int renderSizeX,int re
 	}
 
 	resources->SetScreenResolution(renderSizeX,renderSizeY);
-	data.d3dxpresentationparams = dx_PresParams;
+	data->d3dxpresentationparams = dx_PresParams;
 }
 void ThempX::SetDisplayModeFullScreen(int devmodeIndex)
 {
-	data.applicationActive = false;
+	data->applicationActive = false;
 	DEVMODE devmode = resources->GetDevMode(devmodeIndex);
+	devmode = resources->GetLastDevMode();
 	
 	std::cout << "settings fullscreen display mode to " << devmode.dmPelsWidth << "x" << devmode.dmPelsHeight << " with a rendering size of " << devmode.dmPelsWidth << "x" << devmode.dmPelsHeight << std::endl;
 
 	D3DPRESENT_PARAMETERS dx_PresParams;
-	data.windowed = false;
+	data->windowed = false;
 	oldWSizeX = wSizeX;
 	oldWSizeY = wSizeY;
 	wSizeX = devmode.dmPelsWidth;
@@ -72,18 +73,15 @@ void ThempX::SetDisplayModeFullScreen(int devmodeIndex)
 	
 	GetDesktopResolution(dHorizontal, dVertical);
 	//WS_EX_TOPMOST | WS_POPUPGetDesktopResolution(dHorizontal, dVertical);
-	if(ChangeDisplaySettings(&resources->GetDevMode(devmodeIndex),CDS_FULLSCREEN | CDS_TEST) != DISP_CHANGE_SUCCESSFUL)
+	if(ChangeDisplaySettings(&devmode,CDS_FULLSCREEN | CDS_TEST) != DISP_CHANGE_SUCCESSFUL)
 	{
 		std::cout << "Changing display mode failed" << std::endl;
 		return;
 	}
-	ChangeDisplaySettings(&resources->GetDevMode(devmodeIndex),CDS_FULLSCREEN);
+	ChangeDisplaySettings(&devmode,CDS_FULLSCREEN);
 	SetWindowPos(handleWindow,HWND_TOPMOST,0,0, wSizeX,wSizeY, SWP_NOZORDER | SWP_SHOWWINDOW);
 	Sleep(200);
 	
-	ChangeDisplaySettings(&resources->GetDevMode(devmodeIndex),CDS_FULLSCREEN);
-	SetWindowPos(handleWindow,HWND_TOPMOST,0,0, wSizeX,wSizeY, SWP_NOZORDER | SWP_SHOWWINDOW);
-	Sleep(200);
 
 	dx_PresParams.BackBufferHeight = SRenderSizeY;
 	dx_PresParams.BackBufferWidth = SRenderSizeX;
@@ -94,8 +92,8 @@ void ThempX::SetDisplayModeFullScreen(int devmodeIndex)
 	dx_PresParams.hDeviceWindow = handleWindow;
 	dx_PresParams.SwapEffect = D3DSWAPEFFECT_DISCARD;
 	dx_PresParams.BackBufferCount = 1;
-	dx_PresParams.MultiSampleQuality = 1;
-	dx_PresParams.MultiSampleType = D3DMULTISAMPLE_2_SAMPLES;
+	dx_PresParams.MultiSampleQuality = 0;
+	dx_PresParams.MultiSampleType = D3DMULTISAMPLE_NONE;
 	dx_PresParams.EnableAutoDepthStencil = TRUE;
 	dx_PresParams.AutoDepthStencilFormat = D3DFMT_D16;
 	
@@ -104,8 +102,7 @@ void ThempX::SetDisplayModeFullScreen(int devmodeIndex)
 		SetDefaultRenderStateSettings();
 		g->ReloadGUI();
 	}
-	
-	data.d3dxpresentationparams = dx_PresParams;
+	data->d3dxpresentationparams = dx_PresParams;
 	resources->SetScreenResolution(SRenderSizeX,SRenderSizeY);
 }
 void ThempX::GetListofDisplayModes()
@@ -139,7 +136,7 @@ void ThempX::GetListofDisplayModes()
 	else
 	{
 		MessageBox(handleWindow,"No display devices found","GetListofDisplayModes",MB_OK);
-		data.loop = false;
+		data->loop = false;
 		return;
 	}
 }
@@ -189,7 +186,8 @@ void ThempX::GetDesktopResolution(int& horizontal, int& vertical)
 
 void ThempX::PreCreateWindow()
 {
-	data.windowed = true;
+	data = new ResourceManager::DataStruct();
+	data->windowed = true;
 	int dHorizontal = 0;
 	int dVertical = 0;
 	
@@ -200,6 +198,7 @@ void ThempX::PreCreateWindow()
 	SRenderSizeX = 800;
 	SRenderSizeY = 600;
 	handleWindow = NewWindow("The Morph",dHorizontal/2-(wSizeX/2),dVertical/2-(wSizeY/2),wSizeX,wSizeY,true);
+
 #ifdef DEBUG
 	AllocConsole();
 	SetConsoleTitle("ThempX Debug Console");
@@ -212,8 +211,6 @@ void ThempX::PreCreateWindow()
 //Entry point of the engine (This class is created in main.cpp where the program entrypoint is).
 ThempX::ThempX(HINSTANCE hInstance,LPSTR lpCmdLine)
 {
-	
-	ShowCursor(false);
 	PreCreateWindow();
 	p_Device = InitializeDevice(handleWindow);
 	SetDefaultRenderStateSettings();
@@ -227,23 +224,21 @@ ThempX::ThempX(HINSTANCE hInstance,LPSTR lpCmdLine)
 	soundHandler = new SoundHandler(handleWindow,44100,16,2);
 	GetListofDisplayModes();
 	//SetDisplayMode(false,320,200,320,200);
-
 	WINDOWINFO winInfo;
-	ZeroMemory(&data,sizeof(data));
-	data.windowed = true;
-	data.lockCursor = true;
-	data.loop = true;
-	data.applicationActive = true;
-	data.changeDisplay = false;
-	data.windowSizeX = wSizeX;
-	data.windowSizeY = wSizeY;
+	data->windowed = true;
+	data->lockCursor = true;
+	data->loop = true;
+	data->applicationActive = true;
+	data->changeDisplay = false;
+	data->windowSizeX = wSizeX;
+	data->windowSizeY = wSizeY;
 	// Game loop starts here after everything is initialized
 	
 	resources->SetSoundHandler(soundHandler);
-	resources->SetData(&data);
+	resources->SetData(data);
 	std::cout << "Initialized OK, starting game..." << std::endl;
 
-	g = new Game(&data,handleWindow,resources,inputHandler,soundHandler,p_Device);
+	g = new Game(data,handleWindow,resources,inputHandler,soundHandler,p_Device);
 
 	
 	std::cout << "Game created, now starting game loop..." << std::endl;
@@ -255,9 +250,8 @@ ThempX::ThempX(HINSTANCE hInstance,LPSTR lpCmdLine)
     DWORD cTicks = 0;
 	DWORD oTicks = 0;
 	int deltaTimerPrecision = 10000;
-	while(data.loop)
+	while(data->loop)
     {
-		
 		QueryPerformanceFrequency(&currentFrequency);
 		QueryPerformanceCounter(&currentTicks);
 		currentTicks.QuadPart = currentTicks.QuadPart*deltaTimerPrecision / currentFrequency.QuadPart;
@@ -268,7 +262,7 @@ ThempX::ThempX(HINSTANCE hInstance,LPSTR lpCmdLine)
             DispatchMessage(&msg);	
 			if(msg.message == WM_QUIT)
 			{
-				data.loop = false;
+				data->loop = false;
 				DestroyWindow(handleWindow);
 			}
 			if(msg.message == WM_ACTIVATEAPP)
@@ -281,40 +275,40 @@ ThempX::ThempX(HINSTANCE hInstance,LPSTR lpCmdLine)
 				{
 					//application being brought back from alt-tabbed state (window with lost focus)
 					cout << "window restored" << endl;
-					data.applicationActive = true;
+					data->applicationActive = true;
 					CheckDevice();
 				}
 			}	
         }
-		if(data.changeDisplay) //must stay above the testcooperative function of p_Device
+		if(data->changeDisplay) //must stay above the testcooperative function of p_Device
 		{
-			data.changeDisplay = false;
-			if(data.windowed == true)
+			data->changeDisplay = false;
+			if(data->windowed == true)
 			{
-				SetDisplayModeWindowed(data.windowSizeX,data.windowSizeY,data.renderSizeX,data.renderSizeY);
+				SetDisplayModeWindowed(data->windowSizeX,data->windowSizeY,data->renderSizeX,data->renderSizeY);
 				int dHorizontal = 0;
 				int dVertical = 0;
 				resources->GetDesktopResolution(dHorizontal,dVertical);
-				SetWindowPos(handleWindow,HWND_TOPMOST,dHorizontal/2-(data.windowSizeX/2),dVertical/2-(data.windowSizeY/2),data.windowSizeX,data.windowSizeY, NULL);
+				SetWindowPos(handleWindow,HWND_TOPMOST,dHorizontal/2-(data->windowSizeX/2),dVertical/2-(data->windowSizeY/2),data->windowSizeX,data->windowSizeY, NULL);
 			}
 			else
 			{
-				SetDisplayModeFullScreen(data.devmodeIndex);
+				SetDisplayModeFullScreen(data->devmodeIndex);
 			}
 		}
 		if(p_Device->TestCooperativeLevel() != D3D_OK)
 		{
 			CheckDevice();
-			data.applicationActive = false;
+			data->applicationActive = false;
 		}
 		else
 		{
-			data.applicationActive = true;
+			data->applicationActive = true;
 		}
 		
-		if(data.applicationActive)
+		if(data->applicationActive)
 		{
-			if(data.lockCursor)
+			if(data->lockCursor)
 			{
 				GetWindowInfo(handleWindow,&winInfo);
 				int windowSizeX = winInfo.rcWindow.right-winInfo.rcWindow.left;
@@ -327,7 +321,8 @@ ThempX::ThempX(HINSTANCE hInstance,LPSTR lpCmdLine)
 			FixedUpdate();
 			realframes++;
 			
-			if(currentTicks.QuadPart-oldTicks.QuadPart > (deltaTimerPrecision+((currentTicks.QuadPart-oldTicks.QuadPart) % deltaTimerPrecision))/60)
+			DWORD valu = currentTicks.QuadPart-oldTicks.QuadPart ;
+			if(valu > ((1.0/60.0)*deltaTimerPrecision))
 			{
 				//std::cout << currentTicks.QuadPart << "  <-CurrentTicks quadpart   " << oldTicks.QuadPart <<"  <- OldTicks" << std::endl;
 				
@@ -358,14 +353,13 @@ ThempX::ThempX(HINSTANCE hInstance,LPSTR lpCmdLine)
 			Sleep(100);
 		}
     }
-	
-	ShowCursor(true);
-	//t.join();
+	data->ShowMouse();
 	//release everything
-	resources->ReleaseResources();
-	soundHandler->ShutdownDirectSound();
-	g->ReleaseAll();
+	resources->Release();
+	soundHandler->Release();
+	g->Release();
 	delete inputHandler;
+	delete data;
 	delete resources;
 	delete g;
 	delete soundHandler;
@@ -381,7 +375,7 @@ void ThempX::CheckDevice()
 	HRESULT result = p_Device->TestCooperativeLevel();
 	if(result == D3DERR_DEVICELOST)
 	{
-		data.lockCursor = false;
+		data->lockCursor = false;
 		resources->LostDeviceAllText();
 		return;
 	}
@@ -390,21 +384,21 @@ void ThempX::CheckDevice()
 		resources->LostDeviceAllText();
 		while(result != D3D_OK)
 		{
-			result = p_Device->Reset(&data.d3dxpresentationparams);
+			result = p_Device->Reset(&data->d3dxpresentationparams);
 			if(result == D3D_OK)
 			{
 				SetDefaultRenderStateSettings();
 				g->ReloadGUI();
 			}
-			Sleep(200);
+			//Sleep(50);
 		}
 	//	CheckDevice();
 		return;
 	}
 	if(result == D3DERR_DRIVERINTERNALERROR)
 	{
-		data.applicationActive = false;
-		data.loop = false;
+		data->applicationActive = false;
+		data->loop = false;
 		return;
 	}
 	if(result == D3D_OK)
@@ -416,8 +410,8 @@ void ThempX::CheckDevice()
 		int windowPosX = winInfo.rcWindow.left;
 		int windowPosY = winInfo.rcWindow.top;
 		SetCursorPos(windowPosX+(windowSizeX/2),windowPosY+(windowSizeY/2));
-		data.applicationActive = true;
-		data.loop = true;
+		data->applicationActive = true;
+		data->loop = true;
 		return;
 	}
 }
@@ -437,7 +431,7 @@ void ThempX::Update()
 
 	g->Update(delta);
 }
-//FixedUpdate, this will run every iteration of the main game loop
+//FixedUpdate, this will run every iteration of the main game loop, which can be very intensive, only use if you need utmost precision
 void ThempX::FixedUpdate()
 {
 	oldFixedDelta = newFixedDelta;
@@ -492,7 +486,7 @@ LPDIRECT3DDEVICE9 ThempX::InitializeDevice(HWND han_WindowToBindTo)
 	if (p_dx_Object == NULL)
 	{
 		MessageBox(han_WindowToBindTo,"DirectX Runtime library not installed!","InitializeDevice()",MB_OK);
-		data.loop = false;
+		data->loop = false;
 		return 0;
 	}
 	//////////////////////////////////////////
@@ -502,7 +496,7 @@ LPDIRECT3DDEVICE9 ThempX::InitializeDevice(HWND han_WindowToBindTo)
 	D3DPRESENT_PARAMETERS dx_PresParams;
  
 	ZeroMemory( &dx_PresParams, sizeof(dx_PresParams)); 
-	if(data.windowed)
+	if(data->windowed)
 	{
 		dx_PresParams.Windowed = TRUE;
 		dx_PresParams.BackBufferFormat = D3DFMT_UNKNOWN;
@@ -556,22 +550,22 @@ LPDIRECT3DDEVICE9 ThempX::InitializeDevice(HWND han_WindowToBindTo)
 			break;
 		case D3DERR_DEVICELOST: 
 			MessageBox(han_WindowToBindTo,"Error: Device Lost (Software Mode), Quitting engine","InitializeDevice()",MB_OK);
-			data.loop = false;
+			data->loop = false;
 			return 0;
 			break;
 		case D3DERR_INVALIDCALL:
 			MessageBox(han_WindowToBindTo,"Error: Invalid Call (Software Mode), Quitting engine","InitializeDevice()",MB_OK);
-			data.loop = false;
+			data->loop = false;
 			return 0;
 			break; 
 		case D3DERR_NOTAVAILABLE:
 			MessageBox(han_WindowToBindTo,"Error: No Device Available (Software Mode), Quitting engine","InitializeDevice()",MB_OK);
-			data.loop = false;
+			data->loop = false;
 			return 0;
 			break;  
 		case D3DERR_OUTOFVIDEOMEMORY: 
 			MessageBox(han_WindowToBindTo,"Error: Out of Video Memory (Software Mode), Quitting engine","InitializeDevice()",MB_OK);
-			data.loop = false;
+			data->loop = false;
 			return 0;
 			break;
 		}

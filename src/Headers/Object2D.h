@@ -71,7 +71,7 @@ public:
 
 	void Update(float deltaTime);
 	void SetUVValues();
-	bool PlayAnimation(std::string aName, bool waitEnd = false);
+	bool PlayAnimation(std::string aName, bool waitEnd = false, bool overrideAll = false);
 	bool IsAnimFinished(std::string anim);
 	void CheckPlayingAnimation(std::string playAnimFinished);
 	Animation GetAnimation(std::string aName);

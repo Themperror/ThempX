@@ -8,7 +8,7 @@
 class Enemy
 {
 public:
-	enum EnemyState{Moving,Shooting,Dead,Idle,Damaged};
+	enum EnemyState{Moving,Shooting,Dead,Idle,Damaged}; //remove later
 	enum MovementState{Forward,Left,Right,Back};
 	struct Bullet
 	{
@@ -31,27 +31,21 @@ public:
 	void SetInfo(PxVec3 playerPosition, PxVec3 pRight);
 	void Update(float dT);
 	void Nullify();
-	Object2D* obj;
-	PxRigidActor* actor;
-	float Health;
-	float Damage;
-	bool IsDead;
-	bool PlayAnimAfterCurrent;
-	float lastTimeShot;
-	float shootDelay;
-	float movementSwitchTime;
-	float currentMoveTime;
-	float movementSpeed;
-	EnemyState cState;
-	EnemyState prevState;
-	MovementState cMState;
-	D3DXVECTOR3 originalPos;
-	D3DXVECTOR3 moveDir;
-	D3DXVECTOR3 lookDirection;
-	float colRadius;
-	float colCapsuleHeight;
 	void SetPos(D3DXVECTOR3 pos);
 	void RenderBullets(D3DXMATRIX* camView);
+	inline void Release()
+	{
+		if(obj != NULL)
+		{
+			obj->ReleaseResources();
+			delete obj;
+			obj = NULL;
+		}
+	}
+	inline bool IsDead()
+	{
+		return isDead;
+	}
 	inline std::string LowCaseString(std::string string)
 	{
 		std::string newString = string;
@@ -61,10 +55,70 @@ public:
 		}
 		return newString;
 	}
+	inline void SetHealth(float amount)
+	{
+		enemyHP = amount;
+	}
+	inline void SetAttackDelay(float amount)
+	{
+		shootDelay = amount;
+	}
+	inline void SetDamage(float amount)
+	{
+		enemyDamage = amount;
+	}
+	inline Object2D* GetObj()
+	{
+		return obj;
+	}
+	inline PxRigidActor* GetActor()
+	{
+		return actor;
+	}
+	inline void SetActorNull() //only use after cleaning up actor
+	{
+		actor = NULL;
+	}
+	inline void SetSpeed(float amount)
+	{
+		movementSpeed  = amount;
+	}
+	inline float GetCollisionRadius()
+	{
+		return colRadius;
+	}
+	inline float GetCollisionHeight()
+	{
+		return colCapsuleHeight;
+	}
+	inline float GetHealth()
+	{
+		return enemyHP;
+	}
+	inline void SetObj(Object2D* o)
+	{
+		obj = o;
+	}
+	inline void SetActor(PxRigidActor* a)
+	{
+		actor = a;
+	}
+	inline void SetColRadius(float rad)
+	{
+		colRadius = rad;
+	}
+	inline void SetColHeight(float height)
+	{
+		colCapsuleHeight = height;
+	}
+
+
+
+
 private:
 	
-	int* health;
-	int* armour;
+	int* health; //pointer to GUI.health
+	int* armour; //pointer to GUI.armour
 	ResourceManager* resources;
 	PhysXEngine* physics;
 	PxVec3 playerRight;
@@ -75,6 +129,31 @@ private:
 	void Move(D3DXVECTOR3 dir, float dT);
 	void UpdateBullets(float deltaTimeF);
 	void CreateBullet(PxVec3 origin, PxVec3 dir);
+	
+	//Behaviour
+	float enemyHP;
+	float enemyDamage;
+	bool isDead;
+	float shootDelay;
+	float movementSpeed;
+
+	//cooldown timers
+	float movementSwitchTime;
+	float currentMoveTime;
+	float lastTimeShot;
+
+	float colRadius;
+	float colCapsuleHeight;
+
+	//misc
+	Object2D* obj;
+	PxRigidActor* actor;
+	EnemyState cState;
+	EnemyState prevState;
+	MovementState cMState;
+	D3DXVECTOR3 originalPos;
+	D3DXVECTOR3 moveDir;
+	D3DXVECTOR3 lookDirection;
 
 	inline float Vector3Distance(D3DXVECTOR3* a, D3DXVECTOR3* b)
 	{

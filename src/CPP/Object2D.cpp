@@ -497,7 +497,7 @@ void Object2D::LoadAnimation()
 	}
 	fin.close();
 }
-bool Object2D::PlayAnimation(std::string aName, bool waitEnd)
+bool Object2D::PlayAnimation(std::string aName, bool waitEnd, bool overrideAll)
 {
 	std::string name = LowCaseString(aName);
 	for(unsigned int i=0; i < animations.size();i++)
@@ -506,7 +506,7 @@ bool Object2D::PlayAnimation(std::string aName, bool waitEnd)
 		{
 			if(currentlyPlayingAnimation.compare("") != 0)
 			{
-				if(!GetCurrentAnim()->waitForEnd || !GetCurrentAnim()->waitForEnd && waitEnd)
+				if(!GetCurrentAnim()->waitForEnd || !GetCurrentAnim()->waitForEnd && waitEnd  || overrideAll)
 				{
 					currentXAnimValue = (int)animations.at(i).StartPosition.x;
 					currentYAnimValue = (int)animations.at(i).StartPosition.y;

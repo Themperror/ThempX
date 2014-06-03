@@ -100,6 +100,7 @@ public:
 	GUITexture* levelCompleteGUI;
 	ResourceManager::TextData* healthText;
 	ResourceManager::TextData* armourText;
+	ResourceManager::TextData* gameOverText;
 	inline GUITexture* GetGUIObj(std::string sname)
 	{
 		std::string name = LowCaseString(sname);

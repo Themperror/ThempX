@@ -20,6 +20,15 @@ class ResourceManager
 public:
 	struct DataStruct
 	{
+		public:
+		DataStruct()
+		{
+			loop = true;
+			lockCursor = false;
+			changeDisplay = false;
+			showingMouse = true;
+			applicationActive = true;
+		}
 		bool loop;
 		bool lockCursor;
 		bool changeDisplay;
@@ -31,6 +40,24 @@ public:
 		int devmodeIndex;
 		D3DPRESENT_PARAMETERS d3dxpresentationparams;
 		bool applicationActive;
+		void HideMouse()
+		{
+			if(showingMouse == true)
+			{
+				ShowCursor(false);
+				showingMouse = false;
+			}
+		}
+		void ShowMouse()
+		{
+			if(showingMouse == false)
+			{
+				ShowCursor(true);
+				showingMouse = true;
+			}
+		}
+		private:
+		bool showingMouse;
 	};
 	struct Model
 	{
@@ -74,7 +101,7 @@ public:
 	};
 	
 	ResourceManager(LPDIRECT3DDEVICE9 d3d_Device, HWND handle);
-	void ReleaseResources();
+	void Release();
 	int GetMeshData(std::string mName);
 	LPDIRECT3DTEXTURE9 GetTexture(std::string tName);
 	inline LPDIRECT3DDEVICE9 GetDevice()
@@ -85,6 +112,15 @@ public:
 	{
 		return wHandle;
 	}
+	inline void HideMouse()
+	{
+		data->HideMouse();
+	}
+	inline void ShowMouse()
+	{
+		data->ShowMouse();
+	}
+
 	inline void GetDesktopResolution(int& x, int& y)
 	{
 		RECT desktop;

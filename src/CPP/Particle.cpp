@@ -1,9 +1,11 @@
 #include "../Headers/Particle.h"
 
-Particle::Particle(ResourceManager* res,LPDIRECT3DDEVICE9 device,char* textureP,D3DXMATRIX* camView, D3DXVECTOR3 pos,int minParticles,int maxParticles, float minLife, float maxLife)
+Particle::Particle(ResourceManager* res,LPDIRECT3DDEVICE9 device,char* textureP,D3DXMATRIX* camView, D3DXVECTOR3 pos,unsigned int minParticles,unsigned int maxParticles, float minLife, float maxLife)
 {
 	resources = res;
 	p_Device = device;
+	minParticlesAmount = 0;
+	maxParticlesAmount = 0;
 	texturePath = textureP;
 	cameraView = camView;
 	position = pos;
@@ -20,7 +22,34 @@ Particle::Particle(ResourceManager* res,LPDIRECT3DDEVICE9 device,char* textureP,
 	mat = m;
 	vBuffer = FillCustomVertices(D3DXVECTOR2(-0.5f,-0.5f),D3DXVECTOR2(0.5f,0.5f));
 	iBuffer = FillIndices();
-
+}
+Particle::Particle(ResourceManager* res,LPDIRECT3DDEVICE9 device,char* textureP,D3DXMATRIX* camView, D3DXVECTOR3 pos, bool burst, float life, D3DXVECTOR3 dirMin,D3DXVECTOR3 dirMax)
+{
+	resources = res;
+	p_Device = device;
+	minParticlesAmount = 0;
+	maxParticlesAmount = 0;
+	texturePath = textureP;
+	cameraView = camView;
+	position = pos;
+	texture = res->GetTexture(texturePath);
+	SetEllipsoid(D3DXVECTOR3(5,1,5));
+	SetLifeTime(1,3);
+	SetParticleCount(200,500);
+	SetCreationSpeed(0.005f);
+	updateTimer = 0;
+	D3DMATERIAL9 m;
+	ZeroMemory(&m,sizeof(m));
+	m.Ambient = D3DXCOLOR(128,128,128,128);
+	m.Diffuse = D3DXCOLOR(128,128,128,128);
+	mat = m;
+	vBuffer = FillCustomVertices(D3DXVECTOR2(-0.5f,-0.5f),D3DXVECTOR2(0.5f,0.5f));
+	iBuffer = FillIndices();
+	currentWholeLife = 0;
+	burstFinished = false;
+	burstMode = true;
+	wholeLife = life;
+	SetMovement(dirMin,dirMax);
 }
 void Particle::Release()
 {
@@ -122,6 +151,16 @@ LPDIRECT3DINDEXBUFFER9 Particle::FillIndices()
 void Particle::Update(float deltaTime)
 {
 	updateTimer+=deltaTime;
+	if(burstMode)
+	{
+		currentWholeLife+=deltaTime;
+		if(wholeLife < currentWholeLife)
+		{
+			burstFinished = true;
+		}
+	}
+
+
 	unsigned int pSize = GetSize();
 	if(pSize < minParticlesAmount)
 	{
@@ -131,7 +170,7 @@ void Particle::Update(float deltaTime)
 		}
 		pSize = GetSize();
 	}
-	if(pSize > minParticlesAmount && pSize < maxParticlesAmount && updateTimer > creationSpeed)
+	if(pSize > minParticlesAmount && pSize < maxParticlesAmount && updateTimer > creationSpeed && !burstMode)
 	{
 		updateTimer = 0;
 		CreateParticle();
@@ -165,6 +204,7 @@ void Particle::CreateParticle()
 	p->SetLife(0);
 	p->SetMaxLife(RandomFloat(minLifeTime,maxLifeTime));
 	p->SetPosition((rand()%2==TRUE ? RandomFloat(0,ellipsoid.x) : -RandomFloat(0,ellipsoid.x)) + position.x,(rand()%2==TRUE ? RandomFloat(0,ellipsoid.y) : -RandomFloat(0,ellipsoid.y)) + position.y,(rand()%2==TRUE ? RandomFloat(0,ellipsoid.z) : -RandomFloat(0,ellipsoid.z)) + position.z);
+	p->SetMoveDir(D3DXVECTOR3(RandomFloat(minMovement.x,maxMovement.x), RandomFloat(minMovement.y,maxMovement.y),RandomFloat(minMovement.z,maxMovement.z)));
 	particles.push_back(p);
 }
 void Particle::DestroyParticle(int index)
@@ -178,7 +218,7 @@ void Particle::MoveParticle(D3DXVECTOR3 min, D3DXVECTOR3 max,float deltaTime)
 	for(unsigned int i = 0; i < GetSize();i++)
 	{
 		Particle2D* obj = particles.at(i);
-		obj->AddPosition((float)RandomFloat(min.x,max.x)*deltaTime, (float)RandomFloat(min.y,max.y)*deltaTime, (float)RandomFloat(min.z,max.z)*deltaTime);
+		obj->AddPosition(obj->GetMoveDir().x*deltaTime,obj->GetMoveDir().y*deltaTime,obj->GetMoveDir().z*deltaTime);
 	}
 }
 void Particle::CheckLifeTime()

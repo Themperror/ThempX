@@ -11,6 +11,14 @@ Enemy::Enemy(ResourceManager* res, PhysXEngine* phys, int* hp, int* armor)
 }
 void Enemy::Move(D3DXVECTOR3 dir, float dT)
 {
+	if(!physics->RaycastAny(actor->getGlobalPose().p-PxVec3(0,colCapsuleHeight/1.5f,0),PxVec3(0,-1,0).getNormalized(),3))
+	{
+		dir.y = -9.8f*dT*4;
+		if(obj->position.y < -15)
+		{
+			obj->position.y = -9;
+		}
+	}
 	obj->position += dir*dT;
 	if(actor->isRigidDynamic() != NULL) actor->isRigidDynamic()->setKinematicTarget(PxTransform(PxVec3(obj->position.x,obj->position.y,obj->position.z)));
 }
@@ -42,9 +50,8 @@ void Enemy::UpdateBullets(float deltaTimeF)
 	{
 		Bullet* bullet = bullets.at(i);
 		bullet->bulletLife+=deltaTimeF;
-		//physics->player->setPosition(PxExtendedVec3(bullet->obj->position.x,bullet->obj->position.y,bullet->obj->position.z));
 		bullet->obj->position += bullet->direction*deltaTimeF*55;
-		PxRaycastBuffer hit = physics->RaycastSingle(PxVec3(bullet->obj->position.x,bullet->obj->position.y,bullet->obj->position.z),PxVec3(bullet->direction.x,bullet->direction.y,bullet->direction.z),2);
+		PxRaycastBuffer hit = physics->RaycastSingle(PxVec3(bullet->obj->position.x,bullet->obj->position.y,bullet->obj->position.z),PxVec3(bullet->direction.x,bullet->direction.y,bullet->direction.z).getNormalized(),2);
 		if(hit.block.actor != NULL)
 		{
 			if(hit.block.actor == physics->player->getActor())
@@ -102,7 +109,8 @@ void Enemy::UpdateBullets(float deltaTimeF)
 void Enemy::Update(float dT)
 {
 	UpdateBullets(dT);
-	if(!IsDead)
+	obj->Update(dT);
+	if(!isDead)
 	{
 		currentMoveTime += dT;
 		if(currentMoveTime > movementSwitchTime)
@@ -197,18 +205,21 @@ void Enemy::CheckShooting(float dist, float deltaTime)
 {
 	PxExtendedVec3 pPos = physics->player->getPosition();
 	PxVec3 ori = actor->getGlobalPose().p;
-	PxVec3 dir = (ori - PxVec3(pPos.x,pPos.y,pPos.z)).getNormalized();
-	PxRaycastBuffer hit = physics->RaycastSingle(ori-dir*3,-dir,dist);
-	if(hit.block.actor != NULL && hit.block.actor == physics->player->getActor())
+	PxVec3 dir = -(ori - PxVec3(pPos.x,pPos.y,pPos.z));
+	dir.normalize();
+
+	PxRaycastHit* hit = physics->RaycastMultiple(ori+dir*2.8f,dir,dist,PxQueryFlag::eSTATIC | PxQueryFlag::eDYNAMIC);
+	if(hit[0].actor != NULL && hit[0].actor == physics->player->getActor())
 	{
-		std::cout << " Seeing Player " << std::endl;
 		lastTimeShot+=deltaTime;
 		if(lastTimeShot > shootDelay)
 		{
 			obj->PlayAnimation("Shoot",true);
+			moveDir *= 0.1f;
 			if(obj->GetCurrentAnim()->doAction)
 			{
-				CreateBullet(ori-dir*3,-dir);
+				CreateBullet(ori+dir*2.5f,dir);
+				currentMoveTime = 9999.0f;
 				lastTimeShot = 0;
 				resources->GetSoundHandler()->PlayWaveFile("piew");
 				obj->GetCurrentAnim()->doAction = false;
@@ -220,7 +231,8 @@ void Enemy::CheckFutureCollision()
 {
 	PxVec3 pos = actor->getGlobalPose().p;
 	PxVec3 dirMove = PxVec3(moveDir.x,0,moveDir.z);
-	PxRaycastHit* hit = physics->RaycastMultiple(pos-PxVec3(0,1,0),dirMove.getNormalized(),3.5f,PxQueryFlag::eSTATIC | PxQueryFlag::eDYNAMIC);
+	dirMove.normalize();
+	PxRaycastHit* hit = physics->RaycastMultiple(pos-PxVec3(0,1.5f,0),dirMove,3.5f,PxQueryFlag::eSTATIC | PxQueryFlag::eDYNAMIC);
 	if(hit[0].actor != NULL && hit[0].distance > 0.1f)
 	{
 		currentMoveTime = 0;
@@ -249,19 +261,32 @@ void Enemy::SetCState(Enemy::EnemyState s)
 }
 void Enemy::TakeDamage(float damage)
 {
-	Health -= damage;
-	if(Health <= 0)
+	enemyHP -= damage;
+	if(enemyHP <= 0)
 	{
-		obj->PlayAnimation("Death",true);
-		PlayAnimAfterCurrent = false;
-		IsDead = true;
+		std::vector<std::string> names;
+		names.push_back("MAN1DIE1");
+		names.push_back("MAN1DIE2");
+		resources->GetSoundHandler()->PlayRandom(&names);
+		obj->PlayAnimation("Death",true, true);
+		isDead = true;
 	}
 	else
 	{
+		std::vector<std::string> names;
+		names.push_back("MAN1HIT1");
+		names.push_back("MAN1HIT2");
+		names.push_back("MAN1HIT3");
+		resources->GetSoundHandler()->PlayRandom(&names);
 		prevState = cState;
 		cState = Damaged;
-		//obj->PlayAnimation("Damage");
-		PlayAnimAfterCurrent = true;
+		switch(cMState)
+		{
+			case Forward:  obj->PlayAnimation("DamageF",true); break;
+			case Left:  obj->PlayAnimation("DamageL",true); break;
+			case Right:  obj->PlayAnimation("DamageR",true); break;
+			case Back:  obj->PlayAnimation("DamageB",true); break;
+		}
 	}
 }
 void Enemy::SetPos(D3DXVECTOR3 pos)
@@ -271,21 +296,21 @@ void Enemy::SetPos(D3DXVECTOR3 pos)
 }
 void Enemy::Nullify()
 {
-	Health = 0;
-	Damage = 0;
-	cState = EnemyState::Moving;
-	cMState = MovementState::Forward;
-	lastTimeShot = 1.0f;
+	enemyHP = 0;
+	enemyDamage = 0;
+	cState = Moving;
+	cMState = Forward;
+	lastTimeShot = 0.5f;
 	movementSpeed = 4;
-	movementSwitchTime = 2;
-	moveDir = D3DXVECTOR3(0,0,0);
+	currentMoveTime = 9999.0f;
+	movementSwitchTime = 1.0f;
+	moveDir = D3DXVECTOR3(0.1f,0,0.1f);
 	currentMoveTime = 0;
 	originalPos = D3DXVECTOR3(0,0,0);
-	shootDelay = 2.0f;
+	shootDelay = 1.0f;
 	obj = NULL;
 	actor = NULL;
-	IsDead = false;
+	isDead = false;
 	colRadius= 0;
 	colCapsuleHeight = 0;
-	PlayAnimAfterCurrent = true;
 }

@@ -9,7 +9,6 @@ class Menu
 {
 public:
 	Menu ( bool* loop, ResourceManager* res, InputHandler* inputHandler);
-	~Menu();
 	InputHandler* input;
 	POINT mousePos;
 
@@ -23,6 +22,7 @@ public:
 	void StartGame();
 	void Quit();
 	void Credits();
+	void Release();
 private:
 	struct Button
 	{

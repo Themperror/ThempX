@@ -7,8 +7,8 @@
 class Particle
 {
 public:
-	Particle(ResourceManager* res,LPDIRECT3DDEVICE9 device,char* textureP,D3DXMATRIX* camView, D3DXVECTOR3 pos,int minParticles,int maxParticles, float minLife, float maxLife);
-	
+	Particle(ResourceManager* res,LPDIRECT3DDEVICE9 device,char* textureP,D3DXMATRIX* camView, D3DXVECTOR3 pos,unsigned int minParticles = 200,unsigned int maxParticles = 500, float minLife = 1, float maxLife = 3);
+	Particle(ResourceManager* res,LPDIRECT3DDEVICE9 device,char* textureP,D3DXMATRIX* camView, D3DXVECTOR3 pos, bool burst = true, float life = 2, D3DXVECTOR3 dirMin = D3DXVECTOR3(0,0,0) ,D3DXVECTOR3 dirMax = D3DXVECTOR3(0,0,0));
 	void Update(float deltaTime);
 	void Draw(D3DXMATRIX* camView);
 	void Release();
@@ -21,6 +21,10 @@ public:
 	{
 		maxLifeTime = max;
 		minLifeTime = min;
+	}
+	inline bool GetBurstFinished()
+	{
+		return burstFinished;
 	}
 	inline void SetParticleCount(unsigned int min,unsigned int max)
 	{
@@ -42,16 +46,20 @@ public:
 	}
 private:	
 
+	bool burstMode; //if the class only has a burst then dies;
+	float currentWholeLife;
+	float wholeLife; //the amount of time the particle class will live;
+	bool burstFinished;
 
-	double creationSpeed;
-	D3DXVECTOR3 minMovement;
-	D3DXVECTOR3 maxMovement;
-	unsigned int maxParticlesAmount;
-	unsigned int minParticlesAmount;
-	D3DXVECTOR3 position;
-	float maxLifeTime;
-	float minLifeTime;
-	D3DXVECTOR3 ellipsoid;
+	double creationSpeed; //how fast particles will generate after reaching minimum value;
+	D3DXVECTOR3 minMovement; //movement direction min
+	D3DXVECTOR3 maxMovement;//movement direction min
+	unsigned int maxParticlesAmount; //max amount of paticles;
+	unsigned int minParticlesAmount; //min amount of particles;
+	D3DXVECTOR3 position; //position;
+	float maxLifeTime; //max lifetime of a particle;
+	float minLifeTime; //min lifetime of a particle;
+	D3DXVECTOR3 ellipsoid; //particle spawning radius
 
 	HWND handleWindow;
 	LPDIRECT3DINDEXBUFFER9 iBuffer;

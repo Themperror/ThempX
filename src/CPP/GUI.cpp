@@ -6,8 +6,10 @@ GUI::GUI( LPDIRECT3DDEVICE9 d3dDev, ResourceManager* res)
 	resources = res;
 
 	health = 100;
-	armour = 100;
+	armour = 0;
 	healthText = resources->GetText(resources->CreateTextObject("Arial","Health: ",20,8,84,10,20,D3DXCOLOR(1,1,1,1)));
+	gameOverText = resources->GetText(resources->CreateTextObject("System","Game Over",46,28,50,100,100,0xFFFF0000));
+	gameOverText->render = false;
 	armourText = resources->GetText(resources->CreateTextObject("Arial","Armour: ",20,8,92,10,40,D3DXCOLOR(1,1,1,1)));
 	
 	LoadGUI();
@@ -99,7 +101,6 @@ void GUI::LoadGUI()
 			}
 			else
 			{
-				//std::cout << "should be made" << std::endl;
 				if(!CreateGUIObject(rect,_strdup(path.c_str())))
 				{
 					fin.close();
@@ -422,6 +423,11 @@ void GUI::DrawAllText()
 		armourT.append(ss.str());
 		armourText->text = _strdup(armourT.c_str());
 		armourText->DrawFont();
+	}
+	if(gameOverText != NULL && gameOverText->render)
+	{
+		gameOverText->text = "         Game Over..\n\n Press R to restart game.";
+		gameOverText->DrawFont();
 	}
 }
 void GUI::Render()

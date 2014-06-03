@@ -3,7 +3,7 @@
 SoundHandler::SoundHandler(HWND handle,DWORD samplesPerSec,WORD bitsPerSample, WORD channels)
 {
 	initialized = false;
-	m_DirectSound = NULL;
+	directSound = NULL;
 //	m_primaryBuffer = NULL;
 //	samplesSecond = samplesPerSec;
 	//bitsSample = bitsPerSample;
@@ -22,6 +22,34 @@ bool SoundHandler::Initialize(HWND hwnd)
 		return false;
 	}
 	return true;
+}
+void SoundHandler::Stop(std::string tag)
+{
+	std::string name = LowCaseString(tag);
+	for(unsigned int i = 0; i < currentlyPlayingSounds.size();i++)
+	{
+		if(currentlyPlayingSounds.at(i)->name.compare(name) == 0)
+		{
+			DWORD status = NULL;
+			currentlyPlayingSounds.at(i)->soundBuffer->GetStatus(&status);
+			if(status & DSBSTATUS_PLAYING)
+			{
+				currentlyPlayingSounds.at(i)->soundBuffer->Stop();
+			}
+		}
+	}
+	for(unsigned int i = 0; i < sounds.size();i++)
+	{
+		if(sounds.at(i)->name.compare(name) == 0)
+		{
+			DWORD status = NULL;
+			sounds.at(i)->soundBuffer->GetStatus(&status);
+			if(status & DSBSTATUS_PLAYING)
+			{
+				sounds.at(i)->soundBuffer->Stop();
+			}
+		}
+	}
 }
 bool SoundHandler::IsPlaying(std::string tag)
 {
@@ -59,15 +87,15 @@ bool SoundHandler::InitializeDirectSound(HWND hwnd)
 	DSBUFFERDESC bufferDesc;
 //	WAVEFORMATEX waveFormat;
  
-	result = DirectSoundCreate8(NULL, &m_DirectSound, NULL);
-	if(FAILED(result))
+	result = DirectSoundCreate8(NULL, &directSound, NULL);
+	if(result != DS_OK)
 	{
 		return false;
 	}
  
 	// Set the cooperative level
-	result = m_DirectSound->SetCooperativeLevel(hwnd, DSSCL_PRIORITY);
-	if(FAILED(result))
+	result = directSound->SetCooperativeLevel(hwnd, DSSCL_PRIORITY);
+	if(result != DS_OK)
 	{
 		return false;
 	}
@@ -80,7 +108,7 @@ bool SoundHandler::InitializeDirectSound(HWND hwnd)
 	bufferDesc.guid3DAlgorithm = GUID_NULL;
  
 	/*// Get the default sound device.
-	result = m_DirectSound->CreateSoundBuffer(&bufferDesc, &m_primaryBuffer, NULL);
+	result = directSound->CreateSoundBuffer(&bufferDesc, &m_primaryBuffer, NULL);
 	if(FAILED(result))
 	{
 		return false;
@@ -103,9 +131,9 @@ bool SoundHandler::InitializeDirectSound(HWND hwnd)
 	*/
 	return true;
 }
-void SoundHandler::ShutdownDirectSound()
+void SoundHandler::Release()
 {
-	// Release the primary sound buffer pointer.
+	//Release all currently playing sounds
 	for(unsigned int i = 0; i < currentlyPlayingSounds.size();i++)
 	{
 		if(currentlyPlayingSounds.at(i)->soundBuffer != NULL)
@@ -114,6 +142,7 @@ void SoundHandler::ShutdownDirectSound()
 		}
 	}
 
+	//Release all main sounds
 	for(unsigned int i = 0; i < sounds.size();i++)
 	{
 		if(sounds.at(i)->soundBuffer != NULL)
@@ -121,19 +150,11 @@ void SoundHandler::ShutdownDirectSound()
 			sounds.at(i)->soundBuffer->Release();
 		}
 	}
-	
-	/*
-	if(m_primaryBuffer != NULL)
+	//shutdown directsound itself
+	if(directSound)
 	{
-		m_primaryBuffer->Release();
-		m_primaryBuffer = NULL;
-	}*/
- 
-	// Release the direct sound pointer.
-	if(m_DirectSound)
-	{
-		m_DirectSound->Release();
-		m_DirectSound = NULL;
+		directSound->Release();
+		directSound = NULL;
 	}
  
 	return;
@@ -258,8 +279,8 @@ bool SoundHandler::LoadWaveFile(std::string filename,std::string tag, DWORD samp
 		bufferDesc.lpwfxFormat = &waveFormat;
 		bufferDesc.guid3DAlgorithm = GUID_NULL;
 
-		result = m_DirectSound->CreateSoundBuffer(&bufferDesc, &tempBuffer, NULL);
-		if(FAILED(result))
+		result = directSound->CreateSoundBuffer(&bufferDesc, &tempBuffer, NULL);
+		if(result != DS_OK)
 		{
 			std::cout << "result create soundbuffer false" << std::endl;
 			return false;
@@ -267,7 +288,7 @@ bool SoundHandler::LoadWaveFile(std::string filename,std::string tag, DWORD samp
  
 		// Test the buffer format against the direct sound 8 interface and create the secondary buffer.
 		result = tempBuffer->QueryInterface(IID_IDirectSoundBuffer8, (void**)&data->soundBuffer);
-		if(FAILED(result))
+		if(result != DS_OK)
 		{
 			std::cout << "result query interface false" << std::endl;
 			return false;
@@ -312,7 +333,7 @@ bool SoundHandler::LoadWaveFile(std::string filename,std::string tag, DWORD samp
  
 		// Unlock the secondary buffer after the data has been written to it.
 		result = data->soundBuffer->Unlock((void*)bufferPtr, bufferSize, NULL, 0);
-		if(FAILED(result))
+		if(result != DS_OK)
 		{
 			return false;
 		}
@@ -360,7 +381,7 @@ bool SoundHandler::PlayWaveFile(std::string sName, DWORD volume)
 				if(status & DSBSTATUS_PLAYING)
 				{
 					IDirectSoundBuffer* duplicate;
-					m_DirectSound->DuplicateSoundBuffer(sounds.at(i)->soundBuffer,&duplicate);
+					directSound->DuplicateSoundBuffer(sounds.at(i)->soundBuffer,&duplicate);
 
 					SoundData* data = new SoundData();
 

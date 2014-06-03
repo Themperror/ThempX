@@ -37,7 +37,7 @@ Menu::Menu(bool* loop, ResourceManager* res, InputHandler* inputHandler)
 
 	ShowMenu(StartScreen);
 }
-Menu::~Menu()
+void Menu::Release()
 {
 	for(unsigned int i=0; i < buttons.size();i++)
 	{
@@ -48,7 +48,7 @@ Menu::~Menu()
 }
 void Menu::ShowMenu(MenuState state)
 {
-	ShowCursor(true);
+	resources->ShowMouse();
 	resources->GetDevice()->SetRenderState(D3DRS_FILLMODE,D3DFILL_SOLID);
 	mState = state;
 	LARGE_INTEGER currentTicks;
@@ -58,7 +58,7 @@ void Menu::ShowMenu(MenuState state)
 	LONGLONG deltaTimerPrecision = 10000;
 
 	resources->SetTextRenderingFalse();
-
+	resources->GetSoundHandler()->PlayWaveFile("menu",95);
 	if(state == StartScreen)
 	{
 		StartButton->render = true;
@@ -113,8 +113,7 @@ void Menu::ShowMenu(MenuState state)
 		}
 		Sleep(1);
 	}
-	
-	ShowCursor(false);
+	resources->HideMouse();
 }
 void Menu::Back()
 {
@@ -194,6 +193,7 @@ void Menu::DrawButtons()
 }
 void Menu::StartGame()
 {
+	resources->GetSoundHandler()->Stop("menu");
 	started = true;
 }
 void Menu::Quit()

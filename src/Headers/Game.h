@@ -135,18 +135,21 @@ public:
 
 		bool hasRedKey;
 		bool hasGreenKey;
-
+		bool isDead;
+		bool lockCam;
 		Player(Camera* camera, PxController* controller)
 		{
 			cam = camera;
 			physicsPlayer = controller;
 			hasRedKey = false;
 			hasGreenKey = false;
+			isDead = false;
+			lockCam = true;
 		}
 		D3DXVECTOR3 GetD3DXPosition()
 		{
 			PxExtendedVec3 p = physicsPlayer->getPosition();
-			return D3DXVECTOR3(p.x,p.y,p.z);
+			return D3DXVECTOR3((float)p.x,(float)p.y,(float)p.z);
 		}
 		PxExtendedVec3 GetPxExtendedVec3Position()
 		{
@@ -155,12 +158,15 @@ public:
 		PxVec3 GetPxVec3Position()
 		{
 			PxExtendedVec3 p = physicsPlayer->getPosition();
-			return PxVec3(p.x,p.y,p.z);
+			return PxVec3((PxReal)p.x,(PxReal)p.y,(PxReal)p.z);
 		}
 		void Move(PxVec3 moveDir, float dT)
 		{
 			physicsPlayer->move(moveDir,0.001f,dT,NULL,NULL);
-			cam->SetPosition(GetD3DXPosition()+D3DXVECTOR3(0,2,0));
+			if(lockCam)
+			{
+				cam->SetPosition(GetD3DXPosition()+D3DXVECTOR3(0,2,0));
+			}
 		}
 	};
 	struct Model
@@ -245,7 +251,7 @@ public:
 				if(!playedSound) 
 				{
 					PxExtendedVec3 pPos = context->physics->player->getPosition();
-					D3DXVECTOR3 dPos = D3DXVECTOR3(pPos.x,pPos.y,pPos.z);
+					D3DXVECTOR3 dPos = D3DXVECTOR3((float)pPos.x,(float)pPos.y,(float)pPos.z);
 					//std::cout << "Player Pos X: " << pPos.x << " Y: " << pPos.y << " Z: " << pPos.z << "   Door Pos X: " << obj->position.x << " Y: " << obj->position.y << " Z: " << obj->position.z << std::endl;
 					float DISTANCE = context->Vector3Distance(&dPos,&obj->position);
 					std::cout << "distance was " << DISTANCE << std::endl;
@@ -329,7 +335,7 @@ public:
 			isKinematic = false;
 			flipNormals = true;
 			flags = NULL;
-			cType = PhysicsType::Uninitialized;
+			cType = Uninitialized;
 			boxHalfWidth = PxVec3(0,0,0);
 			radius = 0;
 			capsuleHeight = 0;
@@ -380,13 +386,13 @@ public:
 	void FixedUpdate(double deltaTime);
 	void Render();
 	void Initialize();
-	void ReleaseAll();
+	void Release();
 	void ReloadGUI();
 	void ReleaseEnemy(Enemy* enemy);
 	void RemoveEnemyCollision(Enemy* enemy);
 	void OpenDoor();
 	void LevelComplete();
-	void PlaceEnemy(std::string textureString, D3DXVECTOR3 position, D3DXVECTOR3 scaling, float xRows,float yRows, float colRadius, float colHeight);
+	void PlaceEnemy(std::string textureString, D3DXVECTOR3 position, D3DXVECTOR3 scaling, int xRows,int yRows, float colRadius, float colHeight);
 	bool Create3DObject(bool hasPhysics,Object3DData* data);
 	bool CreateAnimatedSprite(bool hasPhysics, Object2DData* data);
 	bool CreateStaticSprite(bool hasPhysics, Object2DData* data);
@@ -426,11 +432,11 @@ public:
 		data.isKinematic = isKinematic;
 		if(boxHalf.x == 0 && boxHalf.y == 0 && boxHalf.z == 0)
 		{
-			data.cType = PhysicsData::PhysicsType::BoundingBox;
+			data.cType = PhysicsData::BoundingBox;
 		}
 		else
 		{
-			data.cType = PhysicsData::PhysicsType::Box;
+			data.cType = PhysicsData::Box;
 		}
 		data.boxHalfWidth = boxHalf;
 		return data;
@@ -443,11 +449,11 @@ public:
 		data.isKinematic = isKinematic;
 		if(capHeight == 0)
 		{
-			data.cType = PhysicsData::PhysicsType::Sphere;
+			data.cType = PhysicsData::Sphere;
 		}
 		else
 		{
-			data.cType = PhysicsData::PhysicsType::Capsule;
+			data.cType = PhysicsData::Capsule;
 		}
 		data.radius = radius;
 		data.capsuleHeight = capHeight;
@@ -487,6 +493,7 @@ private:
 	Camera* cam;
 	GUI* gui;
 	void LoadLevel(char* txtPath);
+	void LoadItems(char* txtPath);
 	void DestroyLevel();
 	bool wireframe;
 
@@ -504,7 +511,7 @@ private:
 	int KeyPressed(int key);
 	bool mouseLeftJustDown;
 	bool mouseRightJustDown;
-
+	bool camFall;
 	//editor mode
 	void UndoEditorAction();
 	enum EditorAction{ThrowCube,Dynamic,Static,ModelWithCollision,PlacedDoor,None};

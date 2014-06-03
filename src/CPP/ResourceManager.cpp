@@ -42,8 +42,9 @@ int ResourceManager::CreateTextObject(char* font,char* text,int fontsize, int po
 		texts.push_back(obj);
 		return texts.size()-1;
 	}
+	return 0;
 }
-void ResourceManager::ReleaseResources()	//main data release
+void ResourceManager::Release()	//main data release
 {
 	for(unsigned int i=0;i<models.size();i++)
 	{
