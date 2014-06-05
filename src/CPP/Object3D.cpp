@@ -107,31 +107,31 @@ D3DXVECTOR3 Object3D::GetBoundingBox()
         vertices[i*3+1] =	ptr->y * scaling.y;
         vertices[i*3+2] =	ptr->z * scaling.z;
 		//std::cout << "vertex was: X: " << vertices[i*3] << " Y: " << vertices[i*3+1] << " Z: " << vertices[i*3+2] << std::endl;
-		if(vertices[i*3] < inner.x)
+		D3DXVECTOR3 testVar = D3DXVECTOR3(vertices[i*3],vertices[i*3+1],vertices[i*3+2]);
+		if(testVar.x < inner.x)
 		{
 			inner.x = vertices[i*3];
 		}
-		if(vertices[i*3] > outer.x)
+		if(testVar.x > outer.x)
 		{
 			outer.x = vertices[i*3];
 		}
-		if(vertices[i*3+1] < inner.y)
+		if(testVar.y < inner.y)
 		{
 			inner.y = vertices[i*3+1];
 		}
-		if(vertices[i*3+1] > outer.y)
+		if(testVar.y > outer.y)
 		{
 			outer.y = vertices[i*3+1];
 		}
-		if(vertices[i*3+2] < inner.z)
+		if(testVar.z < inner.z)
 		{
 			inner.z = vertices[i*3+2];
 		}
-		if(vertices[i*3+2] > outer.z)
+		if(testVar.z > outer.z)
 		{
 			outer.z = vertices[i*3+2];
 		}
-
 		vPtr+=vertSize;
 	}
 	float xDistance = (abs(inner.x) + abs(outer.x))/2;

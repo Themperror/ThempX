@@ -45,6 +45,44 @@ Resources/Models/Box.x	Box	-48.82	-12.1099	65.9699	2.78983	2.74663	2.74663	0	0	0
 Resources/Models/Box.x	Box	-81.7541	-10.8486	65.6072	1.69012	5.91373	5.68342	0	0	0	0	0	Box	1	1	0	0	0	1	0	0	0	0	0
 Resources/Models/Box.x	Box	-104.388	-11.0469	23.3685	1.69012	5.91373	5.68342	0	0	0	0	0	Box	1	1	0	0	0	1	0	0	0	0	0
 Resources/Models/Box.x	Box	25.1844	-10.9589	65.8373	1.69012	5.91373	5.68342	0	0	0	0	0	Box	1	1	0	0	0	1	0	0	0	0	0
+Resources/Models/Box.x	Model1	0.875681	-9.38457	11.0179	6.99725	9.57278	7.89959	0	0	0	0	0	Box	1	1	0	0	0	1	0	0	0	0	0
+Resources/Models/Box.x	Model1	0.86618	-9.38457	3.1955	6.99725	9.57278	7.89959	0	0	0	0	0	Box	1	1	0	0	0	1	0	0	0	0	0
+Resources/Models/Box.x	Model1	0.55372	-9.3393	-10.6332	6.99725	9.57278	7.89959	0	0	0	0	0	Box	1	1	0	0	0	1	0	0	0	0	0
+Resources/Models/Box.x	Model1	0.57584	-9.3393	-18.4157	6.99725	9.57278	7.89959	0	0	0	0	0	Box	1	1	0	0	0	1	0	0	0	0	0
+Resources/Models/Box.x	Model1	0.655382	-9.24874	-26.3182	6.99725	9.57278	7.89959	0	0	0	0	0	Box	1	1	0	0	0	1	0	0	0	0	0
+Resources/Models/Box.x	Model1	0.600727	-9.3393	-34.2154	6.99725	9.57278	7.89959	0	0	0	0	0	Box	1	1	0	0	0	1	0	0	0	0	0
+Resources/Models/Box.x	Model1	0.615303	-9.24874	-53.3193	6.99725	9.57278	7.89959	0	0	0	0	0	Box	1	1	0	0	0	1	0	0	0	0	0
+Resources/Models/Box.x	Model1	0.568815	-9.20347	-46.482	6.99806	9.57278	5.73391	0	0	0	0	0	Box	1	1	0	0	0	1	0	0	0	0	0
+Resources/Models/Box.x	Model1	-4.34424	-12.3336	13.0588	3.34819	3.16621	2.75878	0	0	0	0	0	Box	1	1	0	0	0	1	0	0	0	0	0
+Resources/Models/Box.x	Model1	-4.35132	-9.22546	13.6241	3.34819	3.16621	2.75878	0	0	0	0	0	Box	1	1	0	0	0	1	0	0	0	0	0
+Resources/Models/Box.x	Model1	-4.27	-6.18882	13.6621	3.34819	3.16621	2.75878	0	0	0	0	0	Box	1	1	0	0	0	1	0	0	0	0	0
+Resources/Models/Box.x	Model1	-3.79801	-10.8426	5.51676	3.34819	5.87162	2.75878	0	0	0	0	0	Box	1	1	0	0	0	1	0	0	0	0	0
+Resources/Models/Box.x	Model1	-3.72099	-10.8426	2.78158	3.34819	5.87162	2.75878	0	0	0	0	0	Box	1	1	0	0	0	1	0	0	0	0	0
+Resources/Models/Box.x	Model1	-3.21943	-12.2257	-24.8149	2.30869	3.48184	5.41909	0	0	0	0	0	Box	1	1	0	0	0	1	0	0	0	0	0
+Resources/Models/Box.x	Model1	-3.12905	-8.841	-25.6923	2.30869	3.48184	5.41909	0	0	0	0	0	Box	1	1	0	0	0	1	0	0	0	0	0
+Resources/Models/Box.x	Model1	-3.27948	-12.2041	-30.3144	2.30869	3.48184	5.41909	0	0	0	0	0	Box	1	1	0	0	0	1	0	0	0	0	0
+Resources/Models/Box.x	Model1	-3.42793	-9.33845	-29.2122	1.22653	2.53495	2.03734	0	0	0	0	0	Box	1	1	0	0	0	1	0	0	0	0	0
+Resources/Models/Box.x	Model1	-3.31592	-9.40621	-31.1221	1.22653	2.53495	2.03734	0	0	0	0	0	Box	1	1	0	0	0	1	0	0	0	0	0
+Resources/Models/Box.x	Model1	-4.03341	-10.8204	-54.1589	2.57923	6.72833	6.90734	0	0	0	0	0	Box	1	1	0	0	0	1	0	0	0	0	0
+Resources/Models/Box.x	Model1	5.3621	-11.7256	14.2502	1.8154	4.29211	1.58671	0	0	0	0	0	Box	1	1	0	0	0	1	0	0	0	0	0
+Resources/Models/Box.x	Model1	5.24555	-7.46276	14.5677	1.8154	4.29211	1.58671	0	0	0	0	0	Box	1	1	0	0	0	1	0	0	0	0	0
+Resources/Models/Box.x	Model1	5.41737	-11.7037	11.2131	1.8154	4.29211	1.58671	0	0	0	0	0	Box	1	1	0	0	0	1	0	0	0	0	0
+Resources/Models/Box.x	Model1	5.16685	-7.46276	12.6023	1.68013	4.29211	2.62378	0	0	0	0	0	Box	1	1	0	0	0	1	0	0	0	0	0
+Resources/Models/Box.x	Model1	5.17958	-12.6765	-28.9702	2.35648	2.75905	2.39833	0	0	0	0	0	Box	1	1	0	0	0	1	0	0	0	0	0
+Resources/Models/Box.x	Model1	5.33413	-12.6338	-26.6288	2.35648	2.75905	2.39833	0	0	0	0	0	Box	1	1	0	0	0	1	0	0	0	0	0
+Resources/Models/Box.x	Model1	5.38354	-12.5911	-24.2473	2.35648	2.75905	2.39833	0	0	0	0	0	Box	1	1	0	0	0	1	0	0	0	0	0
+Resources/Models/Box.x	Model1	5.3699	-12.5911	-21.928	2.35648	2.75905	2.39833	0	0	0	0	0	Box	1	1	0	0	0	1	0	0	0	0	0
+Resources/Models/Box.x	Model1	5.28273	-10.0372	-23.2382	2.35648	2.75905	2.39833	0	0	0	0	0	Box	1	1	0	0	0	1	0	0	0	0	0
+Resources/Models/Box.x	Model1	5.13776	-10.0372	-25.5217	2.35648	2.75905	2.39833	0	0	0	0	0	Box	1	1	0	0	0	1	0	0	0	0	0
+Resources/Models/Box.x	Model1	4.98121	-10.0372	-27.8538	2.35648	2.75905	2.39833	0	0	0	0	0	Box	1	1	0	0	0	1	0	0	0	0	0
+Resources/Models/Box.x	Model1	5.0494	-7.44025	-26.7354	2.35648	2.75905	2.39833	0	0	0	0	0	Box	1	1	0	0	0	1	0	0	0	0	0
+Resources/Models/Box.x	Model1	5.21376	-7.44025	-24.2869	2.35648	2.75905	2.39833	0	0	0	0	0	Box	1	1	0	0	0	1	0	0	0	0	0
+Resources/Models/Box.x	Model1	5.46028	-4.79311	-25.5207	1.63504	2.75905	2.39833	0	0	0	0	0	Box	1	1	0	0	0	1	0	0	0	0	0
+Resources/Models/Box.x	Model1	5.12232	-11.6818	-52.689	2.03734	4.47193	9.4772	0	0	0	0	0	Box	1	1	0	0	0	1	0	0	0	0	0
+Resources/Models/Box.x	Model1	-149.51	-9.82915	-37.3787	6.68135	7.89878	6.36626	0	0	0	0	0	Box	1	1	0	0	0	1	0	0	0	0	0
+Resources/Models/Box.x	Model1	-150.42	-10.1304	-12.4156	6.68135	7.89878	6.36626	0	0	0	0	0	Box	1	1	0	0	0	1	0	0	0	0	0
+Resources/Models/Box.x	Model1	-184.211	-10.0175	-12.1607	6.68135	7.89878	6.36626	0	0	0	0	0	Box	1	1	0	0	0	1	0	0	0	0	0
+Resources/Models/Box.x	Model1	-184.289	-10.3185	-37.7201	6.68135	7.89878	6.36626	0	0	0	0	0	Box	1	1	0	0	0	1	0	0	0	0	0
 Resources/Models/Bookcase.x	Model2	-1.28871	-10.2368	20.3221	2.2393	2.9278	1.918	0	0	0	0	0	Bookcase	1	1	0	0	0	1	0	0	0	0	0
 Resources/Models/Bookcase.x	Model2	-10.307	-10.4597	20.1583	2.2393	2.9278	1.918	0	0	0	0	0	Bookcase	1	1	0	0	0	1	0	0	0	0	0
 Resources/Models/Bookcase.x	Model2	-74.026	-9.52599	67.5274	2.836	3.4327	2.3311	0	0	0	0	0	Bookcase	1	1	0	0	0	1	0	0	0	0	0
@@ -55,65 +93,6 @@ Resources/Models/chair.x	Model4	-26.0245	-11.9785	44.3073	2.05381	1.8721	2.377	3
 Resources/Models/DeurBlauw.x	Model2	-104.979	-8.72787	-34.0446	5.64643	6.27554	0.81964	0	0	0	0	0	BlueDoor	1	0	1	0	0	1	0	0	0	0	0
 Resources/Models/DeurBreakable.x	Model4	40.4725	-7.95438	-125.841	5.73499	5.73445	1	0	0	0	0	0	BreakableDoor	1	0	1	0	0	1	0	0	0	0	0
 Resources/Models/DeurRood.x	Model3	61.7719	-8.3279	121.892	5.64535	6.05063	1	0	0	0	0	0	RedDoor	1	0	1	0	0	1	0	0	0	0	0
-Resources/AnimationPNG/ManimatieSheet2.png	Enemy	58.1437	0	-1.62693	1	1	1	0	0	0	8	8		1	0	1	0	1	0	0	0	0	1	3
-Resources/AnimationPNG/ManimatieSheet2.png	Enemy	66.1404	0	-15.1441	1	1	1	0	0	0	8	8		1	0	1	0	1	0	0	0	0	1	3
-Resources/AnimationPNG/ManimatieSheet2.png	Enemy	62.1082	0	-5.58653	1	1	1	0	0	0	8	8		1	0	1	0	1	0	0	0	0	1	3
-Resources/AnimationPNG/ManimatieSheet2.png	Enemy	60.7099	0	-13.9613	1	1	1	0	0	0	8	8		1	0	1	0	1	0	0	0	0	1	3
-Resources/AnimationPNG/ManimatieSheet2.png	Enemy	57.5422	0	-14.6648	1	1	1	0	0	0	8	8		1	0	1	0	1	0	0	0	0	1	3
-Resources/AnimationPNG/ManimatieSheet2.png	Enemy	65.2318	0	-11.9493	1	1	1	0	0	0	8	8		1	0	1	0	1	0	0	0	0	1	3
-Resources/AnimationPNG/ManimatieSheet2.png	Enemy	112.831	0	-73.7624	1	1	1	0	0	0	8	8		1	0	1	0	1	0	0	0	0	1	3
-Resources/AnimationPNG/ManimatieSheet2.png	Enemy	112.329	0	-78.455	1	1	1	0	0	0	8	8		1	0	1	0	1	0	0	0	0	1	3
-Resources/AnimationPNG/ManimatieSheet2.png	Enemy	117.201	0	-71.4992	1	1	1	0	0	0	8	8		1	0	1	0	1	0	0	0	0	1	3
-Resources/AnimationPNG/ManimatieSheet2.png	Enemy	115.596	0	-65.2805	1	1	1	0	0	0	8	8		1	0	1	0	1	0	0	0	0	1	3
-Resources/AnimationPNG/ManimatieSheet2.png	Enemy	105.734	0	-111.938	1	1	1	0	0	0	8	8		1	0	1	0	1	0	0	0	0	1	3
-Resources/AnimationPNG/ManimatieSheet2.png	Enemy	117.402	0	-111.998	1	1	1	0	0	0	8	8		1	0	1	0	1	0	0	0	0	1	3
-Resources/AnimationPNG/ManimatieSheet2.png	Enemy	58.2467	0	-114.437	1	1	1	0	0	0	8	8		1	0	1	0	1	0	0	0	0	1	3
-Resources/AnimationPNG/ManimatieSheet2.png	Enemy	58.2512	0	-116.848	1	1	1	0	0	0	8	8		1	0	1	0	1	0	0	0	0	1	3
-Resources/AnimationPNG/ManimatieSheet2.png	Enemy	-13.234	0	-139.177	1	1	1	0	0	0	8	8		1	0	1	0	1	0	0	0	0	1	3
-Resources/AnimationPNG/ManimatieSheet2.png	Enemy	-19.515	0	-131.406	1	1	1	0	0	0	8	8		1	0	1	0	1	0	0	0	0	1	3
-Resources/AnimationPNG/ManimatieSheet2.png	Enemy	-113.11	0	-108.905	1	1	1	0	0	0	8	8		1	0	1	0	1	0	0	0	0	1	3
-Resources/AnimationPNG/ManimatieSheet2.png	Enemy	-150.65	0	-104.074	1	1	1	0	0	0	8	8		1	0	1	0	1	0	0	0	0	1	3
-Resources/AnimationPNG/ManimatieSheet2.png	Enemy	-74.338	0	-114.968	1	1	1	0	0	0	8	8		1	0	1	0	1	0	0	0	0	1	3
-Resources/AnimationPNG/ManimatieSheet2.png	Enemy	-109.47	0	-113.173	1	1	1	0	0	0	8	8		1	0	1	0	1	0	0	0	0	1	3
-Resources/AnimationPNG/ManimatieSheet2.png	Enemy	-118.91	0	-112.531	1	1	1	0	0	0	8	8		1	0	1	0	1	0	0	0	0	1	3
-Resources/AnimationPNG/ManimatieSheet2.png	Enemy	-122.59	0	-115.149	1	1	1	0	0	0	8	8		1	0	1	0	1	0	0	0	0	1	3
-Resources/AnimationPNG/ManimatieSheet2.png	Enemy	-141.97	0	-104.531	1	1	1	0	0	0	8	8		1	0	1	0	1	0	0	0	0	1	3
-Resources/AnimationPNG/ManimatieSheet2.png	Enemy	-156.72	0	-99.5303	1	1	1	0	0	0	8	8		1	0	1	0	1	0	0	0	0	1	3
-Resources/AnimationPNG/ManimatieSheet2.png	Enemy	-110.13	0	-203.164	1	1	1	0	0	0	8	8		1	0	1	0	1	0	0	0	0	1	3
-Resources/AnimationPNG/ManimatieSheet2.png	Enemy	-202.079	0	-50.2341	1	1	1	0	0	0	8	8		1	0	1	0	1	0	0	0	0	1	3
-Resources/AnimationPNG/ManimatieSheet2.png	Enemy	-196.238	0	-49.7252	1	1	1	0	0	0	8	8		1	0	1	0	1	0	0	0	0	1	3
-Resources/AnimationPNG/ManimatieSheet2.png	Enemy	-199.121	0	-2.03091	1	1	1	0	0	0	8	8		1	0	1	0	1	0	0	0	0	1	3
-Resources/AnimationPNG/ManimatieSheet2.png	Enemy	-202.816	0	35.0451	1	1	1	0	0	0	8	8		1	0	1	0	1	0	0	0	0	1	3
-Resources/AnimationPNG/ManimatieSheet2.png	Enemy	-128.095	0	88.0715	1	1	1	0	0	0	8	8		1	0	1	0	1	0	0	0	0	1	3
-Resources/AnimationPNG/ManimatieSheet2.png	Enemy	-127.339	0	96.954	1	1	1	0	0	0	8	8		1	0	1	0	1	0	0	0	0	1	3
-Resources/AnimationPNG/ManimatieSheet2.png	Enemy	-129.108	0	85.7856	1	1	1	0	0	0	8	8		1	0	1	0	1	0	0	0	0	1	3
-Resources/AnimationPNG/ManimatieSheet2.png	Enemy	-196.804	0	31.0288	1	1	1	0	0	0	8	8		1	0	1	0	1	0	0	0	0	1	3
-Resources/AnimationPNG/ManimatieSheet2.png	Enemy	-167.761	0	21.5697	1	1	1	0	0	0	8	8		1	0	1	0	1	0	0	0	0	1	3
-Resources/AnimationPNG/ManimatieSheet2.png	Enemy	-174.983	0	24.4382	1	1	1	0	0	0	8	8		1	0	1	0	1	0	0	0	0	1	3
-Resources/AnimationPNG/ManimatieSheet2.png	Enemy	-172.729	0	20.4063	1	1	1	0	0	0	8	8		1	0	1	0	1	0	0	0	0	1	3
-Resources/AnimationPNG/ManimatieSheet2.png	Enemy	-170.627	0	16.9928	1	1	1	0	0	0	8	8		1	0	1	0	1	0	0	0	0	1	3
-Resources/AnimationPNG/ManimatieSheet2.png	Enemy	-93.6565	0	23.7944	1	1	1	0	0	0	8	8		1	0	1	0	1	0	0	0	0	1	3
-Resources/AnimationPNG/ManimatieSheet2.png	Enemy	-102.322	0	30.9797	1	1	1	0	0	0	8	8		1	0	1	0	1	0	0	0	0	1	3
-Resources/AnimationPNG/ManimatieSheet2.png	Enemy	-61.0944	0	74.5993	1	1	1	0	0	0	8	8		1	0	1	0	1	0	0	0	0	1	3
-Resources/AnimationPNG/ManimatieSheet2.png	Enemy	-72.3873	0	74.4647	1	1	1	0	0	0	8	8		1	0	1	0	1	0	0	0	0	1	3
-Resources/AnimationPNG/ManimatieSheet2.png	Enemy	-34.0857	0	79.2494	1	1	1	0	0	0	8	8		1	0	1	0	1	0	0	0	0	1	3
-Resources/AnimationPNG/ManimatieSheet2.png	Enemy	-36.4233	0	80.8006	1	1	1	0	0	0	8	8		1	0	1	0	1	0	0	0	0	1	3
-Resources/AnimationPNG/ManimatieSheet2.png	Enemy	-25.2381	0	80.0463	1	1	1	0	0	0	8	8		1	0	1	0	1	0	0	0	0	1	3
-Resources/AnimationPNG/ManimatieSheet2.png	Enemy	1.60793	-9.1	77.7334	1	1	1	0	0	0	8	8		1	0	1	0	1	0	0	0	0	1	3
-Resources/AnimationPNG/ManimatieSheet2.png	Enemy	2.59128	-9.1	73.2766	1	1	1	0	0	0	8	8		1	0	1	0	1	0	0	0	0	1	3
-Resources/AnimationPNG/ManimatieSheet2.png	Enemy	8.24221	-9.1	75.5551	1	1	1	0	0	0	8	8		1	0	1	0	1	0	0	0	0	1	3
-Resources/AnimationPNG/ManimatieSheet2.png	Enemy	4.60935	-9.1	150.262	1	1	1	0	0	0	8	8		1	0	1	0	1	0	0	0	0	1	3
-Resources/AnimationPNG/ManimatieSheet2.png	Enemy	1.50166	-9.1	137.532	1	1	1	0	0	0	8	8		1	0	1	0	1	0	0	0	0	1	3
-Resources/AnimationPNG/ManimatieSheet2.png	Enemy	2.39453	-9.1	95.8992	1	1	1	0	0	0	8	8		1	0	1	0	1	0	0	0	0	1	3
-Resources/AnimationPNG/ManimatieSheet2.png	Enemy	8.97447	-9.1	105.134	1	1	1	0	0	0	8	8		1	0	1	0	1	0	0	0	0	1	3
-Resources/AnimationPNG/ManimatieSheet2.png	Enemy	8.88656	-9.1	94.7441	1	1	1	0	0	0	8	8		1	0	1	0	1	0	0	0	0	1	3
-Resources/AnimationPNG/ManimatieSheet2.png	Enemy	95.9536	-9.10001	127.283	1	1	1	0	0	0	8	8		1	0	1	0	1	0	0	0	0	1	3
-Resources/AnimationPNG/ManimatieSheet2.png	Enemy	72.0292	-9.10001	125.953	1	1	1	0	0	0	8	8		1	0	1	0	1	0	0	0	0	1	3
-Resources/AnimationPNG/ManimatieSheet2.png	Enemy	84.1354	-9.10001	151.982	1	1	1	0	0	0	8	8		1	0	1	0	1	0	0	0	0	1	3
-Resources/AnimationPNG/ManimatieSheet2.png	Enemy	89.3145	-9.10001	144.674	1	1	1	0	0	0	8	8		1	0	1	0	1	0	0	0	0	1	3
-Resources/AnimationPNG/ManimatieSheet2.png	Enemy	108.176	-9.10001	80.6836	1	1	1	0	0	0	8	8		1	0	1	0	1	0	0	0	0	1	3
-Resources/AnimationPNG/ManimatieSheet2.png	Enemy	109.541	-9.10001	68.7051	1	1	1	0	0	0	8	8		1	0	1	0	1	0	0	0	0	1	3
-Resources/AnimationPNG/ManimatieSheet2.png	Enemy	109.669	-9.10001	53.5945	1	1	1	0	0	0	8	8		1	0	1	0	1	0	0	0	0	1	3
 Resources/Sprites/RottenFlower.png	StaticSprite1	21.2681	-10.3945	22.533	0.385	0.49	1	0	0	0	0	0	RottenFlower	1	0	1	0	1	0	0	0	0	1	0
 Resources/Sprites/RottenFlower.png	StaticSprite1	24.7137	-7.40075	63.287	0.385	0.49	1	0	0	0	0	0	RottenFlower	1	0	1	0	1	0	0	0	0	1	0
 Resources/Sprites/RottenFlower.png	StaticSprite1	-45.9131	-10.0263	65.659	0.385	0.49	1	0	0	0	0	0	RottenFlower	1	0	1	0	1	0	0	0	0	1	0

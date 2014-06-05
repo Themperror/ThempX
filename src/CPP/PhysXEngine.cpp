@@ -60,6 +60,7 @@ PhysXEngine::PhysXEngine(ResourceManager* res)
  
 		gPhysicsSDK->getVisualDebugger()->setVisualizeConstraints(true);
 		gPhysicsSDK->getVisualDebugger()->setVisualDebuggerFlag(physx::PxVisualDebuggerFlag::eTRANSMIT_CONTACTS, true);
+		gPhysicsSDK->getVisualDebugger()->setVisualDebuggerFlag(physx::PxVisualDebuggerFlag::eTRANSMIT_SCENEQUERIES, true);
 	}
 #endif
 
@@ -119,13 +120,17 @@ PxRaycastBuffer PhysXEngine::RaycastSingle(PxVec3 origin, PxVec3 nDir, float dis
 
 	return hit;
 }
-PxRaycastHit* PhysXEngine::RaycastMultiple(PxVec3 origin, PxVec3 nDir, float distance, PxSceneQueryFilterFlags filters)
+PxRaycastHit* PhysXEngine::RaycastMultiple(PxVec3 origin, PxVec3 nDir, float distance, int* numHits, PxSceneQueryFilterFlags filters)
 {
 	PxSceneQueryFilterData filterData(filters);
 	bool blockingHit = false;
-	PxRaycastHit hitBuffer[2]; 
+	PxRaycastHit hitBuffer[3]; 
 	if(!nDir.isNormalized()) nDir.normalize();
-	PxI32 nbHits = gScene->raycastMultiple(origin, nDir, distance,PxHitFlag::eDEFAULT | PxHitFlag::eMESH_BOTH_SIDES, hitBuffer, 2, blockingHit);
+	PxI32 nbHits = gScene->raycastMultiple(origin, nDir, distance,PxHitFlag::eDEFAULT | PxHitFlag::eMESH_MULTIPLE| PxHitFlag::eMESH_BOTH_SIDES, hitBuffer, 3, blockingHit,filterData);
+	if(numHits != NULL)
+	{
+		*numHits = nbHits;
+	}
 	return hitBuffer;
 }
 void PhysXEngine::Update(float deltaTime)
@@ -577,18 +582,14 @@ PxRigidActor* PhysXEngine::CreateCube(PxVec3 position, PxVec3 rotation, PxVec3 s
 PxRigidActor* PhysXEngine::CreateSphereCapsule(PxReal radius, PxReal capHeight,PxVec3 position,float mass, bool isStatic, bool isKinematic, float matStaticFriction, float matDynamicFriction, float matRestitution)
 {
 	PxReal density = 10000.0f;
-
-	PxTransform transform(position);
+	D3DXQUATERNION rotQuat;
+	D3DXQuaternionRotationYawPitchRoll(&rotQuat,0,0,90);
+	PxTransform transform(position,PxQuat(rotQuat.x,rotQuat.y,rotQuat.z,rotQuat.w));
 	PxSphereGeometry geometry;
 	geometry.radius = radius;
 	PxCapsuleGeometry cGeometry;
 	cGeometry.halfHeight = capHeight/2;
 	cGeometry.radius = radius;
-	
-	D3DXQUATERNION rotQuat;
-	D3DXQuaternionRotationYawPitchRoll(&rotQuat,0,0,90*0.0174532925f);
-	transform.p = position;
-	transform.q = PxQuat(rotQuat.x,rotQuat.y,rotQuat.z,rotQuat.w);
 		
 	PxMaterial* mat = gPhysicsSDK->createMaterial(matStaticFriction,matDynamicFriction,matRestitution);
 	mats.push_back(mat);
@@ -613,6 +614,7 @@ PxRigidActor* PhysXEngine::CreateSphereCapsule(PxReal radius, PxReal capHeight,P
 		actor->setAngularDamping(0.2f);
 		actor->setLinearDamping(0.2f);
 		actor->setMass(mass);
+		
 		gScene->addActor(*actor);
 		dynamics.push_back(actor);
 		return actor;

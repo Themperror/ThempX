@@ -20,7 +20,7 @@ public:
 	void Release();
 	bool Initialize(HWND);
 	void Stop(std::string tag);
-	bool LoadWaveFile(std::string path, std::string tag, DWORD samplesPerSec,WORD bitsPerSample, WORD channels);
+	bool LoadWaveFile(std::string path, std::string tag);
 	bool PlayWaveFile(std::string sName, DWORD volume = 96);
 	bool PlayRandom(std::vector<std::string>* names, DWORD volume = 96);
 	bool IsPlaying(std::string sName);

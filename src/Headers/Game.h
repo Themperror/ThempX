@@ -137,7 +137,11 @@ public:
 		bool hasGreenKey;
 		bool isDead;
 		bool lockCam;
-		Player(Camera* camera, PxController* controller)
+		int* health;
+		int* armor;
+		GUI* gui;
+
+		Player(Camera* camera, PxController* controller, GUI* g, int* hp, int* am)
 		{
 			cam = camera;
 			physicsPlayer = controller;
@@ -145,6 +149,69 @@ public:
 			hasGreenKey = false;
 			isDead = false;
 			lockCam = true;
+			health = hp;
+			armor = am;
+			gui = g;
+		}
+		void TakeDamage(float damage)
+		{
+			if(*armor > 0)
+			{
+				*armor -= damage;
+				if(*armor < 0)
+				{
+					damage = abs(*armor);
+					*health -= damage;
+					*armor = 0;
+				}
+			}
+			else
+			{
+				*health -= damage;
+			}
+			if(*health > 0)
+			{
+				if(*health >= 75)
+				{
+					GUI::GUITexture* g = gui->GetGUIObj("Resources/GUI/Heart.png");
+					if(g->currentlyPlayingAnimation.compare("100") != 0)
+					{
+						gui->PlayAnimation(gui->GetGUIObj("Resources/GUI/Heart.png"),"100");
+					}
+				}
+				else if(*health < 75 && *health >= 50)
+				{
+					GUI::GUITexture* g = gui->GetGUIObj("Resources/GUI/Heart.png");
+					if(g->currentlyPlayingAnimation.compare("75") != 0)
+					{
+						gui->PlayAnimation(gui->GetGUIObj("Resources/GUI/Heart.png"),"75");
+					}
+				}
+				else if(*health < 50 && *health >= 25)
+				{
+					GUI::GUITexture* g = gui->GetGUIObj("Resources/GUI/Heart.png");
+					if(g->currentlyPlayingAnimation.compare("50") != 0)
+					{
+						gui->PlayAnimation(gui->GetGUIObj("Resources/GUI/Heart.png"),"50");
+					}
+				}
+				else if(*health < 25 && *health > 0)
+				{
+					GUI::GUITexture* g = gui->GetGUIObj("Resources/GUI/Heart.png");
+					if(g->currentlyPlayingAnimation.compare("25") != 0)
+					{
+						gui->PlayAnimation(gui->GetGUIObj("Resources/GUI/Heart.png"),"25");
+					}
+				}
+			}
+			else
+			{
+				GUI::GUITexture* g = gui->GetGUIObj("Resources/GUI/Heart.png");
+				if(g->currentlyPlayingAnimation.compare("0") != 0)
+				{
+					gui->PlayAnimation(gui->GetGUIObj("Resources/GUI/Heart.png"),"0");
+				}
+			}
 		}
 		D3DXVECTOR3 GetD3DXPosition()
 		{
@@ -494,6 +561,7 @@ private:
 	GUI* gui;
 	void LoadLevel(char* txtPath);
 	void LoadItems(char* txtPath);
+	void LoadEnemies(char* txtPath);
 	void DestroyLevel();
 	bool wireframe;
 
@@ -571,6 +639,10 @@ private:
 	inline D3DXVECTOR3 MultiplyVector3(D3DXVECTOR3* a,float val)
 	{
 		return D3DXVECTOR3(a->x*val,a->y*val, a->z*val);
+	}
+	inline D3DXVECTOR3 DivideVector3(D3DXVECTOR3* a, float val)
+	{
+		return D3DXVECTOR3(a->x/val,a->y/val, a->z/val);
 	}
 	inline PxVec3 ToVec3(D3DXVECTOR3* pos)
 	{

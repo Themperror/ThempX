@@ -1,0 +1,12 @@
+AnimationName		startposX	endposX		startposY	endposY  	animationSpeed 	loop actionPosX & actionPosY
+Idle			0		0		0		0		0.25 		1 	0		0
+WalkForward		0		0		1		4		0.25 		1	0		0
+WalkBack		2		2		1		4		0.25 		1	2		2
+WalkLeft		1		1		1		4		0.25 		1	0		0
+WalkRight		3		3		1		4		0.25 		1	0		0
+DamageF			0		0		7		7		0.2 		0	0		5
+DamageR			3		3		7		7		0.2		0	0		5
+DamageL			1		1		7		7		0.2 		0	0		5
+DamageB			2		2		7		7		0.2 		0	0		5
+Death			1		4		5		5		0.125 		0	0		0
+Shoot			0		2		6		6		0.2 		0	2		6

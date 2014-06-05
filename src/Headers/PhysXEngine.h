@@ -7,7 +7,7 @@
 #include "ResourceManager.h"
 #include "DebugCube.h"
 
-//#define DEBUG //remove line for release
+#define DEBUG //remove line for release
 
 #ifdef DEBUG
 #pragma comment(lib, "PhysX3CHECKED_x86.lib")
@@ -61,7 +61,7 @@ public:
 	bool BakeTriangleMesh(LPD3DXMESH mesh, PxVec3 position,PxVec3 scale, bool flipNormals);
 	bool RaycastAny(PxVec3 origin, PxVec3 nDir, float distance);
 	PxRaycastBuffer RaycastSingle(PxVec3 origin, PxVec3 nDir, float distance);
-	PxRaycastHit* RaycastMultiple(PxVec3 origin, PxVec3 nDir, float distance, PxSceneQueryFilterFlags filters = PxSceneQueryFilterFlag::eSTATIC | PxSceneQueryFilterFlag::eDYNAMIC);
+	PxRaycastHit* RaycastMultiple(PxVec3 origin, PxVec3 nDir, float distance, int* numHits = NULL, PxSceneQueryFilterFlags filters = PxSceneQueryFilterFlag::eSTATIC | PxSceneQueryFilterFlag::eDYNAMIC);
 	void RemoveAllActors();
 	void RemoveAllBoxes();
 	void RemoveActor(PxRigidDynamic* actor);

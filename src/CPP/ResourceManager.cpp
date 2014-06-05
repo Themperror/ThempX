@@ -122,11 +122,14 @@ LPDIRECT3DTEXTURE9 ResourceManager::GetTexture(std::string tName)
 		}
 		else
 		{
-			MessageBox(wHandle,"Texture was not found", "ResourceManager::GetTexture()",MB_OK);
+			std::string text = name;
+			text.append(" was not found");
+			MessageBox(wHandle,_strdup(text.c_str()), "ResourceManager::GetTexture()",MB_OK);
 			return NULL;
 		}
 	}
 	//should be impossible to come here
+
 	MessageBox(wHandle,"No texture returned","ResourceManager::GetTexture()",MB_OK);
 	return NULL;
 }

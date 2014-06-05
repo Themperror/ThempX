@@ -159,15 +159,12 @@ void SoundHandler::Release()
  
 	return;
 }
-bool SoundHandler::LoadWaveFile(std::string filename,std::string tag, DWORD samplesPerSec,WORD bitsPerSample, WORD channels)
+bool SoundHandler::LoadWaveFile(std::string filename,std::string tag)
 {
 	if(initialized)
 	{
 		std::string name = LowCaseString(tag);
 		SoundData* data = new SoundData();
-		data->bitsPerSample = bitsPerSample;
-		data->samplesPerSec = samplesPerSec;
-		data->channels = channels;
 		data->name = name;
 		data->soundBuffer = NULL;
 		data->tag = "";
@@ -198,28 +195,29 @@ bool SoundHandler::LoadWaveFile(std::string filename,std::string tag, DWORD samp
 		{
 			return false;
 		}
- 
-		// Check that the chunk ID is the RIFF format.
-		if((waveFileHeader.chunkId[0] != 'R') || (waveFileHeader.chunkId[1] != 'I') || 
-		   (waveFileHeader.chunkId[2] != 'F') || (waveFileHeader.chunkId[3] != 'F'))
-		{
+	
+
 		
+		data->channels = waveFileHeader.numChannels;
+		data->samplesPerSec = waveFileHeader.sampleRate;
+		data->bitsPerSample = waveFileHeader.bitsPerSample;
+
+		// Check that the chunk ID is the RIFF format.
+		if((waveFileHeader.chunkId[0] != 'R') || (waveFileHeader.chunkId[1] != 'I') || (waveFileHeader.chunkId[2] != 'F') || (waveFileHeader.chunkId[3] != 'F'))
+		{
 			std::cout << "header false" << std::endl;
 			return false;
 		}
  
 		// Check that the file format is the WAVE format.
-		if((waveFileHeader.format[0] != 'W') || (waveFileHeader.format[1] != 'A') ||
-		   (waveFileHeader.format[2] != 'V') || (waveFileHeader.format[3] != 'E'))
+		if((waveFileHeader.format[0] != 'W') || (waveFileHeader.format[1] != 'A') || (waveFileHeader.format[2] != 'V') || (waveFileHeader.format[3] != 'E'))
 		{
-		
 			std::cout << "header false" << std::endl;
 			return false;
 		}
  
 		// Check that the sub chunk ID is the fmt format.
-		if((waveFileHeader.subChunkId[0] != 'f') || (waveFileHeader.subChunkId[1] != 'm') ||
-		   (waveFileHeader.subChunkId[2] != 't') || (waveFileHeader.subChunkId[3] != ' '))
+		if((waveFileHeader.subChunkId[0] != 'f') || (waveFileHeader.subChunkId[1] != 'm') || (waveFileHeader.subChunkId[2] != 't') || (waveFileHeader.subChunkId[3] != ' '))
 		{
 			std::cout << "header false" << std::endl;
 			return false;
@@ -232,31 +230,8 @@ bool SoundHandler::LoadWaveFile(std::string filename,std::string tag, DWORD samp
 			return false;
 		}
  
-		// Check that the wave file was recorded in stereo format.
-		if(waveFileHeader.numChannels != data->channels)
-		{
-			std::cout << "channels false" << std::endl;
-			return false;
-		}
- 
-		// Check that the wave file was recorded at a sample rate of 44.1 KHz.
-		if(waveFileHeader.sampleRate != data->samplesPerSec)
-		{
-			std::cout << "sample rate  false" << std::endl;
-			return false;
-		}
- 
-		// Ensure that the wave file was recorded in 16 bit format.
-		if(waveFileHeader.bitsPerSample != data->bitsPerSample)
-		{
-		
-			std::cout << "bits per sample false" << std::endl;
-			return false;
-		}
- 
 		// Check for the data chunk header.
-		if((waveFileHeader.dataChunkId[0] != 'd') || (waveFileHeader.dataChunkId[1] != 'a') ||
-		   (waveFileHeader.dataChunkId[2] != 't') || (waveFileHeader.dataChunkId[3] != 'a'))
+		if((waveFileHeader.dataChunkId[0] != 'd') || (waveFileHeader.dataChunkId[1] != 'a') ||  (waveFileHeader.dataChunkId[2] != 't') || (waveFileHeader.dataChunkId[3] != 'a'))
 		{
 		
 			std::cout << "header false" << std::endl;

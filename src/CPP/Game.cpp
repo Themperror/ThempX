@@ -14,7 +14,7 @@ Game::Game(ResourceManager::DataStruct* b,HWND windowHandle,ResourceManager* res
 	cam->SetPosition(0,0,0);
 	gui = NULL;
 	
-	soundHandler->LoadWaveFile(std::string("resources/sound/music/menu.wav"),std::string("menu"	),22050,16,1);
+	soundHandler->LoadWaveFile(std::string("resources/sound/music/menu.wav"),std::string("menu"	));
 
 	menu = new Menu(&data->loop,resources,inputHandler);
 	if(data->loop != true) return;
@@ -28,6 +28,7 @@ Game::Game(ResourceManager::DataStruct* b,HWND windowHandle,ResourceManager* res
 
 	LoadLevel("Resources/level.txt");
 	LoadItems("Resources/items1.txt");
+	LoadEnemies("Resources/enemies1.txt");
 	std::cout << "After LoadLevel" << std::endl;
 }
 Game::Object2DData Game::CreateObject2DData(char* filePath,bool hasAnim, D3DXVECTOR3 pos,D3DXVECTOR3 scale, D3DXVECTOR2 rows, PhysicsData pData)
@@ -65,53 +66,38 @@ void Game::Initialize()
 	camFall = false;
 	scaleMultiplier = 3;
 	EditorMode = false;
-	player = new Player(cam,physics->player);
+	player = new Player(cam,physics->player,gui,&gui->health,&gui->armour);
 	dCube = new DebugCube(D3DXVECTOR3(0,0,0),D3DXVECTOR3(0,0,0),-D3DXVECTOR3(1,1,1),D3DXVECTOR3(1,1,1),resources);
 	//Loading sounds
-	//soundHandler->LoadWaveFile("test.wav","test",11025,8,1);
 	
-	soundHandler->LoadWaveFile(std::string("resources/sound/piew.wav"),std::string("Piew"		),22050,16,1);
-	soundHandler->LoadWaveFile(std::string("resources/sound/DoorDown.wav"),std::string("DoorDown"	),22050,16,1);
-	soundHandler->LoadWaveFile(std::string("resources/sound/DoorUp.wav"),std::string("DoorUp"		),22050,16,1);
-	soundHandler->LoadWaveFile(std::string("resources/sound/MAN1DIE1.wav"),std::string("MAN1DIE1"	),22050,16,1);
-	soundHandler->LoadWaveFile(std::string("resources/sound/MAN1DIE2.wav"),std::string("MAN1DIE2"	),22050,16,1);
-	soundHandler->LoadWaveFile(std::string("resources/sound/MAN1HIT1.wav"),std::string("MAN1HIT1"	),22050,16,1);
-	soundHandler->LoadWaveFile(std::string("resources/sound/MAN1HIT2.wav"),std::string("MAN1HIT2"	),22050,16,1);
-	soundHandler->LoadWaveFile(std::string("resources/sound/MAN1HIT3.wav"),std::string("MAN1HIT3"	),22050,16,1);
-	soundHandler->LoadWaveFile(std::string("resources/sound/SAMHIT1.wav"),std::string("SAMHIT1"	),22050,16,1);
-	soundHandler->LoadWaveFile(std::string("resources/sound/SAMHIT2.wav"),std::string("SAMHIT2"	),22050,16,1);
-	soundHandler->LoadWaveFile(std::string("resources/sound/SAMHIT3.wav"),std::string("SAMHIT3"	),22050,16,1);
-	soundHandler->LoadWaveFile(std::string("resources/sound/SAMDIE1.wav"),std::string("SAMDIE1"	),22050,16,1);
-	soundHandler->LoadWaveFile(std::string("resources/sound/SWIPE1.wav"),std::string("SWIPE1"		),22050,16,1);
-	soundHandler->LoadWaveFile(std::string("resources/sound/SWIPE2.wav"),std::string("SWIPE2"		),22050,16,1);
-	soundHandler->LoadWaveFile(std::string("resources/sound/SWIPE3.wav"),std::string("SWIPE3"		),22050,16,1);
-	soundHandler->LoadWaveFile(std::string("resources/sound/SWIPE4.wav"),std::string("SWIPE4"		),22050,16,1);
-	soundHandler->LoadWaveFile(std::string("resources/sound/SWIPE5.wav"),std::string("SWIPE5"		),22050,16,1);
-	soundHandler->LoadWaveFile(std::string("resources/sound/SWORDHIT.wav"),std::string("SWORDHIT"	),22050,16,1);
-	soundHandler->LoadWaveFile(std::string("resources/sound/pickup.wav"),std::string("pickup"		),22050,16,1);
-	soundHandler->LoadWaveFile(std::string("resources/sound/deur.wav"),std::string("deur"		),22050,16,1);
-	soundHandler->LoadWaveFile(std::string("resources/sound/DIGMARK.wav"),std::string("digmark"	),22050,16,1);
-	soundHandler->LoadWaveFile(std::string("resources/sound/SWONWAL1.wav"),std::string("SWONWAL1"	),22050,16,1);
-	soundHandler->LoadWaveFile(std::string("resources/sound/SWONWAL2.wav"),std::string("SWONWAL2"	),22050,16,1);
-	soundHandler->LoadWaveFile(std::string("resources/sound/SWONWAL3.wav"),std::string("SWONWAL3"	),22050,16,1);
-	soundHandler->LoadWaveFile(std::string("resources/sound/music/boss.wav"),std::string("boss"	),22050,16,1);
-	soundHandler->LoadWaveFile(std::string("resources/sound/music/level.wav"),std::string("level"	),22050,16,1);
-	soundHandler->LoadWaveFile(std::string("resources/sound/zeizo.wav"),std::string("zeizo"	),22050,16,1);
+	soundHandler->LoadWaveFile(std::string("resources/sound/piew.wav"),std::string("Piew"));
+	soundHandler->LoadWaveFile(std::string("resources/sound/DoorDown.wav"),std::string("DoorDown"));
+	soundHandler->LoadWaveFile(std::string("resources/sound/DoorUp.wav"),std::string("DoorUp"));
+	soundHandler->LoadWaveFile(std::string("resources/sound/MAN1DIE1.wav"),std::string("MAN1DIE1"));
+	soundHandler->LoadWaveFile(std::string("resources/sound/MAN1DIE2.wav"),std::string("MAN1DIE2"));
+	soundHandler->LoadWaveFile(std::string("resources/sound/MAN1HIT1.wav"),std::string("MAN1HIT1"));
+	soundHandler->LoadWaveFile(std::string("resources/sound/MAN1HIT2.wav"),std::string("MAN1HIT2"));
+	soundHandler->LoadWaveFile(std::string("resources/sound/MAN1HIT3.wav"),std::string("MAN1HIT3"));
+	soundHandler->LoadWaveFile(std::string("resources/sound/SAMHIT1.wav"),std::string("SAMHIT1"));
+	soundHandler->LoadWaveFile(std::string("resources/sound/SAMHIT2.wav"),std::string("SAMHIT2"));
+	soundHandler->LoadWaveFile(std::string("resources/sound/SAMHIT3.wav"),std::string("SAMHIT3"));
+	soundHandler->LoadWaveFile(std::string("resources/sound/SAMDIE1.wav"),std::string("SAMDIE1"));
+	soundHandler->LoadWaveFile(std::string("resources/sound/SWIPE1.wav"),std::string("SWIPE1"));
+	soundHandler->LoadWaveFile(std::string("resources/sound/SWIPE2.wav"),std::string("SWIPE2"));
+	soundHandler->LoadWaveFile(std::string("resources/sound/SWIPE3.wav"),std::string("SWIPE3"));
+	soundHandler->LoadWaveFile(std::string("resources/sound/SWIPE4.wav"),std::string("SWIPE4"));
+	soundHandler->LoadWaveFile(std::string("resources/sound/SWIPE5.wav"),std::string("SWIPE5"));
+	soundHandler->LoadWaveFile(std::string("resources/sound/SWORDHIT.wav"),std::string("SWORDHIT"));
+	soundHandler->LoadWaveFile(std::string("resources/sound/pickup.wav"),std::string("pickup"));
+	soundHandler->LoadWaveFile(std::string("resources/sound/deur.wav"),std::string("deur"));
+	soundHandler->LoadWaveFile(std::string("resources/sound/DIGMARK.wav"),std::string("digmark"));
+	soundHandler->LoadWaveFile(std::string("resources/sound/SWONWAL1.wav"),std::string("SWONWAL1"));
+	soundHandler->LoadWaveFile(std::string("resources/sound/SWONWAL2.wav"),std::string("SWONWAL2"));
+	soundHandler->LoadWaveFile(std::string("resources/sound/SWONWAL3.wav"),std::string("SWONWAL3"));
+	soundHandler->LoadWaveFile(std::string("resources/sound/music/boss.wav"),std::string("boss"));
+	soundHandler->LoadWaveFile(std::string("resources/sound/music/level.wav"),std::string("level"));
+	soundHandler->LoadWaveFile(std::string("resources/sound/zeizo.wav"),std::string("zeizo"));
 	
-	//soundHandler->PlayWaveFile("DoorDown");
-
-	/*Item* KeyRed = new Item("Red Keycard",&Game::ItemTrigger,this,D3DXVECTOR3(10.6f,-12.5f,-75.18f),D3DXVECTOR3(3,10,3));
-	KeyRed->obj2D = new Object2D(resources,"Resources/Sprites/Redkey.png",&cam->GetView());
-	KeyRed->obj2D->scaling = D3DXVECTOR3(0.3f,0.3f,0.3f);
-
-	Item* KeyGreen = new Item("Green Keycard",&Game::ItemTrigger,this,D3DXVECTOR3(80,-12.5f,1.8f),D3DXVECTOR3(3,10,3));
-	KeyGreen->obj2D = new Object2D(resources,"Resources/Sprites/Greenkey.png",&cam->GetView());
-	KeyGreen->obj2D->scaling = D3DXVECTOR3(0.3f,0.3f,0.3f);
-	
-	items.push_back(KeyRed);
-	items.push_back(KeyGreen);*/
-
-	//itemTest->tBoxVisualized = dCube;
 	Item* completeTrigger = new Item(&Game::LevelComplete,this,D3DXVECTOR3(186,-10,68),D3DXVECTOR3(5,5,5));
 	items.push_back(completeTrigger);
 
@@ -135,7 +121,7 @@ void Game::LoadItems(char* txtPath)
 		string path, objName;
 		float posx,posy,posz,scalex,scaley,colx,coly,colz;
 		string str;
-		while(getline(fin, str)) //alle health en armor effe vervangen van lvl naar items.txt
+		while(getline(fin, str))
 		{
 			path = "";
 			objName = "";
@@ -152,6 +138,41 @@ void Game::LoadItems(char* txtPath)
 		fin.close();
 	}
 }
+void Game::LoadEnemies(char* txtPath)
+{
+	ifstream fin(txtPath);
+	if (!fin.good())
+	{
+		std::cout << "Cannot find " << txtPath  << "No enemies are loaded"<< std::endl;
+	}
+	else
+	{
+		string path, tag;
+		float health,damage,moveSpeed,posx,posy,posz,scalex,scaley,colRadius,colHeight;
+		int animRowsX,animRowsY;
+		string str;
+		while(getline(fin, str))
+		{
+			path = "";
+			tag = "";
+			posx =0;posy=0;posz=0;scalex=0;scaley=0;colRadius=0;colHeight=0;
+			animRowsX=0;animRowsY=0;
+
+			fin >> path >> tag >>health >> damage >> moveSpeed >> posx >> posy >> posz >> scalex >> scaley >> animRowsX >> animRowsY >> colRadius >> colHeight;
+
+			if(path.compare("") == 0)
+			{
+				std::cout <<"something"<<std::endl;
+			}
+			PlaceEnemy(path,D3DXVECTOR3(posx,posy,posz),D3DXVECTOR3(scalex,scaley,scalex),animRowsX,animRowsY,colRadius,colHeight);
+			Enemy* e = enemies.at(enemies.size()-1);
+			e->SetSpeed(moveSpeed);
+			e->SetHealth(health);
+			e->SetDamage(damage);
+		}
+		fin.close();
+	}
+}
 void Game::LevelComplete()
 {
 	if(levelComplete == false)
@@ -162,7 +183,7 @@ void Game::LevelComplete()
 		gui->levelCompleteGUI->animations.at(0).showEnd = true;
 		gui->PlayAnimation(gui->levelCompleteGUI,"Complete");
 		gui->GetGUIObj("Resources/GUI/HealthArmor.png")->render = false;
-		gui->GetGUIObj("Resources/GUI/WeaponAmmo.png")->render = false;
+//		gui->GetGUIObj("Resources/GUI/WeaponAmmo.png")->render = false;
 		gui->GetGUIObj("Resources/GUI/CharacterState.png")->render = false;
 		gui->GetGUIObj("Resources/Sprites/GreenKey.png")->render = false;
 		gui->GetGUIObj("Resources/Sprites/RedKey.png")->render = false;
@@ -299,10 +320,11 @@ void Game::Update(double deltaTime)
 				player->hasRedKey = false;
 				DestroyLevel();
 				LoadLevel("Resources/Level2.txt");
-				//LoadItems("Resources/items2.txt");
+				LoadItems("Resources/items2.txt");
+				LoadEnemies("Resources/enemies2.txt");
 				gui->levelCompleteGUI->render = false;
 				gui->GetGUIObj("Resources/GUI/HealthArmor.png")->render = true;
-				gui->GetGUIObj("Resources/GUI/WeaponAmmo.png")->render = true;
+				//gui->GetGUIObj("Resources/GUI/WeaponAmmo.png")->render = true;
 				gui->GetGUIObj("Resources/GUI/CharacterState.png")->render = true;
 				gui->armourText->render = true;
 				gui->healthText->render = true;
@@ -499,6 +521,16 @@ void Game::UndoEditorAction()
 	}
 	if(GetLastAction() == Static)
 	{
+		Object3D* obj = GetLastObject3D();
+		for(unsigned int i = 0; i < modelObjs.size();i++)
+		{
+			if(obj == modelObjs.at(i)->obj)
+			{
+				delete modelObjs.at(i)->obj;
+				delete modelObjs.at(i);
+				modelObjs.erase(modelObjs.begin()+i);
+			}
+		}
 		physics->DeleteLastStatic();
 		RemoveLastAction();
 	}
@@ -554,7 +586,8 @@ PxVec3 Game::DoInput(float dT)
 				p->setLinearVelocity(ToVec3(&(cam->GetLookDir()*5)));
 			}
 		}
-		//std::cout << "Player Pos X: " << physics->player->getPosition().x << " Y: " << physics->player->getPosition().y << " Z: "<< physics->player->getPosition().z << std::endl;
+		std::cout << "Player Pos X: " << physics->player->getFootPosition().x << " Y: " << physics->player->getFootPosition().y << " Z: "<< physics->player->getFootPosition().z << std::endl;
+		player->TakeDamage(10);
 	}
 	if(KeyPressed(DIK_COMMA) == 2)
 	{
@@ -676,6 +709,7 @@ PxVec3 Game::DoInput(float dT)
 			DestroyLevel();
 			LoadLevel("Resources/level.txt");
 			LoadItems("Resources/items1.txt");
+			LoadEnemies("Resources/enemies1.txt");
 			player->physicsPlayer->setPosition(PxExtendedVec3(-11.18f,-8.94f,34.4f));
 		}
 	}
@@ -923,7 +957,7 @@ bool Game::Create3DObject(bool hasPhysics, Object3DData* data)
 bool Game::CreateEnemy(bool hasPhysics, Object2DData* data)
 {
 	Object2D* obj;
-	Enemy* enemy = new Enemy(resources,physics,&gui->health,&gui->armour);
+	Enemy* enemy = new Enemy(resources,physics,gui);
 	enemy->SetHealth(60);
 	enemy->SetDamage(10);
 	if(hasPhysics)

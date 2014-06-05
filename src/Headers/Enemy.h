@@ -4,7 +4,8 @@
 #include "Object2D.h"
 #include "ResourceManager.h"
 #include "PhysXEngine.h"
-
+#include "GUI.h"
+#include "DebugCube.h"
 class Enemy
 {
 public:
@@ -25,7 +26,7 @@ public:
 		bool hasHit;
 	};
 
-	Enemy(ResourceManager* res, PhysXEngine* phys, int* hp, int* armor);
+	Enemy(ResourceManager* res, PhysXEngine* phys, GUI* gu);
 	void SetCState(EnemyState s);
 	void TakeDamage(float damage);
 	void SetInfo(PxVec3 playerPosition, PxVec3 pRight);
@@ -134,6 +135,7 @@ private:
 	float enemyHP;
 	float enemyDamage;
 	bool isDead;
+	bool sawPlayer;
 	float shootDelay;
 	float movementSpeed;
 
@@ -146,6 +148,7 @@ private:
 	float colCapsuleHeight;
 
 	//misc
+	GUI* gui;
 	Object2D* obj;
 	PxRigidActor* actor;
 	EnemyState cState;
@@ -155,7 +158,14 @@ private:
 	D3DXVECTOR3 moveDir;
 	D3DXVECTOR3 lookDirection;
 
+	//temporary
+	DebugCube* dCube;
+
 	inline float Vector3Distance(D3DXVECTOR3* a, D3DXVECTOR3* b)
+	{
+		return sqrt((pow(a->x,2) + pow(b->x,2))+(pow(a->y,2) + pow(b->y,2))+(pow(a->z,2) + pow(b->z,2)));
+	}
+	inline float Vector3Distance(PxVec3* a, PxVec3* b)
 	{
 		return sqrt((pow(a->x,2) + pow(b->x,2))+(pow(a->y,2) + pow(b->y,2))+(pow(a->z,2) + pow(b->z,2)));
 	}
