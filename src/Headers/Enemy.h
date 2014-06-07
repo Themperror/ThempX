@@ -60,6 +60,14 @@ public:
 	{
 		enemyHP = amount;
 	}
+	inline float GetDamage()
+	{
+		return enemyDamage;
+	}
+	inline float GetMoveSpeed()
+	{
+		return movementSpeed;
+	}
 	inline void SetAttackDelay(float amount)
 	{
 		shootDelay = amount;

@@ -56,3 +56,4 @@ Resources/Sprites/Armor.png		Armor		106.187		-12.3583	-90.2873	0.286	0.388	3		10
 Resources/Sprites/Armor.png		Armor		158.442		-12.3583	-90.5954	0.286	0.388	3		10		3
 Resources/Sprites/Armor.png		Armor		58.818		-11.4286	-15.5777	0.286	0.388	3		10		3
 Resources/Sprites/Armor.png		Armor		59.471		-11.3765	18.9854		0.286	0.388	3		10		3
+NULL					LevelComplete	186		-10		68		0	0	5		5		5

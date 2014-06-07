@@ -574,6 +574,7 @@ private:
 	void HandlePlayerCollisions(PxVec3 moveDir);
 	void LeftMouseClick();
 	void RightMouseClick();
+	void RespawnPlayer();
 	void CreateBullet(PxVec3 origin, PxVec3 dir);
 	std::vector<unsigned int> keys;
 	int KeyPressed(int key);

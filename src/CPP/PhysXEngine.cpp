@@ -124,18 +124,20 @@ PxRaycastHit* PhysXEngine::RaycastMultiple(PxVec3 origin, PxVec3 nDir, float dis
 {
 	PxSceneQueryFilterData filterData(filters);
 	bool blockingHit = false;
-	PxRaycastHit hitBuffer[3]; 
+	PxRaycastHit hitBuffer[3];
 	if(!nDir.isNormalized()) nDir.normalize();
-	PxI32 nbHits = gScene->raycastMultiple(origin, nDir, distance,PxHitFlag::eDEFAULT | PxHitFlag::eMESH_MULTIPLE| PxHitFlag::eMESH_BOTH_SIDES, hitBuffer, 3, blockingHit,filterData);
+
+	const PxI32& nbHits = gScene->raycastMultiple(origin, nDir, distance,PxHitFlag::eDEFAULT | PxHitFlag::eMESH_MULTIPLE| PxHitFlag::eMESH_BOTH_SIDES,hitBuffer, 3, blockingHit,filterData);
+
 	if(numHits != NULL)
 	{
 		*numHits = nbHits;
 	}
 	return hitBuffer;
 }
-void PhysXEngine::Update(float deltaTime)
+void PhysXEngine::Update(float deltaTime) 
 {
-
+	
 }
 bool PhysXEngine::BakeTriangleMesh(LPD3DXMESH mesh,PxVec3 position ,PxVec3 scale, bool flipNormals)
 {

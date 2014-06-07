@@ -98,8 +98,6 @@ void Game::Initialize()
 	soundHandler->LoadWaveFile(std::string("resources/sound/music/level.wav"),std::string("level"));
 	soundHandler->LoadWaveFile(std::string("resources/sound/zeizo.wav"),std::string("zeizo"));
 	
-	Item* completeTrigger = new Item(&Game::LevelComplete,this,D3DXVECTOR3(186,-10,68),D3DXVECTOR3(5,5,5));
-	items.push_back(completeTrigger);
 
 	physics->player->setPosition(PxExtendedVec3(-11.18f,-8.94f,34.4f));
 	//cam->SetPosition(5,7.0f,0);
@@ -128,12 +126,20 @@ void Game::LoadItems(char* txtPath)
 			posx =0;posy=0;posz=0;scalex=0;scaley=0;colx=0;coly=0;colz=0;
 
 			fin >> path >> objName >>posx >> posy >> posz >> scalex >> scaley >> colx >> coly >> colz;
-
-			Item* item = new Item(objName,&Game::ItemTrigger,this,D3DXVECTOR3(posx,posy,posz),D3DXVECTOR3(colx,coly,colz));
-			item->obj2D = new Object2D(resources,_strdup(path.c_str()),&cam->GetView());
-			item->obj2D->scaling = D3DXVECTOR3(scalex,scaley,scalex);
-
-			items.push_back(item);
+			if(objName.compare("LevelComplete") == 0)
+			{
+				Item* completeTrigger = new Item(&Game::LevelComplete,this,D3DXVECTOR3(posx,posy,posz),D3DXVECTOR3(colx,coly,colz));
+				items.push_back(completeTrigger);
+				std::cout << path << "   " << objName << std::endl;
+			}
+			else
+			{
+				Item* item = new Item(objName,&Game::ItemTrigger,this,D3DXVECTOR3(posx,posy,posz),D3DXVECTOR3(colx,coly,colz));
+				item->obj2D = new Object2D(resources,_strdup(path.c_str()),&cam->GetView());
+				item->obj2D->scaling = D3DXVECTOR3(scalex,scaley,scalex);
+				std::cout << path << "   " << objName << std::endl;
+				items.push_back(item);
+			}
 		}
 		fin.close();
 	}
@@ -166,6 +172,7 @@ void Game::LoadEnemies(char* txtPath)
 			}
 			PlaceEnemy(path,D3DXVECTOR3(posx,posy,posz),D3DXVECTOR3(scalex,scaley,scalex),animRowsX,animRowsY,colRadius,colHeight);
 			Enemy* e = enemies.at(enemies.size()-1);
+			e->GetObj()->tag = tag;
 			e->SetSpeed(moveSpeed);
 			e->SetHealth(health);
 			e->SetDamage(damage);
@@ -187,6 +194,7 @@ void Game::LevelComplete()
 		gui->GetGUIObj("Resources/GUI/CharacterState.png")->render = false;
 		gui->GetGUIObj("Resources/Sprites/GreenKey.png")->render = false;
 		gui->GetGUIObj("Resources/Sprites/RedKey.png")->render = false;
+		gui->GetGUIObj("Resources/GUI/Heart.png")->render = false;
 		
 		gui->armourText->render = false;
 		gui->healthText->render = false;
@@ -221,6 +229,7 @@ void Game::ItemTrigger(Item* item)
 		{
 			gui->health = 100;
 		}
+		player->TakeDamage(0);
 	}
 	else if(strcmp(_strdup(item->name.c_str()),"Armor") == 0)
 	{
@@ -229,6 +238,7 @@ void Game::ItemTrigger(Item* item)
 		{
 			gui->armour = 100;
 		}
+		player->TakeDamage(0);
 	}				
 	for(unsigned int i = 0; i < items.size(); i++)
 	{
@@ -326,8 +336,12 @@ void Game::Update(double deltaTime)
 				gui->GetGUIObj("Resources/GUI/HealthArmor.png")->render = true;
 				//gui->GetGUIObj("Resources/GUI/WeaponAmmo.png")->render = true;
 				gui->GetGUIObj("Resources/GUI/CharacterState.png")->render = true;
+				gui->GetGUIObj("Resources/GUI/Heart.png")->render = true;
 				gui->armourText->render = true;
 				gui->healthText->render = true;
+				gui->health = 100;
+				gui->armour = 0;
+				player->TakeDamage(0);
 				Sleep(2000);
 			}
 		}
@@ -696,21 +710,7 @@ PxVec3 Game::DoInput(float dT)
 	{
 		if(KeyPressed(DIK_R) == 2)
 		{
-			player->isDead = false;
-			player->lockCam = true;
-			player->hasGreenKey = false;
-			player->hasRedKey = false;
-			player->cam->angleX = 0;
-			player->cam->angleY = 0;
-			gui->armour = 0;
-			gui->health = 100;
-			camFall = false;
-			gui->gameOverText->render = false;
-			DestroyLevel();
-			LoadLevel("Resources/level.txt");
-			LoadItems("Resources/items1.txt");
-			LoadEnemies("Resources/enemies1.txt");
-			player->physicsPlayer->setPosition(PxExtendedVec3(-11.18f,-8.94f,34.4f));
+			RespawnPlayer();
 		}
 	}
 	if(KeyPressed(DIK_Z) == 2)
@@ -910,6 +910,27 @@ PxVec3 Game::DoInput(float dT)
 		gui->SetTextRenderingTrue();
 	}
 	return moveDir;
+}
+void Game::RespawnPlayer()
+{
+	player->isDead = false;
+	player->lockCam = true;
+	player->hasGreenKey = false;
+	player->hasRedKey = false;
+	gui->GetGUIObj("Resources/Sprites/Redkey.png")->render = false;
+	gui->GetGUIObj("Resources/Sprites/Greenkey.png")->render = false;
+	player->cam->angleX = 0;
+	player->cam->angleY = 0;
+	gui->armour = 0;
+	gui->health = 100;
+	camFall = false;
+	gui->gameOverText->render = false;
+	DestroyLevel();
+	LoadLevel("Resources/level.txt");
+	LoadItems("Resources/items1.txt");
+	LoadEnemies("Resources/enemies1.txt");
+	player->TakeDamage(0);
+	player->physicsPlayer->setPosition(PxExtendedVec3(-11.18f,-8.94f,34.4f));
 }
 bool Game::Create3DObject(bool hasPhysics, Object3DData* data)
 {
@@ -1496,6 +1517,19 @@ void Game::CreateLevelFile()
 			level << d->obj->model.meshPath << "\t" << "Door" << "\t" << d->position.x << "\t" << d->position.y << "\t" << d->position.z << "\t" << d->obj->scaling.x << "\t" << d->obj->scaling.y << "\t" << d->obj->scaling.z << "\t" << d->obj->rotation.x << "\t" << d->obj->rotation.y << "\t" << d->obj->rotation.z << "\t" << 0 << "\t" << 0 << "\t" << toTag << "\t" <<  1 << "\t" << 0 << "\t" <<1 << "\t" << 0 << "\t" << 0 << "\t" << 1 << "\t" << d->obj->scaling.x << "\t" << d->obj->scaling.y << "\t" << d->obj->scaling.z << "\t" << 0 << "\t" << 0 << "\n";
 		}
 		*/
+
+	}
+	ofstream enemyLevel("enemies.txt");
+	if (enemyLevel.is_open())
+	{
+		enemyLevel << "TexturePath" << "\t"<< "tag" << "\t"<< "health" << "\t"<< "damage" << "\t"<< "movespeed" << "\t" << "posx" << "\t"<< "posy" << "\t"<< "posz" << "\t"<< "scalex" << "\t"<< "scaley" << "\t"<< "XAnimRows" << "\t"<< "YAnimRows" << "\t"<<	"colRadius"<< "\t"<<	"capsuleHeight" <<"\n";
+		for(unsigned int i = 0; i < enemies.size();i++)
+		{
+			Object2D* obj = enemies.at(i)->GetObj();
+			Enemy* d = enemies.at(i);
+			enemyLevel << obj->quad.textureName << "\t" << obj->tag << "\t" << d->GetHealth() <<"\t" << d->GetDamage()<<"\t" << d->GetMoveSpeed() << obj->position.x << "\t" << obj->position.y << "\t" << obj->position.z << "\t" << obj->scaling.x << "\t" << obj->scaling.y << "\t" << obj->GetXRows() << "\t" << obj->GetYRows() << "\t" << d->GetCollisionRadius() << "\t" <<d->GetCollisionHeight() << "\n";
+		}
+		enemyLevel.close();
 	}
 	else
 	{

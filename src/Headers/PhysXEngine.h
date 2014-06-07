@@ -115,6 +115,9 @@ private:
 	physx::PxDefaultAllocator defaultAlloc;
 	physx::PxDefaultErrorCallback defaultError;
 	PxMaterial* defaultMaterial;
+	std::vector<PxRaycastHit*> RTR; //rays used by MultipleRaycast function, this array is cleared each Update and memory de-allocated
+
+
 	std::vector<PxRigidStatic*> statics;
 	std::vector<PxRigidDynamic*> dynamics;
 	std::vector<PxRigidDynamic*> thrownCubes;

@@ -5,4 +5,4 @@ Resources/GUI/HealthArmor.png		0	80	20	20	0		0		0		0			0		NULL 1
 Resources/GUI/CharacterState.png	80	80	20	20	0		0		0		0			0		NULL 1
 Resources/Sprites/Redkey.png		2	72	5	7	0		0		0		0			0		NULL 0
 Resources/Sprites/Greenkey.png		8	72	5	7	0		0		0		0			0		NULL 0
-Resources/GUI/Heart.png			84	82	13	15	4		4		1		0			0		100	1
+Resources/GUI/Heart.png			84	82	13	15	4		8		1		0			0		100	1

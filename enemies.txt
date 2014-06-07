@@ -1,0 +1,1 @@
+TexturePath	tag	health	damage	movespeed	posx	posy	posz	scalex	scaley	XAnimRows	YAnimRows	colRadius	capsuleHeight
