@@ -1,1 +1,3 @@
 path							name		posx		posy		posz		scalex	scaley	colx	coly	colz
+Resources/Sprites/Redkey.png	Red_Keycard	10.6		-12.5		-75.18		0.3		0.3		3		10		3	
+Resources/Sprites/Greenkey.png	Green_Keycard	80		-12.5		1.8			0.3		0.3		3		10		3

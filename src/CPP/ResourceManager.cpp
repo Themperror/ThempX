@@ -122,8 +122,8 @@ LPDIRECT3DTEXTURE9 ResourceManager::GetTexture(std::string tName)
 		}
 		else
 		{
-			std::string text = name;
-			text.append(" was not found");
+			std::string text;
+			text.append(name +" was not found");
 			MessageBox(wHandle,_strdup(text.c_str()), "ResourceManager::GetTexture()",MB_OK);
 			return NULL;
 		}
@@ -168,6 +168,7 @@ int ResourceManager::GetMeshData(std::string mName)
 		model.d3dxMaterials = (D3DXMATERIAL*)model.materialBuffer->GetBufferPointer();
 		model.meshMaterials = new D3DMATERIAL9[model.numMaterials];
 		model.meshTextures  = new LPDIRECT3DTEXTURE9[model.numMaterials];   
+		ZeroMemory(model.meshTextures,sizeof(model.meshTextures));
 		// Filling material and texture arrays
 		for (DWORD i=0; i<model.numMaterials; i++)
 		{
@@ -180,6 +181,10 @@ int ResourceManager::GetMeshData(std::string mName)
 				std::string texturePath = model.d3dxMaterials[i].pTextureFilename;
 				texturePath = "Resources/Models/"+texturePath;
 				model.meshTextures[i] =  GetTexture(_strdup(texturePath.c_str()));
+				if(model.meshTextures[i] == NULL)
+				{
+					std::cout << "Couldn't find texture belonging to model, path is: " << texturePath << std::endl;
+				}
 			}
 		}
 		model.meshName = _strdup(name.c_str());

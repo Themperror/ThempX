@@ -1,3 +1,7 @@
-name	objName	posx	posy	posz	scalex	scaley	scalez	rotx	roty	rotz	XAnimRows	YAnimRows	Tag				hasPhysics	isStatic	isKinematic	meshCollision	FlipNormals	doDraw	hitBoxX	hitBoxY	hitBoxZ	radius	capsuleHeight
-resources/collision/Level1CollisionMesh.x BAKE	0	-10	0	2	2	2	0	0	0	0	0	BAKE		0		0		0		0		0		0	0	0	0	0	0
-resources/models/level1.x		Level	0	-20	0	2	2	2	0	0	0	0	0	LevelModel	0		0		0		0		0		1	0	0	0	0	0
+name	objName	posx	posy	posz	scalex	scaley	scalez	rotx	roty	rotz	XAnimRows	YAnimRows	Tag				hasPhysics	isStatic	isKinematic	meshCollision	FlipNormal 		doDraw	hitBoxX	hitBoxY	hitBoxZ	radius	capsuleHeight
+resources/models/floor.x BAKE		0	0	0	7	7	7	0	0	0	0	0	BAKE				0		0		0		0		0		0	0	0	0	0	0
+resources/models/walls.x BAKE		0	0	0	7	7	7	0	0	0	0	0	BAKE				0		0		0		0		0		0	0	0	0	0	0
+resources/models/floor.x Level		0	0	0	7	7	7	0	0	0	0	0	LevelMode2l			0		0		0		0		0		1	0	0	0	0	0
+resources/models/walls.x Level		0	0	0	7	7	7	0	0	0	0	0	LevelMode3l			0		0		0		0		0		1	0	0	0	0	0
+resources/models/ceiling.x BAKE		0	0	0	7	7	7	0	0	0	0	0	BAKE				0		0		0		0		1		0	0	0	0	0	0
+resources/models/ceiling.x Level	0	0	0	7	7	7	0	0	0	0	0	LevelMode5l			0		0		0		0		0		1	0	0	0	0	0

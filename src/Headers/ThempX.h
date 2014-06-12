@@ -70,7 +70,7 @@ private:
 	LARGE_INTEGER frequency;
 	LARGE_INTEGER oldDelta,newDelta;
 
-	HWND NewWindow(LPCTSTR windowName,int posX,int posY, int sizeX,int sizeY,bool isWindowed);
+	HWND NewWindow(LPCSTR className, LPCTSTR windowName,int posX,int posY, int sizeX,int sizeY,bool isWindowed);
 	void PreCreateWindow();
 	void GetDesktopResolution(int& horizontal, int& vertical);
 };

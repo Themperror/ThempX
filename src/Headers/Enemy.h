@@ -126,15 +126,15 @@ public:
 
 private:
 	
-	int* health; //pointer to GUI.health
-	int* armour; //pointer to GUI.armour
+	int* health; //pointer to GUI->health
+	int* armour; //pointer to GUI->armour
 	ResourceManager* resources;
 	PhysXEngine* physics;
 	PxVec3 playerRight;
 	PxVec3 playerPos;
 	std::vector<Bullet*> bullets;
 	void CheckShooting(float dist, float deltaTime);
-	void CheckFutureCollision();
+	void CheckFutureCollision(int attempts);
 	void Move(D3DXVECTOR3 dir, float dT);
 	void UpdateBullets(float deltaTimeF);
 	void CreateBullet(PxVec3 origin, PxVec3 dir);

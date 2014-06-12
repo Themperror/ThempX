@@ -73,6 +73,7 @@ PhysXEngine::PhysXEngine(ResourceManager* res)
 	playerDesc.climbingMode = PxCapsuleClimbingMode::eEASY;
 	playerDesc.contactOffset = 0.04f;
 	playerDesc.density = 10;
+	playerDesc.slopeLimit = 0;
 	playerDesc.height = 3; // adjust this to roof height below;
 	playerDesc.maxJumpHeight = 2;
 	playerDesc.nonWalkableMode = PxControllerNonWalkableMode::ePREVENT_CLIMBING_AND_FORCE_SLIDING;

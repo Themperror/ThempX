@@ -255,7 +255,8 @@ void Enemy::Update(float dT)
 		if(sawPlayer)
 		{
 			cState = Enemy::Moving;
-			CheckFutureCollision();
+			int i = 0;
+			CheckFutureCollision(i);
 			Move(moveDir,dT*movementSpeed);
 		}
 	}
@@ -291,41 +292,11 @@ void Enemy::CheckShooting(float dist, float deltaTime)
 			}
 		}
 	}
-	/*
-	if(hit[0].actor == physics->player->getActor())
-	{
-		
-		
-		resources->ClearConsole();
-		std::cout << "I can see you and the distance was: "<< hit[0].distance << " Real distance: " << Vector3Distance(&ori,&pPos) <<std::endl;
-		std::cout << "You were at: X: " << pPos.x << " Y: " << pPos.y << " Z: " << pPos.z << std::endl;
-		std::cout << "I was at: X: "<< ori.x << " Y: "<< ori.y << " Z: " << ori.z << std::endl;
-		std::cout << "Is direction normalized? : " << (dir.isNormalized() ? "yes" : "no")  << "   \nThe direction was: X: " <<dir.x << " Y: " << dir.y << " Z: "<<dir.z << std::endl;
-	}
-	else if(hit[0].actor == actor)
-	{
-		if( hit[1].actor == physics->player->getActor())
-		{
-			sawPlayer = true;
-			lastTimeShot+=deltaTime;
-			if(lastTimeShot > shootDelay)
-			{
-				obj->PlayAnimation("Shoot",true);
-				moveDir *= 0.1f;
-				if(obj->GetCurrentAnim()->doAction)
-				{
-					CreateBullet(ori+dir*2,dir);
-					currentMoveTime = 9999.0f;
-					lastTimeShot = 0;
-					resources->GetSoundHandler()->PlayWaveFile("piew");
-					obj->GetCurrentAnim()->doAction = false;
-				}
-			}
-		}
-	}*/
 }
-void Enemy::CheckFutureCollision()
+void Enemy::CheckFutureCollision(int attempts)
 {
+	attempts++;
+	if(attempts > 10) return;
 	PxVec3 pos = actor->getGlobalPose().p;
 	PxVec3 dirMove = PxVec3(moveDir.x,0,moveDir.z);
 	while(dirMove.isZero())
@@ -337,26 +308,22 @@ void Enemy::CheckFutureCollision()
 		dirMove = PxVec3(xfSpeed, 0, zfSpeed);
 	}
 	dirMove.normalize();
-	PxRaycastHit* hit = physics->RaycastMultiple(pos-PxVec3(0,1.5f,0),dirMove,3.5f,NULL,PxQueryFlag::eSTATIC | PxQueryFlag::eDYNAMIC);
-	if(hit[0].actor != NULL && hit[0].distance > 0.1f)
+	int numHits;
+	PxRaycastHit* hit = physics->RaycastMultiple(pos-PxVec3(0,1.5f,0),dirMove,3.5f,&numHits,PxQueryFlag::eSTATIC | PxQueryFlag::eDYNAMIC);
+	for(unsigned int i= 0; i < numHits; i++)
 	{
-		currentMoveTime = 0;
-		float xspeed = rand()% (int)ceil(movementSpeed); //getal van 0 tot 10
-		float xfSpeed = xspeed - (int)ceil(movementSpeed)/2; // getal van -5 tot 5
-		float zspeed = rand()%(int)ceil(movementSpeed); //getal van 0 tot 10
-		float zfSpeed = zspeed -(int)ceil( movementSpeed)/2; // getal van -5 tot 5
-		moveDir = D3DXVECTOR3(xfSpeed, 0, zfSpeed);
-		CheckFutureCollision();
-	}
-	else if(hit[1].actor != NULL && hit[1].distance > 0.1f)
-	{
-		currentMoveTime = 0;
-		float xspeed = rand()% (int)ceil(movementSpeed); //getal van 0 tot 10
-		float xfSpeed = xspeed - (int)ceil(movementSpeed)/2; // getal van -5 tot 5
-		float zspeed = rand()%(int)ceil(movementSpeed); //getal van 0 tot 10
-		float zfSpeed = zspeed -(int)ceil( movementSpeed)/2; // getal van -5 tot 5
-		moveDir = D3DXVECTOR3(xfSpeed, 0, zfSpeed);
-		CheckFutureCollision();
+		if(hit[i].actor != actor && hit[i].actor != NULL)
+		{
+			currentMoveTime = 0;	
+			float xspeed = rand()% (int)ceil(movementSpeed);		//number from 0 to movementSpeed
+			float xfSpeed = xspeed - (int)ceil(movementSpeed)/2;	// number from -movementSpeed/2 to movementSpeed/2
+			float zspeed = rand()%(int)ceil(movementSpeed);			
+			float zfSpeed = zspeed -(int)ceil( movementSpeed)/2;	
+			moveDir = D3DXVECTOR3(xfSpeed, 0, zfSpeed);
+			i = 999;
+			CheckFutureCollision(attempts);
+		}
+		
 	}
 }
 void Enemy::SetCState(Enemy::EnemyState s)

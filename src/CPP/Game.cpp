@@ -25,10 +25,12 @@ Game::Game(ResourceManager::DataStruct* b,HWND windowHandle,ResourceManager* res
 	std::cout << "After GUI" << std::endl;
 	Initialize();
 	std::cout << "After Init" << std::endl;
-
+	
 	LoadLevel("Resources/level.txt");
 	LoadItems("Resources/items1.txt");
 	LoadEnemies("Resources/enemies1.txt");
+	
+	physics->CreateUpperAndLowerLimits(PxVec3(0,-13.6f,0),PxVec3(0,-2.5f,0));
 	std::cout << "After LoadLevel" << std::endl;
 }
 Game::Object2DData Game::CreateObject2DData(char* filePath,bool hasAnim, D3DXVECTOR3 pos,D3DXVECTOR3 scale, D3DXVECTOR2 rows, PhysicsData pData)
@@ -166,10 +168,6 @@ void Game::LoadEnemies(char* txtPath)
 
 			fin >> path >> tag >>health >> damage >> moveSpeed >> posx >> posy >> posz >> scalex >> scaley >> animRowsX >> animRowsY >> colRadius >> colHeight;
 
-			if(path.compare("") == 0)
-			{
-				std::cout <<"something"<<std::endl;
-			}
 			PlaceEnemy(path,D3DXVECTOR3(posx,posy,posz),D3DXVECTOR3(scalex,scaley,scalex),animRowsX,animRowsY,colRadius,colHeight);
 			Enemy* e = enemies.at(enemies.size()-1);
 			e->GetObj()->tag = tag;
@@ -325,7 +323,7 @@ void Game::Update(double deltaTime)
 			if(gui->levelCompleteGUI->animations.at(0).isFinished)
 			{
 				levelComplete = false;
-				player->physicsPlayer->setPosition(PxExtendedVec3(-11.18f,-9.94f,34.4f));
+				player->physicsPlayer->setPosition(PxExtendedVec3(-99,10.6f,-84.3f));
 				player->hasGreenKey = false;
 				player->hasRedKey = false;
 				DestroyLevel();
@@ -342,6 +340,8 @@ void Game::Update(double deltaTime)
 				gui->health = 100;
 				gui->armour = 0;
 				player->TakeDamage(0);
+				
+				physics->CreateUpperAndLowerLimits(PxVec3(0,-13.6f,0),PxVec3(0,50,0));
 				Sleep(2000);
 			}
 		}
@@ -390,8 +390,6 @@ void Game::Update(double deltaTime)
 			HandlePlayerCollisions(moveDir);
 			cam->Update(deltaTimeF,inputHandler->GetMousePosX(),inputHandler->GetMousePosY());
 		}
-		//physx::PxReal elapsed = 1.0f/60.0f;
-	
 		physics->gScene->simulate(deltaTimeF);
 		while(!physics->gScene->fetchResults())
 		{
@@ -462,7 +460,7 @@ void Game::Render()
 			p_Device->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_CLAMP);
 			p_Device->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP);
 			currentEditorObj->obj2D->position = cam->GetPosition()+cam->GetLookDir()*editorObjectDistance;
-			currentEditorObj->obj2D->Update(0.0166f);
+			currentEditorObj->obj2D->Update(1.0f/60.0f);
 			currentEditorObj->obj2D->cameraView = camView;
 			currentEditorObj->obj2D->Draw();
 		}
@@ -609,7 +607,7 @@ PxVec3 Game::DoInput(float dT)
 		data->windowed = false;
 		data->renderSizeX = 800;
 		data->renderSizeY = 600;
-		data->devmodeIndex = resources->GetDevMode(1024,800);
+		data->devmodeIndex = resources->GetDevMode(1920,1080);
 		return PxVec3(0,0,0);
 	}
 	if(KeyPressed(DIK_M) == 2)
@@ -657,11 +655,13 @@ PxVec3 Game::DoInput(float dT)
 		if(KeyPressed(DIK_F1) == 2 && KeyPressed(DIK_LALT) == 1)
 		{
 			gui->health = 100;
+			player->TakeDamage(0);
 			soundHandler->PlayWaveFile("zeizo");
 		}
 		if(KeyPressed(DIK_F2) == 2 && KeyPressed(DIK_LALT) == 1)
 		{
 			gui->armour = 100;
+			player->TakeDamage(0);
 			soundHandler->PlayWaveFile("zeizo");
 		}
 		if(KeyPressed(DIK_F3) == 2 && KeyPressed(DIK_LALT) == 1)
@@ -675,6 +675,30 @@ PxVec3 Game::DoInput(float dT)
 			player->hasRedKey = true;
 			gui->GetGUIObj("Resources/Sprites/RedKey.png")->render = true;
 			soundHandler->PlayWaveFile("zeizo");
+		}
+		if(KeyPressed(DIK_F6) == 2 && KeyPressed(DIK_LALT) == 1)
+		{
+			levelComplete = false;
+			player->physicsPlayer->setPosition(PxExtendedVec3(-99,10.6f,-84.3f));
+			player->hasGreenKey = false;
+			player->hasRedKey = false;
+			DestroyLevel();
+			LoadLevel("Resources/Level2.txt");
+			LoadItems("Resources/items2.txt");
+			LoadEnemies("Resources/enemies2.txt");
+			gui->levelCompleteGUI->render = false;
+			gui->GetGUIObj("Resources/GUI/HealthArmor.png")->render = true;
+			//gui->GetGUIObj("Resources/GUI/WeaponAmmo.png")->render = true;
+			gui->GetGUIObj("Resources/GUI/CharacterState.png")->render = true;
+			gui->GetGUIObj("Resources/GUI/Heart.png")->render = true;
+			gui->armourText->render = true;
+			gui->healthText->render = true;
+			gui->health = 100;
+			gui->armour = 0;
+			player->TakeDamage(0);
+				
+			physics->CreateUpperAndLowerLimits(PxVec3(0,-13.6f,0),PxVec3(0,50,0));
+			Sleep(2000);
 		}
 		if(inputHandler->MouseButtonDown(0))
 		{
@@ -930,7 +954,9 @@ void Game::RespawnPlayer()
 	LoadItems("Resources/items1.txt");
 	LoadEnemies("Resources/enemies1.txt");
 	player->TakeDamage(0);
-	player->physicsPlayer->setPosition(PxExtendedVec3(-11.18f,-8.94f,34.4f));
+	player->physicsPlayer->setPosition(PxExtendedVec3(-11.18f,-5.94f,34.4f));
+	physics->CreateUpperAndLowerLimits(PxVec3(0,-13.6f,0),PxVec3(0,-2.5f,0));
+	
 }
 bool Game::Create3DObject(bool hasPhysics, Object3DData* data)
 {
@@ -1664,7 +1690,6 @@ void Game::LoadLevel(char* txtPath)
 		fin.close();
 		CreateLevelFile();
 	}
-	physics->CreateUpperAndLowerLimits(PxVec3(0,-13.6f,0),PxVec3(0,-2.5f,0));
 }
 //unused light function
 D3DLIGHT9* Game::CreateLight(D3DXVECTOR3 position,D3DXVECTOR3 direction, D3DLIGHTTYPE lightType,D3DXCOLOR lightColor,float range,float falloff)

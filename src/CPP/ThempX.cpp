@@ -140,7 +140,7 @@ void ThempX::GetListofDisplayModes()
 		return;
 	}
 }
-HWND ThempX::NewWindow(LPCTSTR windowName,int posX,int posY, int sizeX,int sizeY,bool isWindowed)
+HWND ThempX::NewWindow(LPCSTR className, LPCTSTR windowName,int posX,int posY, int sizeX,int sizeY,bool isWindowed)
 {
 	WNDCLASSEX wc;
 
@@ -153,7 +153,7 @@ HWND ThempX::NewWindow(LPCTSTR windowName,int posX,int posY, int sizeX,int sizeY
 	wc.hIcon = NULL;
 	wc.hCursor = NULL;
 	wc.hbrBackground = GetSysColorBrush(COLOR_BTNFACE);
-	wc.lpszClassName = "ThempX";
+	wc.lpszClassName = className;
 	wc.lpszMenuName = NULL;
 	wc.hIconSm = LoadIcon(NULL,IDI_WINLOGO);
 		
@@ -161,11 +161,11 @@ HWND ThempX::NewWindow(LPCTSTR windowName,int posX,int posY, int sizeX,int sizeY
 	
 	if(isWindowed)
 	{
-		return CreateWindowEx(WS_EX_CONTROLPARENT, "ThempX", windowName,  WS_EX_TOPMOST | WS_EX_WINDOWEDGE | WS_POPUP | WS_VISIBLE, posX, posY, sizeX, sizeY, NULL, NULL, GetModuleHandle(NULL), NULL);
+		return CreateWindowEx(WS_EX_CONTROLPARENT, className, windowName,  WS_EX_TOPMOST | WS_EX_WINDOWEDGE | WS_POPUP | WS_VISIBLE, posX, posY, sizeX, sizeY, NULL, NULL, GetModuleHandle(NULL), NULL);
 	}
 	else
 	{
-		return CreateWindowEx(WS_EX_CONTROLPARENT, "ThempX", windowName, WS_EX_TOPMOST | WS_POPUP, 0, 0, sizeX, sizeY, NULL, NULL,GetModuleHandle(NULL), NULL);
+		return CreateWindowEx(WS_EX_CONTROLPARENT, className, windowName, WS_EX_TOPMOST | WS_POPUP, 0, 0, sizeX, sizeY, NULL, NULL,GetModuleHandle(NULL), NULL);
 	}
 }
 
@@ -191,13 +191,23 @@ void ThempX::PreCreateWindow()
 	int dHorizontal = 0;
 	int dVertical = 0;
 	
+	//ReadConfigFile(char* path, ResourceManager::DataStruct* out)
+
+	//Read config file
+	//string gamename
+	//processname
+	//int resolution X, Y
+	//bool onlyHorizontalMouse
+	// etc
+
+	
 	GetDesktopResolution(dHorizontal, dVertical);
 	
 	wSizeX = 800;
 	wSizeY = 600;
 	SRenderSizeX = 800;
 	SRenderSizeY = 600;
-	handleWindow = NewWindow("The Morph",dHorizontal/2-(wSizeX/2),dVertical/2-(wSizeY/2),wSizeX,wSizeY,true);
+	handleWindow = NewWindow("Morph","The Morph",dHorizontal/2-(wSizeX/2),dVertical/2-(wSizeY/2),wSizeX,wSizeY,true);
 
 #ifdef DEBUG
 	AllocConsole();
@@ -580,7 +590,7 @@ LPDIRECT3DDEVICE9 ThempX::InitializeDevice(HWND han_WindowToBindTo)
 void ThempX::SetDefaultRenderStateSettings()
 {
 	p_Device->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE); //double sided plane
-//p_dx_Device->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW); //single sided plane
+	//p_Device->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW); //single sided plane
 	p_Device->SetRenderState(D3DRS_LIGHTING,false);
 	p_Device->SetRenderState(D3DRS_ZENABLE, true);
 	p_Device->SetRenderState(D3DRS_FILLMODE,D3DFILL_SOLID);

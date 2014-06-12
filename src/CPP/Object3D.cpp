@@ -65,7 +65,10 @@ void Object3D::DrawModel()
 			if(model.meshTextures != NULL)
 			{
 				p_Device->SetMaterial(&model.meshMaterials[i]);
-				p_Device->SetTexture(0,model.meshTextures[i]);
+				if(model.meshTextures[i] != NULL)
+				{
+					p_Device->SetTexture(0,model.meshTextures[i]);
+				}
 			}
 			result = model.mesh->DrawSubset(i);
 			if(result == D3DERR_INVALIDCALL)
