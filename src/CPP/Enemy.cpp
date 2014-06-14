@@ -10,7 +10,7 @@ Enemy::Enemy(ResourceManager* res, PhysXEngine* phys, GUI* gu)
 	gui = gu;
 	srand(timeGetTime());
 	srand(timeGetTime() + rand() + *health + *armour);
-	dCube = new DebugCube(D3DXVECTOR3(0,0,0),D3DXVECTOR3(0,0,0),-D3DXVECTOR3(0.5f,0.5f,0.5f),D3DXVECTOR3(0.5f,0.5f,0.5f),res);
+	//dCube = new DebugCube(D3DXVECTOR3(0,0,0),D3DXVECTOR3(0,0,0),-D3DXVECTOR3(0.5f,0.5f,0.5f),D3DXVECTOR3(0.5f,0.5f,0.5f),res);
 }
 void Enemy::Move(D3DXVECTOR3 dir, float dT)
 {

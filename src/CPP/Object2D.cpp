@@ -26,7 +26,6 @@ Object2D::Object2D(ResourceManager* res, char* texturePath, D3DXMATRIX* camView,
 	quad.texture = resources->GetTexture(texturePath);
 	hasAnimation = false;
 	
-	//linkedPhysicsObj = NULL;
 	if(quad.texture != NULL)
 	{
 		D3DMATERIAL9 mat;
